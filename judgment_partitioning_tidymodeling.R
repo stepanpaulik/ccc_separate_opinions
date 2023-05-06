@@ -1,4 +1,8 @@
-xfun::pkg_attach2("tidyverse", "ggplot2", "tidymodels", "kernlab", "xgboost", "doParallel")
+install.packages("tidyverse", "tidymodels", "kernlab", "xgboost", "doParallel", "vip")
+library(tidyverse)
+library(tidymodels)
+library(doParallel)
+library(vip)
 
 doc2vec_df = readRDS("../data/doc2vec_df.rds")
 saveRDS(doc2vec_df, "../data/doc2vec_df.rds")
@@ -154,7 +158,7 @@ xgboost_grid = grid_latin_hypercube(
   min_n(),
   loss_reduction(),
   sample_size = sample_prop(),
-  finalize(mtry(), vb_train),
+  finalize(mtry(), train_data),
   learn_rate(),
   size = 30
 )
@@ -169,8 +173,33 @@ folds = vfold_cv(train_data, v = 6)
 doParallel::registerDoParallel()
 
 xgboost_res = tune_grid(
-  xgboost_wf,
+  xgboost_wflow,
   resamples = folds,
   grid = xgboost_grid,
   control = control_grid(save_pred = TRUE)
+)
+
+# Plot the tuned parameters
+xgboost_res %>%
+  collect_metrics() %>%
+  filter(.metric == "roc_auc") %>%
+  select(mean, mtry:sample_size) %>%
+  pivot_longer(mtry:sample_size,
+               values_to = "value",
+               names_to = "parameter"
+  ) %>%
+  ggplot(aes(value, mean, color = parameter)) +
+  geom_point(alpha = 0.8, show.legend = FALSE) +
+  facet_wrap(~parameter, scales = "free_x") +
+  labs(x = NULL, y = "AUC")
+
+show_best(xboost_res, "roc_auc")
+
+# Select the best parameters for the final tuning
+best_auc = select_best(xgboost_res, "roc_auc")
+
+# Finalize the model fit
+final_xgboost = finalize_workflow(
+  xgboost_wflow,
+  best_auc
 )
