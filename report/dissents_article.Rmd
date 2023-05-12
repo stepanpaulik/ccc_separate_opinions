@@ -1,0 +1,23 @@
+---
+title: "dissents_article"
+author: "Štěpán Paulík, Gor"
+date: "`r Sys.Date()`"
+output:
+  word_document: default
+  pdf_document: default
+---
+In our article, we replicate the study of Epstein, Landes and Posner. The authors build a model of judicial dissents for the Supreme Court of the USA and test various hypotheses. They test what motivates judges to dissent, i.e., whether judges behave strategically, under what circumstances, i.e., how does the decision to dissent depend on the composition of panel, and lastly what is the impact of the dissent on the majority opinion, i.e., whether the majority decision are longer as a result of having to address arguments raised in a dissent.
+
+Epstein et al. build a model of judicial behavior for a Supreme Court of the USA. Their model is based on the strategic behavior of judges. Given that judges enjoy a life tenure, as is the case both at the SCOTUS and at the CCC, which we analyse in our article, judges have "leisure preferences or, equivalently, effort aversion, which they trade off against their desire to have a good reputation and to express their legal and policy beliefs and preferences by their vote and by the judicial opinion explaining their vote (...)." In their model, they include not only the decision to dissent but also a dissent aversion, a phenomenon that causes judges to not dissent even if they disagree with the majority opinion.
+
+The authors conduct the study on federal courts of appeal and the SCOTUS. Due to availability of data and the fact that dissenting is a common practice only at the CCC, we narrow our object of analysis to the CCC. Moreover, Epstein, Posner and Landes include in their analysis the ideological distance between judges. The ideological distance serves as one of the explanatory variables for dissent aversion. The measures of ideological position of judges mainly rely on information about their voting behavior. Regrettably such an information is typically in continental legal systems not made public: the votes in cases are kept hidden from public. Therefore, it is near impossible to construct a measure of political position of judges without knowing how they voted in each case.
+
+We believe that we can, nonetheless, test the remaining hypotheses from the research paper. Thus, the hypotheses we will test are as follow: 
+
+$$ tvoje máma = smrdí $$
+
+## Length of decision
+Judicial decisions hardly ever follow a uniform structure. Nor do they contain uniform title signalling which segment of the decision ensues after the title. Therefore, we utilised supervised machine learning model We trained a classification model that segmented a CCC decision into structural parts, including dissent.
+```{r setup, include=FALSE}
+```
+

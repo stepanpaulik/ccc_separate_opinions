@@ -1,0 +1,121 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={dissents\_article},
+  pdfauthor={Štěpán Paulík, Gor},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{dissents\_article}
+\author{Štěpán Paulík, Gor}
+\date{2023-05-06}
+
+\begin{document}
+\maketitle
+
+In our article, we replicate the study of Epstein, Landes and Posner.
+The authors build a model of judicial dissents for the Supreme Court of
+the USA and test various hypotheses. They test what motivates judges to
+dissent, i.e., whether judges behave strategically, under what
+circumstances, i.e., how does the decision to dissent depend on the
+composition of panel, and lastly what is the impact of the dissent on
+the majority opinion, i.e., whether the majority decision are longer as
+a result of having to address arguments raised in a dissent.
+
+Epstein et al.~build a model of judicial behavior for a Supreme Court of
+the USA. Their model is based on the strategic behavior of judges. Given
+that judges enjoy a life tenure, as is the case both at the SCOTUS and
+at the CCC, which we analyse in our article, judges have ``leisure
+preferences or, equivalently, effort aversion, which they trade off
+against their desire to have a good reputation and to express their
+legal and policy beliefs and preferences by their vote and by the
+judicial opinion explaining their vote (\ldots).'' In their model, they
+include not only the decision to dissent but also a dissent aversion, a
+phenomenon that causes judges to not dissent even if they disagree with
+the majority opinion.
+
+The authors conduct the study on federal courts of appeal and the
+SCOTUS. Due to availability of data and the fact that dissenting is a
+common practice only at the CCC, we narrow our object of analysis to the
+CCC. Moreover, Epstein, Posner and Landes include in their analysis the
+ideological distance between judges. The ideological distance serves as
+one of the explanatory variables for dissent aversion. The measures of
+ideological position of judges mainly rely on information about their
+voting behavior. Regrettably such an information is typically in
+continental legal systems not made public: the votes in cases are kept
+hidden from public. Therefore, it is near impossible to construct a
+measure of political position of judges without knowing how they voted
+in each case.
+
+We believe that we can, nonetheless, test the remaining hypotheses from
+the research paper. Thus, the hypotheses we will test are as follow:
+
+\$ (1) \$ \$ (2) \$
+
+\hypertarget{length-of-decision}{%
+\subsection{Length of decision}\label{length-of-decision}}
+
+Judicial decisions hardly ever follow a uniform structure. Nor do they
+contain uniform title signalling which segment of the decision ensues
+after the title. Therefore, we utilised supervised machine learning
+model We trained a classification model that segmented a CCC decision
+into structural parts, including dissent.
+
+\end{document}

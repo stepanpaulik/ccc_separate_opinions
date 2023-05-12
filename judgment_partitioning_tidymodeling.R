@@ -1,8 +1,4 @@
-install.packages("tidyverse", "tidymodels", "kernlab", "xgboost", "doParallel", "vip")
-library(tidyverse)
-library(tidymodels)
-library(doParallel)
-library(vip)
+xfun::pkg_attach2("tidyverse", "tidymodels", "kernlab", "xgboost", "doParallel", "parallel", "iterators")
 
 doc2vec_df = readRDS("../data/doc2vec_df.rds")
 saveRDS(doc2vec_df, "../data/doc2vec_df.rds")
@@ -15,11 +11,13 @@ saveRDS(doc2vec_df, "../data/doc2vec_df.rds")
 set.seed(222)
 
 # Put 3/4 of the data into the training set 
-data_split = initial_split(svm_df, prop = 3/4)
+data_split = initial_split(doc2vec_df, prop = 3/4)
 
 # Create data frames for the two sets:
 train_data = training(data_split)
 test_data  = testing(data_split)
+
+doc2vec_df$tag = doc2vec_df$tag %>% as.factor()
 
 # Tuning
 # This creates a recipe object. A recipe object contains the formula for the model as well as additional information for example on the role of the columns in a dataframe (ID, predictor, outcome)
@@ -40,10 +38,6 @@ svm_wflow = workflow() %>%
   add_model(svm_mod) %>%
   add_recipe(svm_rec)
 
-# A first fitting without any tuning or resampling
-svm_fit = svm_wflow %>% 
-  fit(data = train_data)
-
 # Firstly we create a grid with the tuning parameters
 svm_tune = grid_regular(cost(), levels = 5)
 
@@ -62,7 +56,7 @@ svm_wflow_final =
   finalize_workflow(best_cost)
 
 # Lastly, the model is both trained and then fitted to the testing data with the last_fit() function; this function fits the finalized model on the full training data set and evaluates the finalized model on the testing data.
-svm_fit_final = svm_wflow %>%
+svm_fit_final = svm_wflow_final %>%
   last_fit(data_split)
 
 svm_fit_final %>% collect_metrics()
@@ -193,13 +187,34 @@ xgboost_res %>%
   facet_wrap(~parameter, scales = "free_x") +
   labs(x = NULL, y = "AUC")
 
-show_best(xboost_res, "roc_auc")
+show_best(xgboost_res, "roc_auc")
 
 # Select the best parameters for the final tuning
 best_auc = select_best(xgboost_res, "roc_auc")
 
-# Finalize the model fit
-final_xgboost = finalize_workflow(
+# Finalize the model workflow with inputting the tuned parameters to the workflow
+final_xgboost_wflow = finalize_workflow(
   xgboost_wflow,
   best_auc
 )
+
+# The final fit using the finalized wflow from previous lines
+final_xgboost_fit = final_xgboost_wflow %>% 
+  last_fit(data_split)
+
+final_xgboost_fit %>% collect_metrics()
+preds = final_xgboost_fit %>% collect_predictions()
+
+# What are the most important parameters for variable importance?
+final_xgboost_wflow %>%
+  fit(data = train_data) %>%
+  extract_fit_parsnip() %>%
+  vip(geom = "point")
+
+# Multiclass ROC curve
+final_xgboost_fit %>%
+  collect_predictions() %>% 
+  roc_curve(tag, 2:10)  %>%
+  autoplot()
+
+save.image(file = "../data/xgboost_model_data.RData")
