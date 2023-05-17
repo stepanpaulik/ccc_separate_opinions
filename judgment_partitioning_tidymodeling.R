@@ -1,8 +1,14 @@
 xfun::pkg_attach2("tidyverse", "tidymodels", "kernlab", "xgboost", "doParallel", "parallel", "iterators")
 
 doc2vec_df = readRDS("../data/doc2vec_df.rds")
-saveRDS(doc2vec_df, "../data/doc2vec_df.rds")
 
+doc2vec_df = doc2vec_df %>%
+  mutate(tag = case_when(
+    tag == "comments" ~ "procedure history",
+    TRUE ~ tag 
+  )) %>%
+  filter(tag != "costs") %>%
+  mutate(tag = factor(tag))
 # Random data filtering
 # svm_df = svm_df %>% filter(tag != "dissent") %>% select(!dissenting_opinion)
 
@@ -16,8 +22,6 @@ data_split = initial_split(doc2vec_df, prop = 3/4)
 # Create data frames for the two sets:
 train_data = training(data_split)
 test_data  = testing(data_split)
-
-doc2vec_df$tag = doc2vec_df$tag %>% as.factor()
 
 # Tuning
 # This creates a recipe object. A recipe object contains the formula for the model as well as additional information for example on the role of the columns in a dataframe (ID, predictor, outcome)
@@ -63,7 +67,7 @@ svm_fit_final %>% collect_metrics()
 
 svm_fit_final %>%
   collect_predictions() %>% 
-  roc_curve(class, .pred_PS) %>% 
+  roc_curve(tag, .pred_dissent) %>% 
   autoplot()
 
 # After having found the right model we can get to k-fold crossvalidation as well as the final model fitting
@@ -76,7 +80,7 @@ svm_rec
 
 # This creates a model object, in which you set the model specifications including the parameters with the tuned values or the engine of the model
 svm_mod = svm_linear(cost = 0.01) %>%
-  set_engine("kernlab") %>%
+  set_engine("LiblineaR") %>%
   set_mode("classification")
 svm_mod
 
@@ -103,11 +107,7 @@ predict(svm_fit, test_data)
 # Measuring the accuracy of the basic model with the augment function or predict, which requires further specifications and more actions
 svm_aug = 
   augment(svm_fit, test_data) %>% 
-  select(doc_id, tag, .pred_class) %>%
-  mutate(
-    tag = factor(tag),
-    .pred_class = factor(.pred_class)
-  )
+  select(doc_id, tag, .pred_class)
 
 svm_aug %>% 
   accuracy(truth = tag, .pred_class)
@@ -209,7 +209,7 @@ preds = final_xgboost_fit %>% collect_predictions()
 final_xgboost_wflow %>%
   fit(data = train_data) %>%
   extract_fit_parsnip() %>%
-  vip(geom = "point")
+  vip::vip(geom = "point")
 
 # Multiclass ROC curve
 final_xgboost_fit %>%
@@ -217,4 +217,41 @@ final_xgboost_fit %>%
   roc_curve(tag, 2:10)  %>%
   autoplot()
 
-save.image(file = "../data/xgboost_model_data.RData")
+# Final tuned fit
+xgboost_rec = recipe(tag ~ ., data = train_data) %>%
+  update_role(all_double(), new_role = "predictor") %>%
+  update_role(doc_id, new_role = "ID") %>%
+  update_role(tag, new_role = "outcome")
+xgboost_rec
+
+xgboost_mod = boost_tree(
+  trees = 1000,
+  mtry = 17,
+  min_n = 16,
+  tree_depth = 13,
+  learn_rate = 0.00540844661792405,
+  loss_reduction = 3.41145754172432e-08,
+  sample_size = 0.545441143696662
+) %>%
+  set_engine("xgboost") %>%
+  set_mode("classification")
+
+xgboost_wflow = workflow() %>%
+  add_model(xgboost_mod) %>%
+  add_recipe(xgboost_rec)
+
+xgboost_fit = xgboost_wflow %>% 
+  fit(data = train_data)
+
+xgboost_aug = 
+  augment(xgboost_fit, test_data) %>% 
+  select(doc_id, tag, .pred_class)
+
+xgboost_aug %>% 
+  accuracy(truth = tag, .pred_class)
+
+xgboost_aug %>%
+  conf_mat(truth = tag, .pred_class)
+
+
+save.image(file = "../data/tuned_model_data.RData")
