@@ -3,21 +3,74 @@ title: "dissents_article"
 author: "Štěpán Paulík, Gor"
 date: "`r Sys.Date()`"
 output:
-  word_document: default
   pdf_document: default
+  word_document: 
+    reference_docx: word_style.docx
 ---
-In our article, we replicate the study of Epstein, Landes and Posner. The authors build a model of judicial dissents for the Supreme Court of the USA and test various hypotheses. They test what motivates judges to dissent, i.e., whether judges behave strategically, under what circumstances, i.e., how does the decision to dissent depend on the composition of panel, and lastly what is the impact of the dissent on the majority opinion, i.e., whether the majority decision are longer as a result of having to address arguments raised in a dissent.
-
-Epstein et al. build a model of judicial behavior for a Supreme Court of the USA. Their model is based on the strategic behavior of judges. Given that judges enjoy a life tenure, as is the case both at the SCOTUS and at the CCC, which we analyse in our article, judges have "leisure preferences or, equivalently, effort aversion, which they trade off against their desire to have a good reputation and to express their legal and policy beliefs and preferences by their vote and by the judicial opinion explaining their vote (...)." In their model, they include not only the decision to dissent but also a dissent aversion, a phenomenon that causes judges to not dissent even if they disagree with the majority opinion.
-
-The authors conduct the study on federal courts of appeal and the SCOTUS. Due to availability of data and the fact that dissenting is a common practice only at the CCC, we narrow our object of analysis to the CCC. Moreover, Epstein, Posner and Landes include in their analysis the ideological distance between judges. The ideological distance serves as one of the explanatory variables for dissent aversion. The measures of ideological position of judges mainly rely on information about their voting behavior. Regrettably such an information is typically in continental legal systems not made public: the votes in cases are kept hidden from public. Therefore, it is near impossible to construct a measure of political position of judges without knowing how they voted in each case.
+Due to availability of data and the fact that dissenting is a common practice only at the CCC, we narrow our object of analysis to the CCC. Moreover, Epstein, Posner and Landes include in their analysis the ideological distance between judges. The ideological distance serves as one of the explanatory variables for dissent aversion. The measures of ideological position of judges mainly rely on information about their voting behavior. Regrettably such an information is typically in continental legal systems not made public: the votes in cases are kept hidden from public. Therefore, it is near impossible to construct a measure of political position of judges without knowing how they voted in each case.
 
 We believe that we can, nonetheless, test the remaining hypotheses from the research paper. Thus, the hypotheses we will test are as follow: 
 
-$$ tvoje máma = smrdí $$
 
 ## Length of decision
-Judicial decisions hardly ever follow a uniform structure. Nor do they contain uniform title signalling which segment of the decision ensues after the title. Therefore, we utilised supervised machine learning model We trained a classification model that segmented a CCC decision into structural parts, including dissent.
-```{r setup, include=FALSE}
+According to Epstein, Landes and Posner, "[a] dissent imposes an effort cost on the majority because the author of the majority opinion is likely to revise his opinion to address the objections raised by the dissent. This suggests that majority opinions will be longer when there is a dissent." A following hypotheses can be distilled:
+
+RQ~1~: "A presence of dissent positively affects the length of the majority argumentation.
+
+To test this hypothesis, Epstein, Landes and Posner collected roughly 446 SCOTUS and 1025 US court of appeals decisions. They then created regression models to see whether the presence of at least one dissenting opinion effected the length of the majority opinion. 
+
+We're interested in application of the SCOTUS model as SCOTUS institutionally resembles the CCC the most. Thus, we will now briefly introduce their model, explain how and why does our model differ, and how we improve it.
+
+The regression model of Epstein et al. naturally controls for multiple covariates, so that bias is eliminated. Among them are:
+
+(1) whether the decision included oral hearing, 
+(2) and (3) a dummy variable for presence of 1 or 2 and more dissents, 
+(4) whether the majority mentioned the dissent,
+(5) a presence of concurring opinion,
+(6) a dummy for subject matter,
+(7) a dummy for the term of the court,
+(8) importance of the case, proxied by the number of references to the case in caselaw of SCOTUS and courts of appeal.
+
+Based on application of their model to the SCOTUS data, the trio of authors found statistical significant and positive relationship between presence of at least two dissenting opinions and the length of the majority decision. Unsurprisingly, the authors also found a statistically significant positive relationship between the outcome variable and the importance of the case.
+
+### Adapting the Epstein et al. regression model
+
+In the next section, we discuss a couple of issues with the model. Firstly, while we are aware that the importance or salience of a case is probably the key confounding variable, measuring as a post-treatment amount of references of that decision might introduce further bias. Secondly, we think inclusion of some of the covariates is unnecessary and may even constitute a bad control, insofar we do not think there is any potential avenue for confounding. Thirdly, not all covariates are transferable from the SCOTUS context to the European continental law context of the CCC.
+
+#### Importance of a case
+
+In general, when utilizing a regression design with observational data, which is our case, the researcher must satisfy certain conditions to be able to interpret the regression results as a causal relationship. The first is the stable unit treatment value assumption (SUTVA) and the other is usually referred to as *conditional independence assumption*. This condition requires that the assignment of treatment is independent of any covariates *X* that also influence outcome. The CIA may be formalized as follows: 
+
+{Y~1i~, Y~0i~}${\bot}$T~i~|X~i~
+
+The notation follows the potential outcomes framework. {Y~1i~, Y~0i~} refer to the outcome of a unit i with or without treatment, in our case the presence of at least one dissenting opinion. T~i~ is the treatment status of unit i and X~i~ are all potential covariates. There are, in general, two types of causes of bias: a confounding variable, which breaks the CIA, and reverse causality. A confounding variable is such that
+
+(1) has an effect on treatment status,
+(2) has an effect on the outcome over and above its effect on the treatment status.
+
+Not controlling for confounding variables causes an omitted variable bias and precludes causal interpretation of the regression. 
+
+While at first glance it may thus seem that researches should throw in as many covariates as possible, that is in reality not the case. There are examples of bad or unnecessary controls (discussed in) that are themselves an outcome of the treatment. 
+
+We believe that importance of a decision proxied by the number of citations in ensuing caselaw may present such a bad post-treatment control variable.
+
+#### Unnecessary or untransferrable control variables
+
+Secondly, we believe not all variables in the Epstein et al. model have potential for confounding or are transferrable to the CCC context. 
+
+The majority mentioning the dissent does not impact the decision to or not to dissent as such mention can only follow after a decision to dissent was made. Thus, we omit it from our model.
+
+Oral hearings are few and far between in the CCC context. It therefore makes no sense to control for the presence of oral hearing in the context of the CCC.
+
+On the other hand, because the formation of the CCC actually varies unlike the static formation of SCOTUS, we're including a dummy variable for the formation of a court, i.e., whether the decision was made in a 3 member panel or a full court plenary. The plenary is more likely to rule on merits and its decisions are, therefore, on average longer. Moreover, the dissent rate in the plenary decisions is also higher. Thus, the formation of the CCC clearly has a confounding potential.
+
+### Data collection and method
+
+The data used for this analysis includes the complete dataset of XXXX CCC decisions, with short procedural decisions being excluded from the dataset. The Czech Apex Court dataset was built by Štěpán Paulík and includes complete database of decisions of the CCC, SAC and the Czech Supreme Court, including comprehensive metadata, text corpora, as well as additional information mined from the texts or publicly available sources, such as references, compositions, or background information of the judges. The analysis was limited up to December 2022.
+
+To extract the length of dissents and length of majority argumentation, a supervised classification algorithm was trained following similar structure-mining attempts within the Czech context [ODKAZY NA Eliasek + Harasta]. A sample of 200 decisions was manually annotated on a paragraph level. The paragraphs were then represented as doc2vec vectors based on word2vec model of the whole CCC text corpus. A couple of various models were trained and compared and, in line with the findings of Eliasek, the choice was narrowed down to two algorithms - Support Vector Machines and Boosted Trees algorithms. More complex algorithms did not provide any improvement in accuracy at the cost of higher computing costs. Table X shows the performance of both algorithms. 
+ 
+
+```{r table2}
 ```
 
