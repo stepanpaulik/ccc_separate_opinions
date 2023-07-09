@@ -1,34 +1,82 @@
-xfun::pkg_attach2("tidyverse", "tidymodels", "kernlab", "xgboost", "doParallel", "parallel", "iterators")
+xfun::pkg_attach2("tidyverse", "tidymodels", "themis", "xgboost", "doParallel", "parallel", "LiblineaR", "skimr", "broom")
 
-doc2vec_df = readRDS("../data/doc2vec_df.rds")
+source("../supporting_functions.R")
+data = readRDS("../data/judgments_annotated_doc2vec.rds")
+# data = readRDS("../data/judgments_annotated_dtm.rds")
+metadata = readRDS("../data/US_metadata.rds")
 
-doc2vec_df = doc2vec_df %>%
-  mutate(tag = case_when(
-    tag == "comments" ~ "procedure history",
-    TRUE ~ tag 
+
+
+# Data prep depending on the goal
+# Create a binary variable for the presence of dissent in the decision, and include only the information on dissents
+filter_dissenting_decisions = function(data, metadata = readRDS("../data/US_metadata.rds")){
+    output = metadata %>% 
+      select(doc_id, dissenting_opinion) %>% 
+      left_join(data, ., by = "doc_id") %>% 
+      mutate(dissenting_opinion = if_else(dissenting_opinion == "", 0, 1)) %>%
+      filter(dissenting_opinion == 1) %>%
+      select(-dissenting_opinion)
+}
+
+remove_dissents_recalculate = function(data){
+  output = data %>%
+    group_by(doc_id) %>%
+    mutate(start = start/max(start),
+           end = end/max(end),
+           length = length/max(length))
+  return(output)
+}
+
+# For dissent/not_dissent classification
+data_dissent = filter_dissenting_decisions(data = data) %>%
+  mutate(class = case_when(
+    class != "dissent" ~ "not_dissent",
+    .default = "dissent"
   )) %>%
-  filter(tag != "costs") %>%
-  mutate(tag = factor(tag))
-# Random data filtering
-# svm_df = svm_df %>% filter(tag != "dissent") %>% select(!dissenting_opinion)
+  mutate(class = factor(class))
+
+# For the remaining classes classification
+data_structure = data %>% 
+  filter(!class %in% c("dissent", "costs")) %>%
+  remove_dissents_recalculate() %>%
+  mutate(class = case_when(
+    class == "comments" ~ "procedure history",
+    .default = class
+  ),
+  class = factor(class))
+
+# Explore the data
+data_structure %>%
+  group_by(class) %>%
+  summarise(N = n(),
+            avg_length = mean(length)) %>%
+  mutate(freq = N/sum(N))
 
 # Fix the random numbers by setting the seed 
 # This enables the analysis to be reproducible when random numbers are used 
 set.seed(222)
 
 # Put 3/4 of the data into the training set 
-data_split = initial_split(doc2vec_df, prop = 3/4)
+data_split = data_dissent %>%
+  initial_split(prop = 3/4)
+
+data_split = data_structure %>%
+  initial_split(prop = 3/4)
 
 # Create data frames for the two sets:
 train_data = training(data_split)
 test_data  = testing(data_split)
 
+# Instead of training on the whole train data, let's do cross validation
+folds = vfold_cv(train_data, v = 6)
+
 # Tuning
 # This creates a recipe object. A recipe object contains the formula for the model as well as additional information for example on the role of the columns in a dataframe (ID, predictor, outcome)
-svm_rec = recipe(tag ~ ., data = train_data) %>%
+svm_rec = recipe(class ~ ., data = train_data) %>%
   update_role(all_double(), new_role = "predictor") %>%
   update_role(doc_id, new_role = "ID") %>%
-  update_role(tag, new_role = "outcome")
+  update_role(class, new_role = "outcome") %>%
+  step_smote(class)
 svm_rec
 
 # This creates a model object, in which you set the model specifications including the parameters to be tuned or the engine of the model
@@ -63,24 +111,29 @@ svm_wflow_final =
 svm_fit_final = svm_wflow_final %>%
   last_fit(data_split)
 
+# Final fit
+svm_fit_final = svm_wflow_final %>%
+  fit(train_data)
+
 svm_fit_final %>% collect_metrics()
 
 svm_fit_final %>%
   collect_predictions() %>% 
-  roc_curve(tag, .pred_dissent) %>% 
+  roc_curve(class, .pred_dissent) %>% 
   autoplot()
 
 # After having found the right model we can get to k-fold crossvalidation as well as the final model fitting
 # This creates a recipe object. A recipe object contains the formula for the model as well as additional information for example on the role of the columns in a dataframe (ID, predictor, outcome)
-svm_rec = recipe(tag ~ ., data = train_data) %>%
+svm_rec = recipe(class ~ ., data = train_data) %>%
   update_role(all_double(), new_role = "predictor") %>%
   update_role(doc_id, new_role = "ID") %>%
-  update_role(tag, new_role = "outcome")
+  update_role(class, new_role = "outcome") %>%
+  themis::step_smote(class)
 svm_rec
 
 # This creates a model object, in which you set the model specifications including the parameters with the tuned values or the engine of the model
-svm_mod = svm_linear(cost = 0.01) %>%
-  set_engine("LiblineaR") %>%
+svm_mod = svm_linear(cost = 0.01313901) %>%
+  set_engine("kernlab") %>%
   set_mode("classification")
 svm_mod
 
@@ -89,8 +142,6 @@ svm_wflow = workflow() %>%
   add_model(svm_mod) %>%
   add_recipe(svm_rec)
 
-# Instead of training on the whole train data, let's do cross validation
-folds = vfold_cv(train_data, v = 6)
 
 # This does a basic cross validation
 svm_fit_cv = svm_wflow %>% 
@@ -105,34 +156,43 @@ svm_fit = svm_wflow %>%
 predict(svm_fit, test_data)
 
 # Measuring the accuracy of the basic model with the augment function or predict, which requires further specifications and more actions
-svm_aug = 
-  augment(svm_fit, test_data) %>% 
-  select(doc_id, tag, .pred_class)
+svm_aug = augment(svm_fit, test_data) %>% 
+  select(doc_id, class, .pred_class)
 
 svm_aug %>% 
-  accuracy(truth = tag, .pred_class)
+  accuracy(truth = class, .pred_class)
 
 svm_aug %>%
-  conf_mat(truth = tag, .pred_class)
+  conf_mat(truth = class, .pred_class)
+
+svm_aug %>%
+  recall(truth = class, .pred_class)
+
+svm_aug %>%
+  f_meas(truth = class, .pred_class)
+
+svm_aug %>%
+  precision(truth = class, .pred_class)
 
 
 # svm_pred = predict(svm_fit, test_data) %>%
 #   bind_cols(predict(svm_fit, test_data, type = "prob")) %>%
-#   bind_cols(test_data %>% select(tag)) %>%
+#   bind_cols(test_data %>% select(class)) %>%
 #   mutate(
-#     tag = factor(tag)
+#     class = factor(class)
 #   )
 
 # svm_pred %>% 
-#   accuracy(truth = tag, .pred_class)
+#   accuracy(truth = class, .pred_class)
 
 ## Boosted trees via xgboost
 # Tuning
 # This creates a recipe object. A recipe object contains the formula for the model as well as additional information for example on the role of the columns in a dataframe (ID, predictor, outcome)
-xgboost_rec = recipe(tag ~ ., data = train_data) %>%
+xgboost_rec = recipe(class ~ ., data = train_data) %>%
   update_role(all_double(), new_role = "predictor") %>%
   update_role(doc_id, new_role = "ID") %>%
-  update_role(tag, new_role = "outcome")
+  update_role(class, new_role = "outcome") %>%
+  step_smote(class)
 xgboost_rec
 
 xgboost_mod = boost_tree(
@@ -161,7 +221,7 @@ xgboost_wflow = workflow() %>%
   add_model(xgboost_mod) %>%
   add_recipe(xgboost_rec)
 
-folds = vfold_cv(train_data, v = 6)
+# folds = vfold_cv(train_data, v = 6)
 
 # Parallelize the process of tuning
 doParallel::registerDoParallel()
@@ -203,7 +263,16 @@ final_xgboost_fit = final_xgboost_wflow %>%
   last_fit(data_split)
 
 final_xgboost_fit %>% collect_metrics()
-preds = final_xgboost_fit %>% collect_predictions()
+
+xgboost_aug = 
+  augment(final_xgboost_fit, test_data) %>% 
+  select(doc_id, class, .pred_class)
+
+xgboost_aug %>% 
+  accuracy(truth = class, .pred_class)
+
+xgboost_aug %>%
+  conf_mat(truth = class, .pred_class)
 
 # What are the most important parameters for variable importance?
 final_xgboost_wflow %>%
@@ -211,17 +280,13 @@ final_xgboost_wflow %>%
   extract_fit_parsnip() %>%
   vip::vip(geom = "point")
 
-# Multiclass ROC curve
-final_xgboost_fit %>%
-  collect_predictions() %>% 
-  roc_curve(tag, 2:10)  %>%
-  autoplot()
 
 # Final tuned fit
-xgboost_rec = recipe(tag ~ ., data = train_data) %>%
+xgboost_rec = recipe(class ~ ., data = train_data) %>%
   update_role(all_double(), new_role = "predictor") %>%
   update_role(doc_id, new_role = "ID") %>%
-  update_role(tag, new_role = "outcome")
+  update_role(class, new_role = "outcome") %>%
+  step_smote(class)
 xgboost_rec
 
 xgboost_mod = boost_tree(
@@ -240,18 +305,78 @@ xgboost_wflow = workflow() %>%
   add_model(xgboost_mod) %>%
   add_recipe(xgboost_rec)
 
+# 6-fold crossvalidation
+metrics = metric_set(accuracy, precision, roc_auc)
+xgboost_fit_cv = xgboost_wflow %>%
+  fit_resamples(folds, metrics = metrics)
+xgboost_fit_cv %>% collect_metrics()
+
+
+
+# Fit with real data
 xgboost_fit = xgboost_wflow %>% 
-  fit(data = train_data)
+  fit(data = data_structure)
 
 xgboost_aug = 
   augment(xgboost_fit, test_data) %>% 
-  select(doc_id, tag, .pred_class)
+  select(doc_id, class, .pred_class)
 
 xgboost_aug %>% 
-  accuracy(truth = tag, .pred_class)
+  accuracy(truth = class, .pred_class)
+
+xgboost_aug %>% 
+  precision(truth = class, .pred_class)
+
+eexgboost_aug %>% 
+  recall(truth = class, .pred_class)
 
 xgboost_aug %>%
-  conf_mat(truth = tag, .pred_class)
-
+  conf_mat(truth = class, .pred_class)
 
 save.image(file = "../data/tuned_model_data.RData")
+
+# Workflow set
+rec = recipe(class ~ ., data = train_data) %>%
+  update_role(all_double(), new_role = "predictor") %>%
+  update_role(doc_id, new_role = "ID") %>%
+  update_role(class, new_role = "outcome") %>%
+  step_smote(class)
+
+# Models
+svm_mod = svm_linear(cost = 0.01313901) %>%
+  set_engine("kernlab") %>%
+  set_mode("classification")
+
+xgboost_mod = boost_tree(
+  trees = 1000,
+  mtry = 17,
+  min_n = 16,
+  tree_depth = 13,
+  learn_rate = 0.00540844661792405,
+  loss_reduction = 3.41145754172432e-08,
+  sample_size = 0.545441143696662
+) %>%
+  set_engine("xgboost") %>%
+  set_mode("classification")
+
+# The workflow set
+wflow = workflow_set(
+  preproc = list(rec),
+  models = list(svm = svm_mod, xgboost = xgboost_mod)
+)
+
+keep_pred <- control_resamples(save_pred = TRUE, save_workflow = TRUE, verbose = TRUE)
+
+result = wflow %>%
+  workflow_map("fit_resamples", verbose = TRUE, resamples = folds, control = keep_pred)
+
+collect_metrics(result)
+
+
+
+
+  
+  
+
+
+
