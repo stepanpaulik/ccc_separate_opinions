@@ -1,5 +1,6 @@
 # Load packages
 library(tidyverse)
+library(ggplot2); theme_set(theme_minimal())
 library(rstanarm)
 library(rstan)
 library(bayesplot)
@@ -78,7 +79,7 @@ model_pooled_length_poisson = stan_glm(
 
  pp_check(model_pooled_length_poisson)
   
-  
+
 
 # MCMC Diagnosis
 mcmc_trace(model_pooled_length)
@@ -105,12 +106,12 @@ prediction_summary_cv_length = prediction_summary_cv(model = model_pooled_length
 mcmc_dens_overlay(model_pooled_length, pars = c("one_dissent","more_dissent"))
 mcmc_areas_length = mcmc_areas(model_pooled_length, pars = c("one_dissent","more_dissent")) +
   labs(title = "Density plot of estimates of parameters of one or two and more dissents ",
-       subtitle = "The inner area is for 95 % confidence interval, the outer for 50 %")
+       subtitle = "The inner area is for 50 % posterior credible interval, the outer for 95 %")
 mcmc_dens(model_pooled_length, pars = c("one_dissent","more_dissent"))
 
 mcmc_intervals_length = mcmc_intervals(model_pooled_length, pars = c("one_dissent","more_dissent")) +
   labs(title = "Plot of uncertainty intervals of estimates of parameters of one or two and more dissents ",
-       subtitle = "The inner whisker is for 95 % confidence interval, the outer for 50 %")
+       subtitle = "The inner whisker is for 50 % posterior credible interval, the outer for 95 %")
 
 # Save the output parameters of the model
 output_workload = tidy(model_pooled_length, 
@@ -322,12 +323,12 @@ mcmc_acf(model_hierarchical_absolute, pars = "caseload")
 mcmc_dens_hierarchical_absolute = mcmc_dens_overlay(model_hierarchical_absolute, pars = "caseload")
 mcmc_areas_hierarchical_absolute = mcmc_areas(model_hierarchical_absolute, pars = "caseload")  +
   labs(title = "Density plot of estimates of parameters of workload of a judge",
-       subtitle = "The inner area is for 95 % confidence interval, the outer for 50 %")
+       subtitle = "The inner area is for 50 % posterior credible interval, the outer for 95 %")
 mcmc_dens(model_hierarchical_absolute, pars = "caseload")
 
 mcmc_intervals_hierarchical_absolute = mcmc_intervals(model_hierarchical_absolute, pars = "caseload") +
-  labs(title = "Plot of uncertainty intervals of estimates of parameters oof workload of a judge",
-       subtitle = "The inner whisker is for 95 % confidence interval, the outer for 50 %")
+  labs(title = "Plot of uncertainty intervals of estimates of parameters of workload of a judge",
+       subtitle = "The inner whisker is for 50 % posterior credible interval, the outer for 95 %")
 
 output_hierarchical_absolute = tidy(model_hierarchical_absolute, conf.int = TRUE, conf.level = 0.8, effects = "fixed") %>%
   filter(term %in% c("(Intercept)", "caseload"))
@@ -413,18 +414,24 @@ mcmc_trace(model_term)
 mcmc_acf(model_term)
 
 # Parameters
-mcmc_dens_term = mcmc_dens_overlay(model_term, pars = c("start_term", "end_term"))
+mcmc_dens_term = mcmc_dens_overlay(model_term, pars = c("start_term", "end_term"))   +
+  labs(title = "Density plot of estimates of parameters of start and end of a judge's term",
+       subtitle = "The inner area is for 50 % posterior credible interval, the outer for 95 %")
 mcmc_areas_term = mcmc_areas(model_term, pars = c("start_term", "end_term"))
 mcmc_dens(model_term, pars = c("start_term", "end_term"))
 
-mcmc_intervals_term = mcmc_intervals(model_term, pars = c("start_term", "end_term"))
+mcmc_intervals_term = mcmc_intervals(model_term, pars = c("start_term", "end_term"))  +
+  labs(title = "Plot of uncertainty intervals of estimates of parameters of start and end of a judge's term",
+       subtitle = "The inner whisker is for 50 % posterior credible interval, the outer for 95 %")
+
+
 
 output_term = tidy(model_term, conf.int = TRUE, conf.level = 0.8, effects = "fixed")
 
 # Posterior diagnosis
 pp_check_term = pp_check(model_term) +
   labs(x = "Dissent count",
-       title = "Posterior predictive check of the absolute terms hierarchical model")
+       title = "Posterior predictive check of the start and end of terms model")
 
 data_term %>% 
   add_epred_draws(object = model_term, ndraws = 4) %>%
