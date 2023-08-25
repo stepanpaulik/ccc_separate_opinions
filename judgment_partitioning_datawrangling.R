@@ -1,37 +1,19 @@
-xfun::pkg_attach2("tidyverse", "ggplot2", "progress", "foreach", "jsonlite",  "word2vec", "udpipe", "tidytext")
+library(tidyverse)
+library(progress)
+library(foreach)
+library(jsonlite)
+library(word2vec)
+library(tidytext)
 
 source("../supporting_functions.R")
 # Load data
-US_metadata = readRDS("../data/US_metadata.rds")
-# US_texts = readRDS("../data/US_texts.rds")
-judgments_annotated_doc2vec = readRDS("../data/judgments_annotated_doc2vec.rds")
+# US_metadata = readr::read_rds("../data/US_metadata.rds")
+# US_texts = readr::read_rds("../data/US_texts.rds")
+# judgments_annotated_doc2vec = readr::read_rds("../data/judgments_annotated_doc2vec.rds")
 
-# Create sample for manual tagging
-# sample = US_metadata %>% 
-#   filter(rapportools::is.empty(dissenting_opinion)) %>% 
-#   sample_n(size = 50)
-# sample = US_metadata %>% 
-#   filter(!rapportools::is.empty(dissenting_opinion)) %>% 
-#   sample_n(size = 50) %>% 
-#   rbind(., sample) %>% 
-#   select(doc_id) %>% 
-#   left_join(., US_texts)
-# write_csv(sample, file = "../data/US_sample_annotate.csv")
-# 
-# sample2 = US_metadata %>% 
-#   filter(rapportools::is.empty(dissenting_opinion)) %>% 
-#   sample_n(size = 70)
-# sample2 = US_metadata %>% 
-#   filter(!rapportools::is.empty(dissenting_opinion)) %>% 
-#   sample_n(size = 30) %>% 
-#   rbind(., sample2) %>% 
-#   select(doc_id) %>% 
-#   left_join(., US_texts)
-# write_csv(sample2, file = "../data/US_sample_annotate2.csv")
+data_ud = readr::read_rds(file = "models/US_UDmodel.rds")
 
-data_ud = readRDS(file = "../apex_courts_dataset/models/US_UDmodel.rds")
-
-# Transform the UDPipe model into a paragraph-level lemmatized text with ID information as well as information on length and position of the paragraphs
+# Transform any UDPipe model into a paragraph-level lemmatized text with ID information as well as information on length and position of the paragraphs
 udpipe_into_lemma = function(data, paragraphs = TRUE){
   if(paragraphs){
   output = data %>%
@@ -73,6 +55,7 @@ udpipe_into_lemma = function(data, paragraphs = TRUE){
 
 data_paragraphs = udpipe_into_lemma(data = data_ud) 
 remove(data_ud)
+gc()
 
 # Word2vec
 # Window parameter:  for skip-gram usually around 10, for cbow around 5
@@ -81,12 +64,12 @@ remove(data_ud)
 # # hs: the training algorithm: hierarchical so􏰂max (better for infrequent
 # words) vs nega􏰁ve sampling (better for frequent words, better with low
 #                              dimensional vectors)
-word2vec_model_CBOW = word2vec(x = data_paragraphs$text, dim = 300, threads = 8)
-write.word2vec(word2vec_model_CBOW, file = "models/word2vec_model_CBOW.bin")
-
-# The more accurate but computationally intensive skip-gram
-word2vec_model_skipgram = word2vec(x = data_paragraphs$text, dim = 300, type = "skip-gram", window = 10, threads = 8)
-write.word2vec(word2vec_model_skipgram, file = "models/word2vec_model_skipgram.bin")
+# word2vec_model_CBOW = word2vec(x = data_paragraphs$text, dim = 300, threads = 8)
+# write.word2vec(word2vec_model_CBOW, file = "models/word2vec_model_CBOW.bin")
+# 
+# # The more accurate but computationally intensive skip-gram
+# word2vec_model_skipgram = word2vec(x = data_paragraphs$text, dim = 300, type = "skip-gram", window = 10, threads = 8)
+# write.word2vec(word2vec_model_skipgram, file = "models/word2vec_model_skipgram.bin")
 
 # Prepare the lemmatized paragraphs for classification
 # Load the word2vec model for doc2vec use
@@ -114,8 +97,7 @@ udpipe_to_doc2vec = function(data, model = word2vec_model) {
 data_paragraphs_doc2vec = udpipe_to_doc2vec(data = data_paragraphs, model = word2vec_model) %>%
   left_join(data_paragraphs, ., by = c("doc_id", "paragraph_id"))
 
-saveRDS(data_paragraphs_doc2vec, file = "../data/data_paragraphs_doc2vec.rds")
-
+readr::write_rds(data_paragraphs_doc2vec, file = "../data/data_paragraphs_doc2vec.rds")
 
 ## TRANSFORM ANNOTATED DATA INTO DOC2VEC
 # Load annotated data and create it into tibble of tag-level observations, including creating paragraph IDs within group
@@ -207,8 +189,8 @@ judgments_annotated_doc2vec = judgments_annotated_paragraphs %>%
   as_tibble()
 
 # Save the file
-saveRDS(judgments_annotated_doc2vec, file = "../data/judgments_annotated_doc2vec.rds")
-judgments_annotated_doc2vec = readRDS("../data/judgments_annotated_doc2vec.rds")
+readr::write_rds(judgments_annotated_doc2vec, file = "../data/judgments_annotated_doc2vec.rds")
+judgments_annotated_doc2vec = readr::read_rds("../data/judgments_annotated_doc2vec.rds")
 
 # Annotated texts into td-idf
 judgments_annotated_dtm = judgments_annotated_paragraphs %>%
@@ -225,7 +207,7 @@ judgments_annotated_dtm = judgments_annotated_paragraphs %>%
   modify(.f = unlist)
 
 # Save the file
-saveRDS(judgments_annotated_dtm, file = "../data/judgments_annotated_dtm.rds")
+readr::write_rds(judgments_annotated_dtm, file = "../data/judgments_annotated_dtm.rds")
 
 
 

@@ -1,5 +1,6 @@
 # Load packages
 library(tidyverse)
+library(tidymodels)
 library(ggplot2); theme_set(theme_minimal())
 library(rstanarm)
 library(rstan)
@@ -9,58 +10,59 @@ library(broom)
 library(broom.mixed)
 library(tidybayes)
 library(lubridate)
+library(foreach)
+library(parallel)
+tidymodels_prefer()
+
+library(doMC)
+registerDoMC(cores = parallel::detectCores() - 2)
 
 # Load data
-load(file = "report/data_dissents_article.RData")
-data_citations = readRDS("../data/US_citations.rds")
-data_metadata = readRDS("../data/US_metadata.rds")
-data_dissents = readRDS("../data/US_dissents.rds")
-data_judges = readRDS("../data/US_judges.rds")
+# load(file = "report/data_dissents_article.RData")
+data_citations = readr::read_rds("../data/US_citations.rds")
+data_metadata = readr::read_rds("../data/US_metadata.rds") %>%
+  mutate(year_submission = year(date_submission),
+         year_decision = year(date_decision))
+data_dissents = readr::read_rds("../data/US_dissents.rds")
+data_judges = readr::read_rds("../data/US_judges.rds")
+data_compositions = readr::read_rds("../data/US_compositions.rds")
 
-remove(data_citations, data_metadata, data_dissents, data_judges)
+# remove(data_citations, data_metadata, data_dissents, data_judges)
 # Set the number of chains & cores
 chains = 4L
 
 # # SAVE
-save.image(file = "report/data_dissents_article.RData")
-# saveRDS(model_hierarchical_absolute, "models/model_hierarchical_absolute.rds")
-# saveRDS(model_pooled_absolute, "models/model_pooled_absolute.rds")
-# saveRDS(model_pooled_length, "models/model_pooled_length.rds")
+# save.image(file = "report/data_dissents_article.RData")
+# readr::write_rds(model_hierarchical_absolute, "models/model_hierarchical_absolute.rds")
+# readr::write_rds(model_pooled_absolute, "models/model_pooled_absolute.rds")
+# readr::write_rds(model_pooled_length, "models/model_pooled_length.rds")
 
-# LENGTH X DISSENT
-# data_length = readRDS("../data/data_paragraphs_doc2vec.rds") %>% 
-#   left_join(., readRDS(file = "../data/data_paragraphs_classified.rds"), by = join_by(doc_id, paragraph_id)) %>%
-#   select(doc_id, paragraph_id, text, class)
-# data_dissents = readRDS("../data/US_dissents.rds")
-# 
-# data_dissents = data_dissents %>%
-#   group_by(doc_id) %>%
-#   summarise(count_dissents = n())
-# 
-# data_length = data_length %>%
-#   group_by(doc_id) %>%
-#   summarise(argument_length = sum(str_count(text, '\\w+'))) %>%
-#   left_join(., data_metadata %>% select(doc_id, formation, date_decision, year_decision, type_decision)) %>%
-#   left_join(., data_dissents) %>%
-#   mutate(formation = case_when(
-#     formation == "Plenum" ~ "Plenum",
-#     .default = "Chamber"
-#   ),
-#   formation = factor(formation),
-#   count_dissents = replace_na(count_dissents,0),
-#   one_dissent = if_else(count_dissents == 1, 1, 0),
-#   more_dissent = if_else(count_dissents > 1, 1, 0),
-#   type_decision = factor(type_decision)) %>%
-#   select(-count_dissents)
+# RQ1: LENGTH X DISSENT
+data_length = readr::read_rds("../data/data_paragraphs_doc2vec.rds") %>%
+  left_join(., readr::read_rds(file = "../data/data_paragraphs_classified.rds"), by = join_by(doc_id, paragraph_id)) %>%
+  select(doc_id, paragraph_id, text, class) %>%
+  group_by(doc_id) %>%
+  summarise(argument_length = sum(str_count(text, '\\w+'))) %>%
+  left_join(., data_metadata %>% select(doc_id, formation, date_decision, year_decision, type_decision)) %>%
+  left_join(., data_dissents %>%
+  group_by(doc_id) %>%
+  summarise(count_dissents = n())) %>%
+  mutate(formation = case_when(
+    formation == "Plenum" ~ "Plenum",
+    .default = "Chamber"
+  ),
+  formation = factor(formation),
+  count_dissents = replace_na(count_dissents,0),
+  one_dissent = if_else(count_dissents == 1, 1, 0),
+  more_dissent = if_else(count_dissents > 1, 1, 0),
+  type_decision = factor(type_decision)) %>%
+  select(-count_dissents)
 
 data_length %>%
   ggplot(aes(x = argument_length)) +
   geom_density()
 
-
-
-
-# Completely pooled model with all variables stored in absolute terms
+  # Completely pooled model with all variables stored in absolute terms
 model_pooled_length = stan_glm(
   argument_length ~ one_dissent + more_dissent + formation + type_decision,
   data = data_length, family = neg_binomial_2, 
@@ -77,10 +79,8 @@ model_pooled_length_poisson = stan_glm(
   chains = chains, iter = 5000*2, seed = 84735, cores = chains)
  
 
- pp_check(model_pooled_length_poisson)
+pp_check(model_pooled_length_poisson)
   
-
-
 # MCMC Diagnosis
 mcmc_trace(model_pooled_length)
 mcmc_acf(model_pooled_length, pars = c("one_dissent","more_dissent"))
@@ -114,64 +114,100 @@ mcmc_intervals_length = mcmc_intervals(model_pooled_length, pars = c("one_dissen
        subtitle = "The inner whisker is for 50 % posterior credible interval, the outer for 95 %")
 
 # Save the output parameters of the model
-output_workload = tidy(model_pooled_length, 
+output_length = tidy(model_pooled_length, 
               conf.int = TRUE, 
               conf.level = 0.80)
 
 
-# DISSENT RATE X WORKLOAD
+# RQ2 DISSENT RATE X WORKLOAD
 # PLOTS
 negbin_distribution = data_length %>%
   ggplot(aes(x = argument_length)) +
   geom_density() +
   xlim(0,10000) +
-  labs(x = "words of the majority opinion argumentation",
+  labs(x = "Words of the majority opinion argumentation",
        title = "Distribution of number of words of argumentation of the majority")
-# Create the dataset
+
+# Create the data CASELOAD
 data_dissents = data_dissents %>%
-  left_join(., data_metadata %>% select(doc_id, year_decision, formation)) %>%
-  group_by(dissenting_judge, year_decision) %>%
+  left_join(., data_metadata %>% select(doc_id, formation, year_submission)) %>%
+  filter(year_submission < 2023) %>%
+  group_by(dissenting_judge, year_submission) %>%
   summarise(count_dissents = n())
 
 data_caseload = data_metadata %>%
-  group_by(judge_rapporteur, year_decision) %>%
+  group_by(judge_rapporteur_name_name, year_submission) %>%
   summarise(caseload = n())
 
-data = right_join(data_dissents, data_caseload, by = join_by(dissenting_judge==judge_rapporteur, year_decision)) %>%
+data_dissents_caseload = right_join(data_dissents, data_caseload, by = join_by(dissenting_judge==judge_rapporteur_name, year_submission)) %>%
   replace(is.na(.), 0) %>%
-  mutate(year_decision = factor(year_decision),
+  mutate(year_submission = factor(year_submission),
          dissenting_judge = factor(dissenting_judge))
 
-
-data = data %>% mutate(dissenting_judge = factor(dissenting_judge))
 # See the development of caseload overtime
-  data %>%
-    group_by(year_decision) %>%
-    summarise(caseload = sum(caseload)) %>%
-    mutate(year_decision = as.numeric(year_decision)) %>%
-    ungroup() %>%
-  ggplot(aes(x = year_decision, y = caseload)) +
+data_dissents_caseload %>%
+  group_by(year_submission) %>%
+  summarise(caseload = sum(caseload)) %>%
+  mutate(year_submission = as.numeric(year_submission)) %>%
+  ungroup() %>%
+  ggplot(aes(x = year_submission, y = caseload)) +
   geom_point() +
   geom_smooth()
-  
-# See the development of number of dissents overtime
-  data %>%
-    group_by(year_decision) %>%
-    summarise(count_dissents = sum(count_dissents)) %>%
-    mutate(year_decision = as.numeric(year_decision)) %>%
-    ungroup() %>%
-    ggplot(aes(x = year_decision, y = count_dissents)) +
-    geom_point() +
-    geom_smooth()
-  
-  data %>%
-    group_by(year_decision) %>%
-    summarise(ratio = sum(count_dissents)/sum(caseload)) %>%
-    mutate(year_decision = as.numeric(year_decision)) %>%
-    ggplot(aes(x = year_decision, y = ratio)) +
-    geom_point() +
-    geom_smooth(method = "lm")
 
+# See the development of number of dissents overtime
+data_dissents_caseload %>%
+  group_by(year_decision) %>%
+  summarise(count_dissents = sum(count_dissents)) %>%
+  mutate(year_decision = as.numeric(year_decision)) %>%
+  ungroup() %>%
+  ggplot(aes(x = year_decision, y = count_dissents)) +
+  geom_point() +
+  geom_smooth()
+
+data_dissents_caseload %>%
+  group_by(year_decision) %>%
+  summarise(ratio = sum(count_dissents)/sum(caseload)) %>%
+  mutate(year_decision = as.numeric(year_decision)) %>%
+  ggplot(aes(x = year_decision, y = ratio)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+i = 2500L
+
+# Create the data WORKLOAD
+data_dissents_workload = data_compositions %>%
+  left_join(., data_dissents %>% mutate(dissent = 1) %>% select(-judge_id), by = join_by(doc_id, judge == dissenting_judge))  %>%
+  mutate(dissent = replace_na(dissent, 0)) %>%
+  left_join(., data_metadata %>% select(doc_id, date_decision, date_submission))
+
+
+n.cores = parallel::detectCores() - 1
+my.cluster = parallel::makeCluster(
+  n.cores, 
+  type = "PSOCK"
+)
+
+#register it to be used by %dopar%
+doParallel::registerDoParallel(cl = my.cluster)
+
+#check if it is registered (optional)
+foreach::getDoParRegistered()
+foreach::getDoParWorkers()
+
+message("Succcesfully finished parallelization")
+
+data_workload = foreach(i = seq_along(data_dissents_workload$doc_id), .combine = "bind_rows", .packages = c("tidyverse")) %dopar% {
+  output =  data_metadata %>%
+    filter(date_decision > data_dissents_workload$date_decision[[i]] & 
+             date_submission < data_dissents_workload$date_decision[[i]] & 
+           judge_rapporteur_name_name == data_dissents_workload$dissenting_judge[[i]]) %>%
+    summarise(doc_id = data_dissents_workload$doc_id[[i]],
+              judge = data_dissents_workload$judge[[i]],
+              unfinished_cases = n())
+}
+
+# Stop the parallel process
+parallel::stopCluster(cl = my.cluster)
 
 # Test correlation between importance proxied by number of citations and by formation of the CC
 citations_distribution = data_citations %>% 
@@ -202,25 +238,24 @@ final_distributions
 
 # Model 1 Caseload x Dissent
 
-
 # Data exploration - to me there doesn't seem to be good linear relationship between the two
-ggplot(data, aes(x = caseload, y = count_dissents)) +
+ggplot(data_dissents_caseload, aes(x = caseload, y = count_dissents)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
   facet_wrap(~dissenting_judge)
 
 # Check the structure of your variables
-ggplot(data = data, aes(x = caseload)) +
+ggplot(data = data_dissents_caseload, aes(x = caseload)) +
   geom_density()
 
-ggplot(data = data, aes(x = count_dissents)) +
+ggplot(data = data_dissents_caseload, aes(x = count_dissents)) +
   geom_density()
 
-ggplot(data = data, aes(x = rate_dissents)) +
+ggplot(data = data_dissents_caseload, aes(x = rate_dissents)) +
   geom_density()
 
 # Create rate variables
-data %<>% 
+data_dissents_caseload %<>% 
   group_by(dissenting_judge) %>% 
   arrange(dissenting_judge, year_decision) %>% 
   mutate(roc_caseload = 100 * (caseload - lag(caseload))/lag(caseload),
@@ -265,7 +300,7 @@ mcmc_acf(model_pooled_absolute, pars = "caseload")
 pp_check(model_pooled_absolute) +
   xlab("n_dissents")
 
-data %>% 
+data_dissents_caseload %>% 
   add_epred_draws(object = model_pooled_absolute, ndraws = 4) %>%
   ggplot(aes(x = caseload, y = count_dissents)) +
   geom_line(aes(y = .epred, group = paste(dissenting_judge, .draw)))
@@ -293,7 +328,7 @@ mcmc_acf(model_pooled_rate, pars = "caseload")
 pp_check(model_pooled_rate) +
   xlab("n_dissents")
 
-data %>% 
+data_dissents_caseload %>% 
   add_epred_draws(object = model_pooled_rate, ndraws = 4) %>%
   ggplot(aes(x = caseload, y = count_dissents)) +
   geom_line(aes(y = .epred, group = paste(dissenting_judge, .draw)))
@@ -385,7 +420,7 @@ prediction_summary_cv(model = model_hierarchical_rate, data = data, k = 6)
 #   # summarise(count_dissents = n())
 
 
-# END OF TERM X DISSENT BEHAVIOR
+# RQ3 END OF TERM X DISSENT BEHAVIOR
 data_term = data_judges %>%
   mutate(end = case_when(
     is.na(end) & reelection == 1 ~ start %m+% years(20),
