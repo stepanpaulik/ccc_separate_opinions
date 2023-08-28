@@ -1,6 +1,7 @@
-.Rproj.user
-.Rhistory
-.RData
-.Ruserdata
-/models
+*.Rproj.user
+*.Rhistory
+*.RData
+*.Ruserdata
+*.rds
+*.bin
 /report
