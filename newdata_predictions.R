@@ -3,6 +3,7 @@ library(tidymodels)
 
 source("../supporting_functions.R")
 model_dissents = readr::read_rds("models/model_dissents.rds")
+model_structure = readr::read_rds("models/model_structure.rds")
 
 # PREDICTION TO NEW DATA
 # DISSENT VS NOT_DISSENT
@@ -19,11 +20,6 @@ newdata_dissent = newdata %>%
   rename("class" = .pred_class) %>%
   split_id()
 
-remove(newdata)
-
-# readr::write_rds(newdata_dissent, "../data/dissent_classified.rds")
-newdata_dissent = readr::read_rds("../data/dissent_classified.rds")
-
 # STRUCTURE
 newdata_structure = newdata_dissent %>% 
   filter(class == "dissent") %>%
@@ -31,15 +27,19 @@ newdata_structure = newdata_dissent %>%
   remove_dissents_recalculate() %>%
   merge_id() %>%
   select(-text) %>%
-  bind_cols(., predict(object = xgboost_fit, new_data = .)) %>%
+  bind_cols(., predict(object = model_structure, new_data = .)) %>%
   select(doc_id, .pred_class) %>%
   rename("class" = .pred_class) %>%
   split_id()
 
+remove(newdata)
+
 # COMBINE AND SAVE
 paragraphs_classified = newdata_dissent %>% 
   filter(class == "dissent") %>%
-  bind_rows(., newdata_structure)
+  bind_rows(., newdata_structure) %>% 
+  right_join(., readr::read_rds("../data/data_paragraphs_doc2vec.rds"), by = join_by(doc_id, paragraph_id)) %>%
+  select(doc_id, paragraph_id, text, class)
 
 readr::write_rds(paragraphs_classified, file = "../data/data_paragraphs_classified.rds")
 

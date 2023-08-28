@@ -2,6 +2,8 @@
 output: 
   stevetemplates::article2:
     keep_tex: true
+    toc: true
+    number_sections: true
   distill::distill_article: default
   word_document:
       reference_docx: word_style.docx
@@ -30,42 +32,38 @@ bibliography: "`r rbbt::bbt_write_bib('bibliography.bib', overwrite = TRUE)`"
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 library(tidyverse)
-library(rstanarm)
-library(rstan)
-library(bayesplot)
-library(bayesrules)
-library(broom)
-library(broom.mixed)
-library(tidybayes)
+library(ggplot2); theme_set(theme_minimal())
+library(lemon)
+knit_print.tibble = lemon_print
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 # Load data
-load(file = "data_dissents_article.RData")
+load(file = "../models/models_fitted_length_dissent.RData")
+load(file = "../models/models_fitted_workload_dissent.RData")
+load(file = "../models/models_fitted_term_dissent.RData")
+load(file = "../models/models_fitted_coalition_panel.RData")
 ```
 
 \vspace{30pt}
-
-# Abstract
-
-The decision of a judge to dissent or not to dissent opens up avenue for strategical considerations. Building on the economic-strategic account of judicial behavior developed by Lee Epstein, Richard A. Posner and William M. Landes, we develop and test multiple hyptotheses on the Czech Constitutional Court. To test the hypotheses, we utilize Bayesian regression analyses. We find that the workload of a judge does not affect their dissenting behavior as previous research in the US context suggests. We also find that a dissent imputes substantial costs on the majority that produces longer arguments to address a dissent. The effect is stronger the more disagreement there is on the bench. Lastly, we cast doubt upon the theory that dissents bring about significant collegiality costs to the dissenter" 
 
 # Introduction
 
 Empirical legal research has been slowly but surely finding it's outside the predominant US context. Historically though most of the empirical studies have been conducted in the US, especially the Supreme Court, context [such as @boydUntanglingCausalEffects2010; @carrubbaWhoControlsContent2012; @epsteinWhyWhenJudges2011]. We now know that judgments are what judges had for a breakfast. Put less pompously, there are many theories and approaches for explanation of judicial decisions [@posnerHowJudgesThink2010] e. What we do not know is the extent to which these theories and explanations carry over to other legal systems and context.
 
-In our article, we set out to replicate one of the empirical legal research studies conducted in the US context elsewhere. More specifically, the main goal of our article is to replicate the method and the findings of Epstein, Posner and Landes [@epsteinWhyWhenJudges2011] on the Czech Constitutional Court ("CCC") and to test whether the same conclusions hold in a different context.
+In our article, we set out to replicate one of the empirical legal research studies conducted in the US  by Epstein, Posner and Landes [@epsteinWhyWhenJudges2011] on the on the Czech Constitutional Court ("CCC")  and to test whether the same theory and same empirical conclusions hold in a different context. 
 
-The authors study under which circumstances do US judges generally dissent. They build a formal economic model based on the strategic account of judicial behavior. The study's empirical part is firmly rooted in their theoretical part: they draw and test multiple hypotheses, which flow from their theory. In particular, they test the dependence of dissent rate on workload, the dependence of dissent rate on size of courts, the dependence of dissent rate on the ideological distance, and the dependence of length of majority argumentation on the presence of a dissenting opinion. We will test similar hypotheses on the CCC based on the same theories.
+Epstein et al. study under which circumstances do US judges generally dissent. More specifically, they build a formal economic model based on the strategic account of judicial behavior. The study's empirical part is firmly rooted in their theoretical part: they draw and test multiple hypotheses, which flow from their theory. In particular, they test the dependence of dissent rate on workload, the dependence of dissent rate on size of courts, the dependence of dissent rate on the ideological distance, and the dependence of length of majority argumentation on the presence of a dissenting opinion. We will test similar hypotheses on the CCC based on the same theories.
 
-We adapt the theories constructed in the US context to the Czech civil law context. Based on the adaption, we draw hypotheses that resemble the original ones. We test whether the length of majority argumentation depends on the presence of one or more dissents due to, whether the workload of a judge affects their dissenting behavior, whether relationships from plenary sessions carry over to 3-member panel proceedings, and, lastly, whether the dissenting behavior of judges changes at the start and end of their terms. 
+We adapt the theories constructed in the US context to the civil law and Czech judiciary contexts. Based on the adaption, we draw hypotheses that resemble the original ones. We test whether the length of majority argumentation depends on the presence of one or more dissents due to, whether the workload of a judge affects their dissenting behavior, whether the dissenting behavior of judges changes at the start and end of their terms, and, lastly, whether relationships formed during the plenary sessions, as posited by the Czech legal scholarship, carry over to 3-member panel proceedings.
 
-To test the hypotheses, we utilize Bayesian regression analyses. We find that the workload of a judge does not affect their dissenting behavior as previous research in the US context suggests. We also find that a dissent imputes substantial costs on the majority that produces longer arguments to address a dissent. The effect is stronger the more disagreement there is on the bench. Lastly, we cast doubt upon the theory that dissents bring about significant collegiality costs for the dissenter.
+We find that the workload of a judge does not affect their dissenting behavior as previous research in the US context suggests. We also find that a dissent imputes substantial costs on the majority that produces longer arguments to address a dissent. The effect is stronger the more disagreement there is on the bench. Lastly, we cast doubt upon the theory that dissents bring about significant collegiality costs for the dissenter.^[All the code and the link to data for replication is available at https://github.com/stepanpaulik/court_dissents]
 
-Our article proceeds as follows. We start out with a theory.^[We need to develop it more in depth, Gor is currently working on it]. We explain the main differences between the expectations based on the theory in the CCC context in comparison to the SCOTUS context and based on that we draw the hypotheses for the empirical part. We then explain the choice of our broad methodological framework: the Bayesian statistics. We proceed to test the hypotheses in empirical part divided into sections one per each research question. Lastly, we discuss the results.
+In this article, we utilize Bayesian regression analyses. In other words, we rely on quantitative methods of social science research. That is not without its limits. To not rely on one methodological approach, we set this article into a broader mixed effects effort. We conducted semi-structured interviews with the CCC judges to gain deeper understanding of the judicial behavior, to paint more details to our quantitative effort, and to help with further development of our theory. Parts of the interviews mirror our findings in this article. To name an example, in the interviews, we inquire into the effect of the coalitions at the CCC, whose effect we measure in the last part of this article. In terms of the output of our effort, we divide it into two articles: one utilizing the quantitative methods, the other utilizing qualitative methods. 
+
+Our article proceeds as follows. We start out with a theory. We explain the main differences between the expectations based on the theory in the CCC context in comparison to the SCOTUS context and based on that we draw the hypotheses for the empirical part. We then explain the choice of our broad methodological framework: the Bayesian statistics. We proceed to test the hypotheses in empirical part divided into sections one per each research question. Lastly, we discuss the results.
 
 # Theory
-
 ## Current accounts of judicial behavior
 In general, there are multiple accounts of behavior of judges'. The first that had dominated until ~the end of 20th century posited that judges are policy oriented. A lot of research has been conducted on whether, how and to what extent do judges indeed seek to advance the policies they desire [@berdejoElectoralCyclesUS2017; @clarkLocatingSupremeCourt2010; @dworkinPoliticalJudgesRule1980; @kastellecEmpiricallyEvaluatingCountermajoritarian2016; @moyerJudicialInnovationSexual2012]. 
 
@@ -73,7 +71,7 @@ However, as of recently, the perspective on judges has shifted. Judges are now a
 
 In their article Epstein et al. test multiple hypotheses about the circumstances under which do the judges of the US courts dissent or under which they decide to not dissent (dissent aversion). Their analysis is based on the strategic-economic framework of self-interested strategically motivated judges. They presume that judges "leisure preferences, or, equivalently, effort aversion, which they trade off against their desire to have a good reputation and to express their legal and policy beliefs and preferences (and by doing so perhaps influence law and policy) by their vote, and by the judicial opinion explaining their vote, in the cases they hear."
 
-The authors find the strategic aspect of dissenting in how a judge squares their decision to either dissent or to avert a dissent based on the costs and benefits of a dissent. The auhotrs claim that "[s]ince writing a dissenting opinion requires effort, which is a cost, a judge will not dissent unless he anticipates a benefit from dissenting that offsets his cost." The majority also accrues costs from dissenting. In the words of Epstein et al.: "[d]issenting imposes an effort cost on the majority as well and sometimes a reputation cost too, if the dissenting opinion criticizes the majority force- fully. To minimize the dissenter’s criticisms and retain the vote of the other judge in the majority (in a panel of three judges, the normal number of judges who decide a case in the federal courts of appeals), the author of the majority opinion often will revise his opinion to meet, whether explicitly or implicitly, the points made by the dissent."
+The authors find the strategic aspect of dissenting in how a judge squares their decision to either dissent or to avert a dissent based on the costs and benefits of a dissent. The authors claim that "[s]ince writing a dissenting opinion requires effort, which is a cost, a judge will not dissent unless he anticipates a benefit from dissenting that offsets his cost." The majority also accrues costs from dissenting. In the words of Epstein et al.: "[d]issenting imposes an effort cost on the majority as well and sometimes a reputation cost too, if the dissenting opinion criticizes the majority force- fully. To minimize the dissenter’s criticisms and retain the vote of the other judge in the majority (in a panel of three judges, the normal number of judges who decide a case in the federal courts of appeals), the author of the majority opinion often will revise his opinion to meet, whether explicitly or implicitly, the points made by the dissent."
 
 The benefits of a dissenting opinion are the potential to undermine the majority opinion when the dissent is influential and the enhanced reputation that the judge enjoys. The dissenting opinion may be cited in the future by other judges or publicly analysed by legal scholars.
 
@@ -81,26 +79,27 @@ The theories they presume and hypotheses they test rest on this framework: in th
 
 ## Disagreement in the driver’s seat
 
-Our hypotheses and research design differ. Our article focuses only on a single court, the CCC, rather than focusing on multiple courts. It also does not replicate the political distance research question. Our research questions are slightly different mainly for two reasons. 
+Our hypotheses and research design slightly differ. Our article focuses only on a single court, the CCC, rather than focusing on multiple courts. It also does not replicate the political distance research question. Our research questions had to be adapted mainly for two reasons. 
 
 Firstly, a major obstacle in conducting and carrying the US research elsewhere is data availability. We narrow our object of analysis to the CCC because there is the largest variation in the dissenting behavior (unlike on the Supreme Administrative Court). While there is not yet a full fledged dataset on the CCC [like the SCOTUS or CJEU @brekkeCJEUDatabasePlatform2023], we have managed to build a complete yet unreleased dataset on the CCC, which includes the metadata about the cases as well as the text corpus. However, Epstein, Posner and Landes include in their analysis the ideological distance between judges. The ideological distance serves as one of the explanatory variables for dissent aversion. The measures of ideological position of judges mainly rely on information about their voting behavior. Regrettably such information is  in continental legal systems typically not made public: the votes in cases are kept secret. Therefore, it is near impossible to construct a measure of the political position of judges without knowing how they voted in each case. 
 
-Secondly, we utilize variation of different institutional settings, which allows us to answer very similar questions. While Epstein et al. explore the variation between SCOTUS and Federal Courts, we're able to explore variation within the CCC. The CCC is structured so that it can either decide cases in 3-member panels or a plenary session. Moreover, we are able to use the variation of a judge rapporteur.
+Secondly, we utilize variation of different institutional settings, which allows us to answer very similar questions. While Epstein et al. explore the variation between SCOTUS and Federal Courts, we're able to explore variation within the CCC. The CCC is structured so that it can either decide cases in 3-member panels or a plenary session. Moreover, we are able to use the variation of a judge rapporteur. To apprehend the institutional variation, we interpose a short section on the CCC institutional setup and the difference in comparison to the SCOTUS, which has repercussions on our theory. 
 
-We interpose a short section on the CCC institutional setup and the difference in comparison to the SCOTUS, which has repercussions on our theory. The CCC consists of 15 judges: ​​a Chairman, two Vice-chairmains and twelve judges who are members of the permanent 3- member chambers consisting of three judges. The CCC justices are elected for 10 years and the appointment process is akin to that of SCOTUS: the President proposes a candidate that is confirmed by the Czech Senate. 
-The CCC is currently entering its fourth decade, having been established in 1993, with 3 “generations” of judges having been rotated so far with a fourth coming in. Most importantly, the CCC can decide a case in two formations: there are four 3-member panels and a grand chamber, which attracts procedurally specified. Thus, the size of the deciding body varies within the court. So does the type of cases that get assigned to either type of body. We address this issue later on.
+The CCC consists of 15 judges: a Chairman, two Vice-chairmains and twelve judges who are members of the permanent 3- member panels consisting of three judges. The CCC justices are elected for 10 years and the appointment process is akin to that of SCOTUS: the President proposes a candidate that is confirmed by the Czech Senate.
+
+The CCC is currently entering its fourth decade, having been established in 1993, with 3 “generations” of judges having been rotated so far with the fourth term of the CCC being just around the corner. Most importantly, the CCC can decide a case in two formations: there are four 3-member panels and a plenum, which attracts procedurally specified. Thus, the size of the deciding body varies within the court. So does the type of cases that get assigned to either type of body. We address this issue later on.
 
 The room for the dissenting judge and the majority to address each other differs between the two bodies. Based on our internal insight, there is less back and forth interplay between the judges, more akin to the SCOTUS context, and most of the communication is handled remotely, whereas the plenum meets regularly to discuss the cases in person. Despite that the process of generating dissents is the same. In both cases, the rapporteurs are informed about the outcome of the vote, which is filed in the voting record. The dissenting opinion is then sent to the judge rapporteur before the decision is announced, as it cannot be added until after the announcement.^[It is interesting to note that in some cases the rapporteur judge can dissent against their own decision. Such a behavior mostly occurs in cases where the rapporteur is forced to omit an idea in the reasoning they would’ve otherwise included. The rapporteur then appends the omitted part as a concurring opinion.] It is important to note that judges have the possibility, not the obligation, to dissent. In other words, there is room for judges to give way to strategic considerations.
 
 It may then seem that it would be futile to measure the impact of the dissenting opinion on the majority opinion when the majority may have not even be given a chance to familiarize itself with it before its vote on the draft opinion. 
 
-However, to advance the theory further, what we believe that a presence of a dissenting opinion truly captures is the expressed disagreement among CCC judges. Since the individual cases are debated among the judges, whether in person or remotely, it is possible to observe which side a judge takes during the discussion before the final vote. The judges have in either deciding body ample room to voice their disagreement, even if they write the dissenting opinion last minute. There is no evidence that would suggest otherwise - that the normal behavior would be to remain silent until the vote and then present the majority with a dissenting opinion.^[We are aware of one judge whose behavior resembles the description, the rest voice their disagreement openly.] Thus, technically speaking, the true explanatory variable of our theory is at all times the varying disagreement among judges. We, in turn, capture that with the presence and the number of  dissenting opinions.
+However, to advance the theory further, what we believe that a presence of a dissenting opinion truly captures is the expressed disagreement among CCC judges. Since the individual cases are debated among the judges, whether in person or remotely, it is possible to observe which side a judge takes during the discussion before the final vote. The judges have in either deciding body ample room to voice their disagreement, even if they write the dissenting opinion last minute. There is no evidence that would suggest otherwise - that the normal behavior would be to remain silent until the vote and then present the majority with a dissenting opinion.^[We are aware of one judge whose behavior resembles the description, the rest voice their disagreement openly.] Thus, technically speaking, the true explanatory variable of our theory is at all times the varying disagreement among judges. We, in turn, capture that with the presence and the yearly number of dissenting opinions.
 
-Thus, on the one hand, we narrow our inquiry in comparison to Epstein et al. and omit the research questions that require the knowledge of the ideological position of the judges. On the other hand, we are able to utilize the variation at the CCC that's not present at the SCOTUS: namely the chamber system and the limited terms of CCC judges. As a result of that we are able to add two additional research questions.
+Thus, on the one hand, we narrow our inquiry in comparison to Epstein et al. and omit the research questions that require the knowledge of the ideological position of the judges. On the other hand, we are able to utilize the variation at the CCC that's not present at the SCOTUS: namely the division of the CCC into 3-member panels and one Plenum and the limited terms of CCC judges. As a result of that we are able to add two additional research questions.
 
-Literature on judicial coalitions at the CCC has revealed that the third period of CCC is the most polarized, and there are clearly two big coalitions of judges that clash against each other. However this literature focuses only on plenary decisions and is of rather superficial descriptive nature. We hypothetise that the relationship from the plenary sessions carry over to the 3-member panel hearings. Our hypothesis is that senates composed of judges from both coalitions will be more likely to show disagreement in the form of dissenting opinion. If this shows to be true, it would provide further evidence to the two coalition theory of the CCC [@chmelCoOvlivnujeUstavni2021; @vartazaryanSitOvaAnalyza2022].
+Epstein et al. base their theory on an economic model of dissenting, in which a decision to dissent imposes collegiality costs on the dissenter. They then test whether the variation of panel sizes impacts the likelihood of dissent, as bigger panels impose lower collegiality costs. Similarly, one of the profits of a dissent may be increased reputation costs (as explained below). To test the collegiality costs theory, we measure whether the dissenting behavior of CCC judges changes at the start and end of their term. The CCC judges enjoy a 10 years long limited term, which they may repeat if they go through a re-election before the Senate. Our hypothesis is that as the collegiality costs decrease before the end of the judges' terms, their likelihood to dissent may go up. We will also analyse whether judges changed their dissenting behavior depending on whether they decided to face a re-election or not.
 
-Epstein et al. base their theory on an economic model of dissenting, in which a decision to dissent imposes collegiality costs on the dissenter. They then test whether the variation of panel sizes impacts the likelihood of dissent, as bigger chambers impose lower collegiality costs. Similarly, one of the profits of a dissent may be increased reputation costs (as explained below). We test whether the dissenting behavior of CCC judges changes at the end of their term. The CCC judges enjoy a 10 years long limited term, which they may repeat if they go through a re-election before the Senate. Our hypothesis is that as the collegiality costs decrease before the end of the judges' terms, their likelihood to dissent may go up. We will also analyse whether judges changed their dissenting behavior depending on whether they decided to face a re-election or not.
+Lastly, the research on judicial coalitions at the CCC has revealed that the third period of CCC is the most polarized, and there are clearly two big coalitions of judges that clash against each other. However this literature focuses only on plenary decisions and is of rather superficial descriptive nature. We hypothesize that the relationship from the plenary sessions carry over to the 3-member panel hearings. Our hypothesis is that panels composed of judges from both coalitions will be more likely to show disagreement in the form of dissenting opinion. If this shows to be true, it would provide further evidence to the two coalition theory of the CCC [@chmelCoOvlivnujeUstavni2021; @vartazaryanSitOvaAnalyza2022; @smekalMimopravniVlivyNa2021].
 
 We therefore test the following hypotheses:
 
@@ -110,12 +109,12 @@ RQ2: The higher the workload of a judge, the lower their dissent rate as a resul
 
 RQ3: The judges are more likely to dissent at the end of their terms as the collegiality costs decrease.
 
-RQ4: Judicial coalitions formed in the plenary proceedings affect the likelihood to dissent in 3-member panels^[We will add this one later]
+RQ4: Judicial coalitions formed in the plenary proceedings affect the likelihood to dissent in 3-member panels. Having a panel composed of members of both judicial coalitions increases the disagreement on the bench and, thus, the likelihood of a dissent.
 
 # Method
 Our goal, as we have noted, is to replicate the Lee Epstein et al. study in the context of the CCC. The original study employs quantitative methods, namely a linear regression (including a log transformation in one case) on observational data.
 
-We will deviate in some aspects from the original study. Firstly, we utilize the *Bayesian* rather than *frequentist* framework of statistics. Secondly, we adapt the statistical models to a different regulatory and institutional setting of the CCC. Thirdly, we change the statistical models so that only relevant explanatory and confounding variables remain. We now discuss the reasoning behind opting for Bayesian statistics as the framework for our quantitative analysis. We address the adaptation of the models and the selection of variables for each research question separately.
+We will deviate in some aspects from the original study. Firstly, we utilize the *Bayesian* rather than *frequentist* framework of statistics. Secondly, we adapt the statistical models to a different regulatory and institutional setting of the CCC. Thirdly, we change the statistical models so that only relevant explanatory and confounding variables remain. Despite that, regression models lay at the core of our research. We now discuss the reasoning behind opting for Bayesian statistics as the framework for our quantitative analysis. We address the adaptation of the models and the selection of variables for each research question separately.
 
 ## Bayesian framework
 Without delving too much into the Bayesian versus frequentist statistics, we opt for the Bayesian framework for it, we believe, reflects better our understanding of probability and scientific inquiry. There are two major differences in understanding of concepts between the two approaches towards statistics: that of role of prior knowledge and that of probability. 
@@ -131,10 +130,9 @@ The Bayesian framework rather than measuring the uncertainty about observed data
 The Lee Epstein et al. original study employs the frequentist framework and hence they report statistically significant relationships between the variables of interest. Our approach will be Bayesian. We will firstly see whether the employed models actually make sense for the data by running posterior predictive checks and afterwards we will draw the parameters from the posterior distribution to see whether their distribution indeed looks similar to the ones reached by Epstein et al.
 
 # Effect of presence of dissenting opinion on the length of majority argumentation
-
 According to Epstein, Landes and Posner, "[a] dissent imposes an effort cost on the majority because the author of the majority opinion is likely to revise his opinion to address the objections raised by the dissent. This suggests that the majority opinions will be longer when there is a dissent." 
 
-To test this hypothesis, Epstein, Landes and Posner collected roughly 446 SCOTUS and 1025 US court of appeals decisions. They then create regression models to see whether the presence of at least one dissenting opinion affected the length of the majority opinion. The regression model of Epstein et al. naturally controls for multiple covariates, so that bias is eliminated and a causal interpretation of the result is made possible. The outcome variable of their model was the number of words of the majority opinion. The explanatory and control variables in their model are:
+To test this hypothesis, Epstein, Landes and Posner collected roughly 446 SCOTUS and 1025 US court of appeals decisions. They then create regression models to see whether the presence of at least one dissenting opinion affected the length of the majority opinion. The regression model of Epstein et al. naturally controls for multiple covariates, so that bias is eliminated and a causal interpretation of the result is made possible. The outcome variable of their model was the number of words of the majority opinion. The explanatory and control variables in their model were:
 
 (1) whether the decision included oral hearing, 
 (2) and (3) a dummy variable for presence of 1 or 2 and more dissents (the explanatory variable), 
@@ -175,7 +173,7 @@ Institutionally, the CCC can decide cases either in 3-member panels or in the wh
 
 We confirm our intuition by comparing our metric of importance of a case to Epstein's metric in the CCC context. While plenary decisions make up only 1.5 % of all CCC decisions, they make up 15 % references in the CCC caselaw. Unlike the Epstein metric, our metric is in any case determined before the decision to dissent or not to dissent is made. Thus, in our model, we're including a dummy variable for the formation of a court, i.e., whether the decision was made in a 3 member panel or a full court plenary. We find similar numbers regarding the distribution of decisions on the merits and on the procedure.
 
-``` {r dummy_distribution}
+``` {r dummy_distribution, render = lemon_print}
 final_distributions
 ```
 
@@ -185,9 +183,9 @@ Similarly, the type of decision affects both the length of argumentation as well
 Secondly, we believe not all variables in the Epstein et al. model have potential for confounding or are transferable to the CCC context. The majority mentioning the dissent does not impact the judge's decision to or not to dissent. What's more, a mention of a dissent by the majority can only follow after a decision to dissent was made. Thus, we omit it from our model. Oral hearings are few and far between in the CCC context. It therefore makes no sense to control for the presence of oral hearing in the context of the CCC.
 
 ## Data collection and method
-The data used for this analysis includes the complete dataset CCC decisions, with short procedural decisions being filtered out from the dataset. The Czech Apex Court dataset was built by Štěpán Paulík and includes complete database of decisions of the CCC, SAC and the Czech Supreme Court, including comprehensive metadata, text corpus, as well as additional information mined from the texts or publicly available sources, such as case references, compositions, or background information of the judges. The analysis was limited up until the end of 2022.
+The data used for this analysis includes the dataset CCC decisions. The Czech Apex Court dataset was built by Štěpán Paulík and includes complete database of decisions of the CCC, SAC and the Czech Supreme Court, including comprehensive metadata, text corpus, as well as additional information mined from the texts or publicly available sources, such as case references, compositions, or background information of the judges. The analysis was limited up until the end of 2022. We filtered only those decisions, where a variation in the dissenting behavior could procedurally be observed: procedural decisions were filtered out as they require unanimity amongs the judges and do not leave any space for disdagreement.
 
-While the metadata of decisions contain information about a presence of a dissenting opinion, regrettably, the CCC decisions are not neatly split up like their SCOTUS counterparts. The text of the decision contains both the majority opinion as well as the dissent. That is why we relied on machine learning to extract the information about presence, position and length of dissenting opinion as well as the majority argumentation in the CCC decisions. 
+While the metadata of decisions contain information about a presence of a dissenting opinion, regrettably, the CCC decisions are not neatly split up like their SCOTUS counterparts. The text of the decision contains both the majority opinion as well as the dissent without any clear boundary from other parts of the structure. That is why we relied on machine learning to extract the information about presence, position of dissenting opinion as well as length of the majority argumentation in the CCC decisions. 
 
 Utilizing machine learning unlocked one more avenue to further improve the Epstein et al. model. Instead of conceptualizing the length of the majority opinion as the whole majority opinion, we narrowed our inquiry only to the majority argumentation rather than including, for example, the heading or the facts of the case in the length of a majority opinion variable. Therefore, we believe our model better reflects the relationship between the presence of a dissent and the legal argumentation of the majority.
 
@@ -204,9 +202,9 @@ Our classification followed in two stages. In the first step, the dissenting opi
 (7) information on further legal remedies
 (8) signature
  
-A couple of various models were trained and compared and, in line with the findings of Eliasek and Lüders articles, the choice was narrowed down to two algorithms - Support Vector Machines [@gandhiSupportVectorMachine2018] with the sparse td-idf representation and Gradient Boosted Decision Trees with the dense doc2vec embeddings [@maklinGradientBoostingDecision2019]. More complex algorithms did not provide any improvement in accuracy at the cost of higher computing costs. The benchmark for both classifiers was the zero rule, i.e., the proportion of the majority class as a zero rule classifier would presume that all occurrences are of that class and would be right the proportion amount of the time.
+In line with the findings of Eliasek and Lüders articles, we tested and compared three classification algorithms: - Support Vector Machines [@gandhiSupportVectorMachine2018] with the sparse td-idf representation and Gradient Boosted Decision Trees [@maklinGradientBoostingDecision2019] and Random Forests with the dense doc2vec embeddings. More complex algorithms did not provide any improvement in accuracy at the cost of higher computing costs. The benchmark for both classifiers was the zero rule, i.e., the proportion of the majority class as a zero rule classifier would presume that all occurrences are of that class and would be right the proportion amount of the time.
 
-In the end, the XGBoost algorithm combined with the doc2vec embeddings boasted the highest benchmark values (precision, accuracy, FScore). The precision of the first stage classifier was ~85 %, slightly above the 75 % zero rule benchmark. The precision of the second stage classifier was ~82 %, well above the 37 % zero rule benchmark. Afterwards, both classification models were trained on all annotated data and used to predict classes of the whole dataset.
+In the end, the XGBoost algorithm combined with the doc2vec embeddings boasted the highest benchmark values (precision, accuracy, FScore). The precision of the first stage classifier was ~86 %, above the 75 % zero rule benchmark. The precision of the second stage classifier was ~82 %, well above the 37 % zero rule benchmark. Afterwards, both classification models were trained on all annotated data and used to predict classes of the whole dataset.
 
 ## Result
 ### The model
@@ -257,18 +255,16 @@ mcmc_intervals_length
 
 Even after controlling for all potential observable confounding variables, the regression table looks as follows
 
-``` {r length_regression}
-output_workload %>%
-  filter(!term == "type_decisionStanovisko pléna") %>%
- mutate_if(is.numeric, round, digits = 2)
+``` {r length_regression, render = lemon_print}
+output_length %>%
+  filter(!term == "type_decisionStanovisko pléna")
 ```
 
-In other words, the presence of one dissent implies an average *e*^0.561^ increase of words in the court arguments part of judgment. Put in terms of percentage, a presence of one dissent increases the length of the argumentation by 75 %. The presence of two or more dissents implies an average *e*^1.239^ increase of words in the court arguments part of judgment. That is a staggering ~234 % increase in the length as a result of presence of two or more dissenting opinions. To this end, the result of our study is in line with that of Epstein et al.: a presence of dissenting opinion increases the length of the majority opinion argumentation.
+In other words, the presence of one dissent implies an average *e*^0.57^ increase of words in the court arguments part of judgment. Put in terms of percentage, a presence of one dissent increases the length of the argumentation by 77 %. The presence of two or more dissents implies an average *e*^1.10^ increase of words in the court arguments part of judgment. That is a staggering ~200 % increase in the length as a result of presence of two or more dissenting opinions. To this end, the result of our study is in line with that of Epstein et al.: a presence of dissenting opinion increases the length of the majority opinion argumentation considerably.
 
-We believe there are two potential ways to explain this behavior. Either the majority simply takes the dissenting opinion seriously and addresses the arguments raised in them or the presence of a dissenting opinion reflects a deeper disagreement between judges that would have taken place during the deliberation. Based on our knowledge of the inner organisation of the court, the deeper disagreement explanation would fit the plenary proceedings more accurately as a more thorough debate usually takes place than in the 3-member panel proceedings. Such a substantive explanation for our findings is supported by the fact that decisions originating in the plenary proceedings are disproportionately over-represented among decisions that contain at least one dissenting opinion. This explanation is further supported by the larger effect of having 2 or more dissents over just the 1 dissent. More dissenting judges simply imply higher degree of disagreement on the bench. Be it as it may, we conclude that the majority takes the disagreement seriously. Our finding is in line with that of Epstein et al.
+We believe there are two potential ways to explain this behavior. Either the majority simply takes the dissenting opinion seriously and addresses the arguments raised in them or the presence of a dissenting opinion reflects a deeper disagreement between judges that would have taken place during the deliberation. Based on our knowledge of the inner organisation of the court, the deeper disagreement explanation would fit the plenary proceedings more accurately as a more thorough debate usually takes place than in the 3-member panel proceedings. Such a substantive explanation for our findings is supported by the fact that decisions originating in the plenary proceedings are disproportionately over-represented among decisions that contain at least one dissenting opinion. This explanation is further supported by the larger effect of having 2 or more dissents over just the 1 dissent. More dissenting judges simply imply higher degree of disagreement on the bench. The latter explanation fits within our theory of conceptualizing dissent as a result of differing degree of disagreement on the bench. Be it as it may, we conclude that the majority takes the disagreement seriously. Our finding is in line with that of Epstein et al.
 
 # Effect of workload on the dissenting behavior
-
 ## Adapting the Epstein et al. regression model to the CCC context
 According to Epstein et al. "[t]he economic theory of judicial behavior predicts that a decline in the judicial workload would lower the opportunity cost of dissenting and increase the frequency of dissents, and also that the greater the ideological heterogeneity among judges the more likely they are to disagree and so the higher the dissent rate will be." The authors then test both of these hypotheses - whether the workload and the political distance between judges affects dissent rate.
 
@@ -281,84 +277,61 @@ The authors find a positive relationship between the log of dissent rate, i.e., 
 The authors again control for multiple variables, which we believe to be unnecessary. They control for ideological differences between judges. It is hard to see how the ideological difference between judges could affect caseload, although it undoubtedly carries an explanatory value for dissent rate variance, as the authors indeed conclude.
 
 ## Model
-Our model is built slightly differently. We utilize the variance in the caseload among judge rapporteurs to measure workload Hence, we operationalized caseload in two ways:
+Our model is built slightly differently. We utilize the variance in the caseload among judge rapporteurs to capture the workload of a judge. We could conceptualize the workloaf of a judge in multiple ways:
 
-1. the number of cases submitted and assigned to each judge rapporteur per year
-2. as the yearly rate of change of thereof.
+1. the number of cases submitted and assigned to each judge rapporteur per year (we refer to this option as the caseload)
+2. the number of unfinished cases as a judge rapporteur of any judge at the time of decision in any given decision (we refer to this option as workload),
+3 and 4. as the yearly rate of change of thereof.
 
-In other words, the caseload here is that of an individual judge of decisions that they have to decide and write, or the rate of change of thereof. That in our eyes reflects the idea of workload of each judge on the court. The more cases the judges have to author, the busier they are. 
+Regarding the option 1, it follows the steps of Epstein et al., i.e., it captures the caseload here is that of an individual judge of decisions that they have to decide and write, or the rate of change of thereof. That in our eyes reflects the idea of workload of each judge on the court better than the original caseload of a whole court. The more cases the judges have to author each year, the busier they are.
 
-Similarly, instead of measuring dissent rate on the Constitutional court in general, we measure the number of dissents written by each judge either in absolute terms or as a rate relative to their caseload (similarly to Epstein et al.) Ideally, we would measure both variables as rate of change. However, there are many observations of the number of dissents with the value of 0. In these cases, the rate of change would either be infinite or not a number (as a 0 would appear either in the denominator or numerator of the rate of change formula). Getting rid of the zeroes would imply a rather complex transformation [for a more detailed overview of the possible transformations see @hyndmanTransformingDataZeros2010]. We include time as a control variable because we presume that the workload of judges increases over time and so may the number of dissents.
+However, it is doubtful whether that is how a judge would perceive workload. We believe our second measure captures the workload of a judge better. We firstly mined the compositions of panels as well as the plenary from the text of the decision. We then calculated the number of unfinished cases each judge had at the time of any given decision as a judge rapporteur using the date of submission and of decision of a case. We believe such a measure captures the perceived workload of a judge much better: a judge knowing that they have, for example, 20 in comparison to 100 decisions to draft as a judge rapporteur is what influences the decision to dissent or not.
+
+Similarly, instead of measuring dissent rate on the Constitutional court in general, we can regress the number of dissents written by each judge either (similarly to Epstein et al.) per year on the caseload or we can regress the decision to dissent of any given judge on their workload. Ideally, we would measure both variables as rate of change. However, there are many observations of the number of dissents with the value of 0. In these cases, the rate of change would either be infinite or not a number (as a 0 would appear either in the denominator or numerator of the rate of change formula). Getting rid of the zeroes would imply a rather complex transformation [for a more detailed overview of the possible transformations see @hyndmanTransformingDataZeros2010]. We include time as a control variable because we presume that the workload of judges increases over time and so may the number of dissents.
 
 To address potential sources of bias in our regression analysis, we consider the caseload of a judge to be assigned as good as random. The cases once submitted to the CCC get assigned to individual judges based on the alphabetic order of their surnames. There is no intentional case selection in play. Therefore the assignment of the treatment, the workload of a judge, is independent of other covariates and so is the outcome of interest. The same applies to our last research question.
 
 ``` {r caseload_over_time}
-data %>%
-  group_by(year_decision) %>%
+data_dissents_caseload %>%
+  group_by(year_submission) %>%
   summarise(Caseload = sum(caseload)) %>%
-  ggplot(aes(x = year_decision, y = Caseload)) +
+  ggplot(aes(x = year_submission, y = Caseload)) +
   geom_point() +
   scale_x_discrete(breaks = scales::breaks_pretty(n = 20)) +
   labs(x = element_blank(),
        title = "Development of CCC caseload over time")
 ```
-
-We opt for the Bayesian Poisson regression model. A quick precursory look at our data as well as the fact that the dependent variable is a *count* reveals that our *Y*, the count of dissenting opinions of a judge per year:
+We opt for the Bayesian logistic regression model because the dependent variable is a binomial variable with 1 trial, i.e. our *Y*, the decision to dissent or not to dissent of a judge in any given decision:
 
 $$
-Y | \lambda \sim Pois(\lambda)
+Y | \pi \sim Bern(\pi)
 $$
-
-Plotting the density of the number of dissents confirms our intuition. The number of dissenting opinions clearly follows a Poisson distribution that is not over-dispersed to justify Negative Binomial model as in the previous section.
-
-``` {r plot_data}
-data %>%
-ggplot(aes(x = count_dissents)) +
-  geom_density() +
-  labs(x = "count of dissenting opinions of a judge per year")
-```
 
 ## Result
 ### Model diagnosis
-We tried two models. Firstly, we tried a completely pooled Poisson regression. Secondly, we also tried a hierarchical Poisson regression. The main difference between the two models is that the former model completely ignores individual intercept. The latter allows for differentiating intercepts between the groups (in our case judge rapporteurs) and the global intercept. The global parameter of interest is then informed both by the global trends as well as the individual intercepts. That can usually lead to higher accuracy in case of structured or time series data at the cost of higher computational expenses.
+We tried two models, a completely pooled and hierarchical model clustered around the judges.  The main difference between the two models is that the former model completely ignores individual intercept. The latter allows for differentiating intercepts between the groups (in our case the individual judges) and the global intercept. The global parameter of interest is then informed both by the global trends as well as the individual intercepts. That can usually lead to higher accuracy in case of structured or time series data at the cost of higher computational expenses.
 
 We ran both the models via Stan with 4 Monte Carlo Markov Chains (MCMC) of 20000 iterations each, the first 10000 warm up iterations being discarded. We did a diagnosis of all the models. In all cases, the trace plots show that the chains were stable and probed plausible parameter values, the density plots of the MCMC show that all 4 chains exhibited similar behavior, and the autocorrelation between the iterations always dropped quickly and that the chains were moving around the potential parameter values quickly.
-
-The posterior diagnosis reveals that although the simulations are not perfect, they do reasonably capture the features of the observed dissents count data. In other words, we selected the correct model and the priors are not too off either. Thus, our Poisson regression assumptions are reasonable. 
-
-``` {r posterior_check}
-pp_check_hierarchical_absolute
-```
-
+ 
 We now compare the pooled against the hierarchical models. The former model got the posterior prediction 1.2 of the number of dissents per judge wrong (0.84 standard deviations off), whereas the former model got the posterior prediction wrong only by 0.94 of the number of dissents per judge (0.7 standard deviations off), with 99 % of the predictions falling within the 95 % posterior credible interval. 6-fold cross-validated check reveals that neither of the models overfitted. Thus, while the hierarchical model is slightly more computationally expensive, it yields better results.
 
 ### Interpreting the posterior
-Interpreting the posterior is quite interesting. In neither case was the parameter of caseload in any way negative, as was found by Lee Epstein.
 
-``` {r interpreting_posterior1}
-output_hierarchical_absolute %>%
-  mutate_if(is.numeric, round, digits = 2)
-```
-
-Even with the 80 % posterior credible interval, the caseload parameter is very slightly positive and all 4 chains converge on it. In other words, there is not a negative relationship between dissent rate and caseload on the CCC as on SCOTUS. Although the relationship statistically significantly differs from 0, it is hard to interpret the substantive significance - with each new case a judge gets assigned, their amount of dissents increases by 0.35 % (*e*^0.0035^).
+We can see that the estimate of the workload parameter significantly differs from 0, as the 95 % and 80 % uncertainty intervals of the posterior draws of the parameter lay on the left of 0. We're thus able to proceed with substantive interpretation of the result.
 
 ``` {r interpreting_posterior2}
 # Parameters
-
-mcmc_areas_hierarchical_absolute
-mcmc_intervals_hierarchical_absolute
+mcmc_areas_workload
+mcmc_intervals_workload
 ```
 
-What is more, when we draw 4 plausible posterior models, the models seem to be rather all over the place. It is then hardly possible to draw any definite conclusions regarding the slope of the explanatory variable.
+The regression table is already transformed into odds from the log odds output of the model. At first glance, the results are in line with our theoretical predictions. The intercept is quite low as in the complete pool of cases, dissents are far few and between.
 
-``` {r interpreting_posterior3}
-data %>% 
-  add_epred_draws(object = model_hierarchical_absolute, ndraws = 4) %>%
-  ggplot(aes(x = caseload, y = count_dissents)) +
-  geom_line(aes(y = .epred))
+``` {r interpreting_posterior1, render = lemon_print}
+output_workload
 ```
 
-The result from our analysis is in line with our intuition. The CCC judges may not act strategically or economically as legal scholars seem to posit based on the US studies. The parameters are in either - the rate as well as the absolute number - models positive in contrast to the result of Epstein et al.
+We can see that for each increase of unfinished cases of a judge in any decision, the outcome likelihood of dissent decreases by ~0.5 % (*e*^-0.00475^). Because the number of unfinished cases is usually in 10^1 dimensions, the effect isn't unsubstantial. The result from our analysis is in line with our intuition. The CCC judges take into account the effort costs of dissent and square it against their perceived workload. It would be almost unreasonable to observe opposite effect.
 
 # Collegiality costs of dissenting at the CCC
 ## Theory
@@ -368,14 +341,14 @@ While it is hard for us to see how a variation between the number of members in 
 
 In the following section, we test the hypothesis:
 
-RQ3: The judges are more likely to dissent at the end of their terms as the collegiality costs decrease.
+RQ3: The judges are less likely to dissent at the beginning of their dissents as the collegiality costs of dissent are steep and more likely to dissent at the end of their terms as the collegiality costs decrease.
 
 ## Model
 We build on our previous model. We now know that the number of dissents of a judge rapporteur follows a Poisson distribution. We use a hierarchical model pooled on the judges. We have no knowledge whatsoever about the effect of start or end of term on the number of dissents, thus, we use only weakly informative priors. We have addressed the potential sources of bias with the workload as an explanatory variable above.
 
 ## Result
 ### Model diagnosis
-We ran the model via Stan with 4 Monte Carlo Markov Chains (MCMC) of 20000 iterations each, the first 10000 warm up iterations being discarded. We did diagnosis of all the models. The trace plots reveal that the chains were stable and probed plausible parameter values, the density plots of the MCMC show that all 4 chains exhibited similar behavior, and the autocorrelation between the iterations always dropped quickly and that the chains were moving around the potential parameter values quickly. The posterior predictive check again reveals that our posterior model reasonably captures the underlying data.
+We ran the model via Stan with 4 Monte Carlo Markov Chains (MCMC) of 20000 iterations each, the first 10000 warm up iterations being discarded. We did diagnosis of all the models. The trace plots reveal that the chains were stable and probed plausible parameter values, the density plots of the MCMC show that all 4 chains exhibited similar behavior, and the autocorrelation between the iterations always dropped quickly and that the chains were moving around the potential parameter values quickly.The posterior predictive check again reveals that our posterior model reasonably captures the underlying data.
 
 ``` {r posterior_check_term}
 pp_check_term
@@ -383,21 +356,54 @@ pp_check_term
 
 ### Interpreting the posterior
 
-The parameters of both variables of interest turned out to be significantly negative.
+The parameters of both variables of interest turned out to be significantly differing from zero. Therefore, we're able to draw conclusions from our model.
 
 ``` {r interpreting_posterior_term2}
 mcmc_areas_term
 mcmc_intervals_term
 ```
 
-On the one hand, consistently with the Epstein theory of collegiality costs of dissents, the likelihood of dissenting is lower by 27.2 % (*e*^--0.317^) during the first two years of judges' terms. On the other hand, contrary to our theoretical expectations, the likelihood of dissent drops by 11.7 % (*e*^-0.124^).
+Consistently with the Epstein theory of collegiality costs of dissents, we find that the likelihood of dissenting is lower by ~20 % (*e*^-0.23^) during the first two years of judges' terms and that at the end of the judges' terms, their appetite for disagreement and dissent increases by roughly 14 % (*e*^-0.13^).
 
-``` {r interpreting_posterior_term1}
+``` {r interpreting_posterior_term1, render = lemon_print}
 output_term %>%
   filter(!term %in% "reelection")
 ```
 
-It is again difficult to square the theory of Epstein et al. with the results of our analysis. It is either that the theory of collegiality costs of dissents is not entirely accurate - perhaps it does not bring about any collegiality costs. Or it may not apply to the CCC because the CCC judges do not give weight to the collegiality costs. In either way, our results were not wholly consistent with the theory of collegaility costs of dissenting.
+Our results are, again, consistent with those of Epstein et al. The model reveals that the judges seem to change their dissenting behavior depending on in which phase of their term do they find themselves.
+
+# The effect of plenary judicial coalitions on dissenting behavior in panels
+
+## Theory of judicial coalitions at the CCC
+
+Lastly, we measure the impact of coalitions that formed in the plenary proceedings on the behavior of judges on the dissenting behavior of judges. According to Czech legal scholarship [@chmelCoOvlivnujeUstavni2021; @smekalMimopravniVlivyNa2021; @vartazaryanSitOvaAnalyza2022], two grand coalitions have formed on the third term of the CCC between 2013-2023. The articles rely primarily on network analysis of the dissenting opinions in the plenary proceedings. We do not intend to delve into validating their conclusions. 
+
+Rather, we test whether the presumable existence of the coalitions carry over to and have any effect on the dissenting behavior of judges in the panels. Consistent with our theoretical part, we believe that a dissenting opinion reflects disagreement on the judicial bench. Our intuition suggests that if indeed there are two coalitions in the plenary proceedings, which strongly disagree between each other, such a disagreement should, theoretically, carry over to the panel level. Our hypothesis is as follows:
+
+RQ4: Judicial coalitions formed in the plenary proceedings affect the likelihood to dissent in 3-member panels. Having a panel composed of members of both judicial coalitions increases the disagreement on the bench and, thus, the likelihood of a dissent.
+
+## Model
+
+Practically speaking, we mined the compositions of panels from the text of the decision in each and every decision. Following Chmel and Vartazaryan, we split the 3rd term CCC into two coalitions: the first coalition consisted of judges Kateřina Šimáčková, Vojtěch Šimíček, Ludvík David, Jaromír Jirsa, David Uhlíř, Jiří Zemánek, Tomáš Lichovník, Jan Filip, Milada Tomková and Pavel Šámal, whereas the second coalition of judges consisted of Radovan Suchánek, Vladimír Sládeček, Josef Fiala, Jan Musil, Jaroslav Fenyk, and Pavel Rychetský. The Vyhnánek article goes so far to coin the first coalition as a more left-leaning and the second as a more right-leaning.
+
+We filtered the 3-member panel on merits decisions^[At the 3-member panel level, procedural decisions have to be unanimous. Therefore, they do not leave any variation of dissenting behavior and we leave them out of the model.] of the 3rd term CCC and coded the following dummy variables. One dummy for each coalition, if all 3 members of the panel in any given decision were members of the same coalition. On top of that, our model included one dummy variable, if one member of the panel in the minority came from the other coalition of the 2 majority judges. The assignment to panels is as good as random, thus, there is no need to control for other covariates. Because our outcome of interest, the presence of a dissent in any given decision, is a binary variable, we opted for the binomial logistic regression model. For the model, we used weakly informative priors as we have no idea about the potential effect of having the two coalitions
+
+## Results
+
+While at first glance, the results are along the lines of what we expected. The regression table is already transformed into odds from the log odds output of the model.
+
+``` {r output_coalition, render = lemon_print}
+output_coalition_panel
+```
+
+The estimated odds of dissent are already pretty low, the predicted likelihood of dissent appearing in any 3-member panel decision on merits is ~3 % (which isn't at odds with our workload model, where the pool of considered decisions is slightly wider). In our data, there is not a single dissent among a panel composed of completely of members from the second coalition, which explains the 0. On the other hand, the full presence of the first coalition decreases the odds of dissent considerably by ~20 %. Lastly, the effects of having both panels mixed are in either case positive, the odds of both parameters are ~2.
+
+``` {r interval_coalition}
+mcmc_intervals_coalition_panel
+mcmc_areas_coalition_panel
+```
+
+Interpreting the repercussions for theory is quite difficult, especially given the lack of data on the second, more conservative coalition and given the rather large standard errors. While we steer clear of using the language of causal relationship, the trend is clear and has remained robust to multiple model specifications: a panel composed of members from both coalitions from the plenary proceedings increases the disagreement on the bench. We could not confirm any heterogenous effects between the two coalitions. We thus conclude that our data and evidence seems reasonably compatible with the explanation of Czech legal scholars.
 
 # Discussion
 We successfully transplanted a research design from the US context to the European context. We had to adjust it to the extent that data availability precluded us for posing certain research questions or applying certain methods. Our results are inconclusive as to the potential to transfer conclusions from empirical legal research conducted in the US context elsewhere.
@@ -407,3 +413,9 @@ On the one hand, we reached a similar conclusion regarding the costs a dissentin
 On the other hand, the CCC judges do not seem to act as strategically as their US counterparts, at least in the context of dissenting opinions. Increase in their workload (operationalized both as the absolute number of cases assigned to a judge as well as the rate of change of thereof) does not appear to decrease the likelihood of that judge dissenting, as Epstein et al. concluded.
 
 Our last remark addresses our research design in general: the regression analysis. We are aware that given the potential outcome frameworks, it is difficult to sustain all the assumptions of regression research design. Experimental or quasi-experimental research design such as difference-in-differences or discontinuity designs should be the golden standard of social science [@buenodemesquitaThinkingClearlyData2021]. The relative unmalleability of law in general, but rather conservative institutions such as courts in particular, leaves little space for experimental design and the general applicability of law within a legal system leaves little space for quasi-experimental design. That is not to say that it is impossible. Although we tried our best to think of and to address all potential sources of bias and whether the assumptions of the models of choice were met, we are aware of limitations of regression-based research design and therefore our conclusions should be taken with a grain of salt.
+
+\vspace{30pt}
+
+# Literature
+
+
