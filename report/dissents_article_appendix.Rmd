@@ -7,7 +7,7 @@
   distill::distill_article: default
   word_document:
       reference_docx: word_style.docx
-title: "Appendix of: Why and when do (Czech) judges dissent: an empirical analysis of the Czech Constitutional Court"
+title: "Appendix of: Why and when do (Czech) judges dissent: a quantitative empirical analysis of the Czech Constitutional Court"
 author:
 - name: Štěpán Paulík
   affiliation: Humboldt Universität zu Berlin, stepan.paulik.1@hu-berlin.de

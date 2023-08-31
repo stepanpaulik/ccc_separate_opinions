@@ -7,13 +7,13 @@ output:
   distill::distill_article: default
   word_document:
       reference_docx: word_style.docx
-title: "Why and when do (Czech) judges dissent: an empirical analysis of the Czech Constitutional Court"
+title: "Why and when do (Czech) judges dissent: a quantitative empirical analysis of the Czech Constitutional Court"
 author:
 - name: Štěpán Paulík
   affiliation: Humboldt Universität zu Berlin, stepan.paulik.1@hu-berlin.de
 - name: Gor Vartazaryan
   affiliation: Charles University, gorike2000@gmail.com
-abstract: "The decision of a judge to dissent or not to dissent opens up avenue for strategical considerations. Building on the economic-strategic account of judicial behavior developed by Lee Epstein, Richard A. Posner and William M. Landes, we develop and test multiple hyptotheses on the Czech Constitutional Court. To test the hypotheses, we utilize Bayesian regression analyses. We find that the workload of a judge does not affect their dissenting behavior as previous research in the US context suggests. We also find that a dissent imputes substantial costs on the majority that produces longer arguments to address a dissent. The effect is stronger the more disagreement there is on the bench. Lastly, we cast doubt upon the theory that dissents bring about significant collegiality costs to the dissenter"
+abstract: "The decision of a judge to dissent or not to dissent opens up avenue for strategical considerations. Building on the economic-strategic account of judicial behavior developed by Lee Epstein, Richard A. Posner and William M. Landes, we develop and test multiple hyptotheses on the Czech Constitutional Court. To test the hypotheses, we utilize Bayesian regression analyses. We find that the workload of a judge does affect their dissenting behavior as previous research in the US context suggests. We also find that a dissent imputes substantial costs on the majority that produces longer arguments to address a dissent, the effect being stronger the more disagreement there is on the bench. Thirdly, we find that dissents bring about significant collegiality costs to the dissenter. Lastly, we confirm the carry over effect of alleged judicial coalitions formed in the plenary proceedings to the 3-member panel proceedings. Simply put, CCC judges are more liekly to disagree when sitting on a bench with members from both coalitions."
 keywords: "empirical legal research, courts, dissents, judicial behavior, political science, Bayesian statistics, regression analysis"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 geometry: margin=1in
@@ -49,7 +49,7 @@ load(file = "../models/models_fitted_coalition_panel.RData")
 
 # Introduction
 
-Empirical legal research has been slowly but surely finding it's outside the predominant US context. Historically though most of the empirical studies have been conducted in the US, especially the Supreme Court, context [such as @boydUntanglingCausalEffects2010; @carrubbaWhoControlsContent2012; @epsteinWhyWhenJudges2011]. We now know that judgments are what judges had for a breakfast. Put less pompously, there are many theories and approaches for explanation of judicial decisions [@posnerHowJudgesThink2010] e. What we do not know is the extent to which these theories and explanations carry over to other legal systems and context.
+Empirical legal research has been slowly but surely finding it's outside the predominant US context. Historically though most of the empirical studies have been conducted in the US, especially the Supreme Court, context [such as @boydUntanglingCausalEffects2010; @carrubbaWhoControlsContent2012; @epsteinWhyWhenJudges2011]. We now know that judgments are what judges had for a breakfast. Put less pompously, there are many theories and approaches for explanation of judicial decisions [@posnerHowJudgesThink2010]. What we do not know is the extent to which these theories and explanations carry over to other legal systems and context.
 
 In our article, we set out to replicate one of the empirical legal research studies conducted in the US  by Epstein, Posner and Landes [@epsteinWhyWhenJudges2011] on the on the Czech Constitutional Court ("CCC")  and to test whether the same theory and same empirical conclusions hold in a different context. 
 
