@@ -2,7 +2,7 @@
 output: 
   stevetemplates::article2:
     keep_tex: true
-    toc: true
+    # toc: true
     number_sections: true
   distill::distill_article: default
   word_document:
@@ -129,6 +129,8 @@ The Bayesian framework rather than measuring the uncertainty about observed data
 
 The Lee Epstein et al. original study employs the frequentist framework and hence they report statistically significant relationships between the variables of interest. Our approach will be Bayesian. We will firstly see whether the employed models actually make sense for the data by running posterior predictive checks and afterwards we will draw the parameters from the posterior distribution to see whether their distribution indeed looks similar to the ones reached by Epstein et al.
 
+The whole article is implemented in the R programming language and STAN software, connected via the RStan package. We include all the model specifications and diagnoses in the appendix. In this article, we mainly focus on the output of the models and the interpretation of thereof.
+
 # Effect of presence of dissenting opinion on the length of majority argumentation
 According to Epstein, Landes and Posner, "[a] dissent imposes an effort cost on the majority because the author of the majority opinion is likely to revise his opinion to address the objections raised by the dissent. This suggests that the majority opinions will be longer when there is a dissent." 
 
@@ -216,44 +218,22 @@ Building on the theory and the Epstein model, in our model, we included the numb
 (4) the type of the decision as a control variable,   
 (4) year of the decision as a control variable.
 
-We conducted our analysis employing Bayesian regression implemented by the software Stan in R. We opted for a completely pooled model as the data did not contain any inherent structure (there were no clusters). At first glance, we assumed that 
-
-$$
-Y | \lambda \sim Pois(\lambda)
-$$
-
-because our outcome variable of interest is a discrete count and the density plot of the length of court argumentation suggests so.
-
-``` {r negbinom}
-negbin_distribution
-```
-
-However, as the posterior checking revealed, the Y was actually overdispersed and the Poisson regression was not able to capture the overdispersion. Therefore, we instead opted for the Negative Binomial model, which allows for relaxing the assumption of equality of variance of Y to its expected value. Thus, the explanatory variable, the number of words of argumentation of the CCC *Y*
+We opted for a completely pooled model as the data did not contain any inherent structure (there were no clusters). We instead opted for the Negative Binomial model, which allows for relaxing the assumption of equality of variance of Y to its expected value in comparison to the Poisson model. Thus, the explanatory variable, the number of words of argumentation of the CCC *Y*
 
 $$
 Y_{words} | \mu, r \sim NegBin(\mu, r)
 $$
-As for the priors, we based the priors on the Epstein results as well as a cursory exploratory peak into the data.
-
-### Diagnosis
-
-We ran the model via Stan with 4 Monte Carlo Markov Chains (MCMC) of 20000 iterations each, the first 10000 warm up iterations being discarded. The trace plot shows that the chains were stable and probed plausible parameter values, the density plots of the MCMC show that all 4 chains exhibited similar behavior, and the autocorrelation between the iterations always dropped quickly and that the chains were moving around the potential parameter values quickly.
-
-The posterior diagnosis confirms that although the simulations are not perfect, they do reasonably capture the features of the observed number of words of court arguments. In other words, we selected the correct model and the priors are not too off either. Thus, our Negative Binomial regression assumptions are reasonable.
-
-``` {r pp_check_negbinom}
-pp_check_length_negbinom
-```
+As for the priors, we based the priors on the Epstein results as well as a cursory exploratory peak into the data. All our priors follow a normal distribution, the intercept being centered around the population mean. The remaining priors were kept uninformative, because we simply have no previous knowledge on the CCC. The negative binomial family employs a log link, therefore the resulting estimates have to be interpreted as such.
 
 ### Posterior interpretation
 Parameters of all variables of interest are significantly different from 0 as revealed by the density and whisker plots with 80 % and 95 % posterior credible intervals.
 
 ``` {r length_parameter_plots}
 mcmc_areas_length
-mcmc_intervals_length
+# mcmc_intervals_length
 ```
 
-Even after controlling for all potential observable confounding variables, the regression table looks as follows
+Even after controlling for all potential observable confounding variables, the already unlogged regression table looks as follows
 
 ``` {r length_regression, render = lemon_print}
 output_length %>%
@@ -295,6 +275,9 @@ To address potential sources of bias in our regression analysis, we consider the
 data_dissents_caseload %>%
   group_by(year_submission) %>%
   summarise(Caseload = sum(caseload)) %>%
+  mutate(year_submission = as.character(year_submission)) %>%
+  filter(year_submission < "2023") %>%
+  arrange(year_submission) %>%
   ggplot(aes(x = year_submission, y = Caseload)) +
   geom_point() +
   scale_x_discrete(breaks = scales::breaks_pretty(n = 20)) +
@@ -308,21 +291,13 @@ Y | \pi \sim Bern(\pi)
 $$
 
 ## Result
-### Model diagnosis
-We tried two models, a completely pooled and hierarchical model clustered around the judges.  The main difference between the two models is that the former model completely ignores individual intercept. The latter allows for differentiating intercepts between the groups (in our case the individual judges) and the global intercept. The global parameter of interest is then informed both by the global trends as well as the individual intercepts. That can usually lead to higher accuracy in case of structured or time series data at the cost of higher computational expenses.
-
-We ran both the models via Stan with 4 Monte Carlo Markov Chains (MCMC) of 20000 iterations each, the first 10000 warm up iterations being discarded. We did a diagnosis of all the models. In all cases, the trace plots show that the chains were stable and probed plausible parameter values, the density plots of the MCMC show that all 4 chains exhibited similar behavior, and the autocorrelation between the iterations always dropped quickly and that the chains were moving around the potential parameter values quickly.
- 
-We now compare the pooled against the hierarchical models. The former model got the posterior prediction 1.2 of the number of dissents per judge wrong (0.84 standard deviations off), whereas the former model got the posterior prediction wrong only by 0.94 of the number of dissents per judge (0.7 standard deviations off), with 99 % of the predictions falling within the 95 % posterior credible interval. 6-fold cross-validated check reveals that neither of the models overfitted. Thus, while the hierarchical model is slightly more computationally expensive, it yields better results.
-
 ### Interpreting the posterior
-
 We can see that the estimate of the workload parameter significantly differs from 0, as the 95 % and 80 % uncertainty intervals of the posterior draws of the parameter lay on the left of 0. We're thus able to proceed with substantive interpretation of the result.
 
 ``` {r interpreting_posterior2}
 # Parameters
 mcmc_areas_workload
-mcmc_intervals_workload
+# mcmc_intervals_workload
 ```
 
 The regression table is already transformed into odds from the log odds output of the model. At first glance, the results are in line with our theoretical predictions. The intercept is quite low as in the complete pool of cases, dissents are far few and between.
@@ -347,9 +322,8 @@ RQ3: The judges are less likely to dissent at the beginning of their dissents as
 We build on our previous model. We now know that the number of dissents of a judge rapporteur follows a Poisson distribution. We use a hierarchical model pooled on the judges. We have no knowledge whatsoever about the effect of start or end of term on the number of dissents, thus, we use only weakly informative priors. We have addressed the potential sources of bias with the workload as an explanatory variable above.
 
 ## Result
-### Model diagnosis
-We ran the model via Stan with 4 Monte Carlo Markov Chains (MCMC) of 20000 iterations each, the first 10000 warm up iterations being discarded. We did diagnosis of all the models. The trace plots reveal that the chains were stable and probed plausible parameter values, the density plots of the MCMC show that all 4 chains exhibited similar behavior, and the autocorrelation between the iterations always dropped quickly and that the chains were moving around the potential parameter values quickly.The posterior predictive check again reveals that our posterior model reasonably captures the underlying data.
 
+The posterior predictive check again reveals that our posterior model reasonably captures the underlying data.
 ``` {r posterior_check_term}
 pp_check_term
 ```
@@ -360,7 +334,7 @@ The parameters of both variables of interest turned out to be significantly diff
 
 ``` {r interpreting_posterior_term2}
 mcmc_areas_term
-mcmc_intervals_term
+# mcmc_intervals_term
 ```
 
 Consistently with the Epstein theory of collegiality costs of dissents, we find that the likelihood of dissenting is lower by ~20 % (*e*^-0.23^) during the first two years of judges' terms and that at the end of the judges' terms, their appetite for disagreement and dissent increases by roughly 14 % (*e*^-0.13^).
@@ -373,9 +347,7 @@ output_term %>%
 Our results are, again, consistent with those of Epstein et al. The model reveals that the judges seem to change their dissenting behavior depending on in which phase of their term do they find themselves.
 
 # The effect of plenary judicial coalitions on dissenting behavior in panels
-
 ## Theory of judicial coalitions at the CCC
-
 Lastly, we measure the impact of coalitions that formed in the plenary proceedings on the behavior of judges on the dissenting behavior of judges. According to Czech legal scholarship [@chmelCoOvlivnujeUstavni2021; @smekalMimopravniVlivyNa2021; @vartazaryanSitOvaAnalyza2022], two grand coalitions have formed on the third term of the CCC between 2013-2023. The articles rely primarily on network analysis of the dissenting opinions in the plenary proceedings. We do not intend to delve into validating their conclusions. 
 
 Rather, we test whether the presumable existence of the coalitions carry over to and have any effect on the dissenting behavior of judges in the panels. Consistent with our theoretical part, we believe that a dissenting opinion reflects disagreement on the judicial bench. Our intuition suggests that if indeed there are two coalitions in the plenary proceedings, which strongly disagree between each other, such a disagreement should, theoretically, carry over to the panel level. Our hypothesis is as follows:
@@ -383,13 +355,11 @@ Rather, we test whether the presumable existence of the coalitions carry over to
 RQ4: Judicial coalitions formed in the plenary proceedings affect the likelihood to dissent in 3-member panels. Having a panel composed of members of both judicial coalitions increases the disagreement on the bench and, thus, the likelihood of a dissent.
 
 ## Model
-
 Practically speaking, we mined the compositions of panels from the text of the decision in each and every decision. Following Chmel and Vartazaryan, we split the 3rd term CCC into two coalitions: the first coalition consisted of judges Kateřina Šimáčková, Vojtěch Šimíček, Ludvík David, Jaromír Jirsa, David Uhlíř, Jiří Zemánek, Tomáš Lichovník, Jan Filip, Milada Tomková and Pavel Šámal, whereas the second coalition of judges consisted of Radovan Suchánek, Vladimír Sládeček, Josef Fiala, Jan Musil, Jaroslav Fenyk, and Pavel Rychetský. The Vyhnánek article goes so far to coin the first coalition as a more left-leaning and the second as a more right-leaning.
 
 We filtered the 3-member panel on merits decisions^[At the 3-member panel level, procedural decisions have to be unanimous. Therefore, they do not leave any variation of dissenting behavior and we leave them out of the model.] of the 3rd term CCC and coded the following dummy variables. One dummy for each coalition, if all 3 members of the panel in any given decision were members of the same coalition. On top of that, our model included one dummy variable, if one member of the panel in the minority came from the other coalition of the 2 majority judges. The assignment to panels is as good as random, thus, there is no need to control for other covariates. Because our outcome of interest, the presence of a dissent in any given decision, is a binary variable, we opted for the binomial logistic regression model. For the model, we used weakly informative priors as we have no idea about the potential effect of having the two coalitions
 
 ## Results
-
 While at first glance, the results are along the lines of what we expected. The regression table is already transformed into odds from the log odds output of the model.
 
 ``` {r output_coalition, render = lemon_print}
@@ -399,7 +369,7 @@ output_coalition_panel
 The estimated odds of dissent are already pretty low, the predicted likelihood of dissent appearing in any 3-member panel decision on merits is ~3 % (which isn't at odds with our workload model, where the pool of considered decisions is slightly wider). In our data, there is not a single dissent among a panel composed of completely of members from the second coalition, which explains the 0. On the other hand, the full presence of the first coalition decreases the odds of dissent considerably by ~20 %. Lastly, the effects of having both panels mixed are in either case positive, the odds of both parameters are ~2.
 
 ``` {r interval_coalition}
-mcmc_intervals_coalition_panel
+# mcmc_intervals_coalition_panel
 mcmc_areas_coalition_panel
 ```
 

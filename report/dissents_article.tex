@@ -95,7 +95,7 @@
 \title{Why and when do (Czech) judges dissent: an empirical analysis of
 the Czech Constitutional Court}
 \author{true \and true}
-\date{August 28, 2023}
+\date{August 31, 2023}
 
 % Jesus, okay, everything above this comment is default Pandoc LaTeX template. -----
 % ----------------------------------------------------------------------------------
@@ -292,18 +292,9 @@ statistics, regression analysis \par
 
 \vskip -8.5pt
 
-{
-\hypersetup{linkcolor=black}
-\setcounter{tocdepth}{2}
-\tableofcontents
-}
 
  % removetitleabstract
 
-{
-\setcounter{tocdepth}{2}
-\tableofcontents
-}
 
 \setlength{\parindent}{16pt}
 \setlength{\parskip}{0pt}
@@ -673,6 +664,11 @@ by running posterior predictive checks and afterwards we will draw the
 parameters from the posterior distribution to see whether their
 distribution indeed looks similar to the ones reached by Epstein et al.
 
+The whole article is implemented in the R programming language and STAN
+software, connected via the RStan package. We include all the model
+specifications and diagnoses in the appendix. In this article, we mainly
+focus on the output of the models and the interpretation of thereof.
+
 \hypertarget{effect-of-presence-of-dissenting-opinion-on-the-length-of-majority-argumentation}{%
 \section{Effect of presence of dissenting opinion on the length of
 majority
@@ -978,50 +974,22 @@ outcome variable. Regarding the explanatory variables, we opted for
   year of the decision as a control variable.
 \end{enumerate}
 
-We conducted our analysis employing Bayesian regression implemented by
-the software Stan in R. We opted for a completely pooled model as the
-data did not contain any inherent structure (there were no clusters). At
-first glance, we assumed that
-
-\[
-Y | \lambda \sim Pois(\lambda)
-\]
-
-because our outcome variable of interest is a discrete count and the
-density plot of the length of court argumentation suggests so.
-
-\includegraphics{dissents_article_files/figure-latex/negbinom-1.pdf}
-
-However, as the posterior checking revealed, the Y was actually
-overdispersed and the Poisson regression was not able to capture the
-overdispersion. Therefore, we instead opted for the Negative Binomial
-model, which allows for relaxing the assumption of equality of variance
-of Y to its expected value. Thus, the explanatory variable, the number
-of words of argumentation of the CCC \emph{Y}
+We opted for a completely pooled model as the data did not contain any
+inherent structure (there were no clusters). We instead opted for the
+Negative Binomial model, which allows for relaxing the assumption of
+equality of variance of Y to its expected value in comparison to the
+Poisson model. Thus, the explanatory variable, the number of words of
+argumentation of the CCC \emph{Y}
 
 \[
 Y_{words} | \mu, r \sim NegBin(\mu, r)
 \] As for the priors, we based the priors on the Epstein results as well
-as a cursory exploratory peak into the data.
-
-\hypertarget{diagnosis}{%
-\subsubsection{Diagnosis}\label{diagnosis}}
-
-We ran the model via Stan with 4 Monte Carlo Markov Chains (MCMC) of
-20000 iterations each, the first 10000 warm up iterations being
-discarded. The trace plot shows that the chains were stable and probed
-plausible parameter values, the density plots of the MCMC show that all
-4 chains exhibited similar behavior, and the autocorrelation between the
-iterations always dropped quickly and that the chains were moving around
-the potential parameter values quickly.
-
-The posterior diagnosis confirms that although the simulations are not
-perfect, they do reasonably capture the features of the observed number
-of words of court arguments. In other words, we selected the correct
-model and the priors are not too off either. Thus, our Negative Binomial
-regression assumptions are reasonable.
-
-\includegraphics{dissents_article_files/figure-latex/pp_check_negbinom-1.pdf}
+as a cursory exploratory peak into the data. All our priors follow a
+normal distribution, the intercept being centered around the population
+mean. The remaining priors were kept uninformative, because we simply
+have no previous knowledge on the CCC. The negative binomial family
+employs a log link, therefore the resulting estimates have to be
+interpreted as such.
 
 \hypertarget{posterior-interpretation}{%
 \subsubsection{Posterior
@@ -1032,10 +1000,9 @@ Parameters of all variables of interest are significantly different from
 posterior credible intervals.
 
 \includegraphics{dissents_article_files/figure-latex/length_parameter_plots-1.pdf}
-\includegraphics{dissents_article_files/figure-latex/length_parameter_plots-2.pdf}
 
 Even after controlling for all potential observable confounding
-variables, the regression table looks as follows
+variables, the already unlogged regression table looks as follows
 
 \begin{longtable}[]{@{}lrrrr@{}}
 \toprule\noalign{}
@@ -1196,38 +1163,6 @@ Y | \pi \sim Bern(\pi)
 \hypertarget{result-1}{%
 \subsection{Result}\label{result-1}}
 
-\hypertarget{model-diagnosis}{%
-\subsubsection{Model diagnosis}\label{model-diagnosis}}
-
-We tried two models, a completely pooled and hierarchical model
-clustered around the judges. The main difference between the two models
-is that the former model completely ignores individual intercept. The
-latter allows for differentiating intercepts between the groups (in our
-case the individual judges) and the global intercept. The global
-parameter of interest is then informed both by the global trends as well
-as the individual intercepts. That can usually lead to higher accuracy
-in case of structured or time series data at the cost of higher
-computational expenses.
-
-We ran both the models via Stan with 4 Monte Carlo Markov Chains (MCMC)
-of 20000 iterations each, the first 10000 warm up iterations being
-discarded. We did a diagnosis of all the models. In all cases, the trace
-plots show that the chains were stable and probed plausible parameter
-values, the density plots of the MCMC show that all 4 chains exhibited
-similar behavior, and the autocorrelation between the iterations always
-dropped quickly and that the chains were moving around the potential
-parameter values quickly.
-
-We now compare the pooled against the hierarchical models. The former
-model got the posterior prediction 1.2 of the number of dissents per
-judge wrong (0.84 standard deviations off), whereas the former model got
-the posterior prediction wrong only by 0.94 of the number of dissents
-per judge (0.7 standard deviations off), with 99 \% of the predictions
-falling within the 95 \% posterior credible interval. 6-fold
-cross-validated check reveals that neither of the models overfitted.
-Thus, while the hierarchical model is slightly more computationally
-expensive, it yields better results.
-
 \hypertarget{interpreting-the-posterior}{%
 \subsubsection{Interpreting the
 posterior}\label{interpreting-the-posterior}}
@@ -1238,7 +1173,6 @@ posterior draws of the parameter lay on the left of 0. We're thus able
 to proceed with substantive interpretation of the result.
 
 \includegraphics{dissents_article_files/figure-latex/interpreting_posterior2-1.pdf}
-\includegraphics{dissents_article_files/figure-latex/interpreting_posterior2-2.pdf}
 
 The regression table is already transformed into odds from the log odds
 output of the model. At first glance, the results are in line with our
@@ -1316,19 +1250,8 @@ above.
 \hypertarget{result-2}{%
 \subsection{Result}\label{result-2}}
 
-\hypertarget{model-diagnosis-1}{%
-\subsubsection{Model diagnosis}\label{model-diagnosis-1}}
-
-We ran the model via Stan with 4 Monte Carlo Markov Chains (MCMC) of
-20000 iterations each, the first 10000 warm up iterations being
-discarded. We did diagnosis of all the models. The trace plots reveal
-that the chains were stable and probed plausible parameter values, the
-density plots of the MCMC show that all 4 chains exhibited similar
-behavior, and the autocorrelation between the iterations always dropped
-quickly and that the chains were moving around the potential parameter
-values quickly.The posterior predictive check again reveals that our
-posterior model reasonably captures the underlying data.
-
+The posterior predictive check again reveals that our posterior model
+reasonably captures the underlying data.
 \includegraphics{dissents_article_files/figure-latex/posterior_check_term-1.pdf}
 
 \hypertarget{interpreting-the-posterior-1}{%
@@ -1340,7 +1263,6 @@ significantly differing from zero. Therefore, we're able to draw
 conclusions from our model.
 
 \includegraphics{dissents_article_files/figure-latex/interpreting_posterior_term2-1.pdf}
-\includegraphics{dissents_article_files/figure-latex/interpreting_posterior_term2-2.pdf}
 
 Consistently with the Epstein theory of collegiality costs of dissents,
 we find that the likelihood of dissenting is lower by \textasciitilde20
@@ -1458,7 +1380,6 @@ having both panels mixed are in either case positive, the odds of both
 parameters are \textasciitilde2.
 
 \includegraphics{dissents_article_files/figure-latex/interval_coalition-1.pdf}
-\includegraphics{dissents_article_files/figure-latex/interval_coalition-2.pdf}
 
 Interpreting the repercussions for theory is quite difficult, especially
 given the lack of data on the second, more conservative coalition and
