@@ -83,8 +83,11 @@ mcmc_acf(model_coalition_panel)
 # Parameters
 mcmc_dens_coalition_panel = mcmc_dens_overlay(model_coalition_panel)
 mcmc_areas_coalition_panel = mcmc_areas(model_coalition_panel) +
-  labs(title = "Density plot of estimates of parameters of our model",
-       subtitle = "The inner area is for 50 % posterior credible interval, the outer for 95 %")
+  labs(title = "Fig. 6: Density plot of estimates of parameters of our model",
+       subtitle = "The inner area is for 50 % posterior credible interval, the outer for 95 %")  +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
+mcmc_areas_coalition_panel
 mcmc_dens(model_coalition_panel)
 
 mcmc_intervals_coalition_panel = mcmc_intervals(model_coalition_panel)  +

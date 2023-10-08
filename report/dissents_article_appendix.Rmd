@@ -1,5 +1,5 @@
 ---
-štěoutput: 
+output: 
   stevetemplates::article2:
     keep_tex: true
     toc: true
@@ -45,6 +45,21 @@ load(file = "../models/models_fitted_coalition_panel.RData")
 \vspace{30pt}
 
 This is an appendix, in which we diagnose and compare the models from our main article and explain our choices in higher detail.
+
+In this article, we utilize Bayesian regression analyses. In other words, we rely on quantitative methods of social science research. That is not without its limits. To not rely on one methodological approach, we set this article into a broader mixed effects effort. We conducted semi-structured interviews with the CCC judges to gain deeper understanding of the judicial behavior, to paint more details to our quantitative effort, and to help with further development of our theory. Parts of the interviews mirror our findings in this article. To name an example, in the interviews, we inquire into the effect of the coalitions at the CCC, whose effect we measure in the last part of this article. In terms of the output of our effort, we divide it into two articles: one utilizing the quantitative methods, the other utilizing qualitative methods.
+
+# Bayesian framework
+Without delving too much into the Bayesian versus frequentist statistics, we opt for the Bayesian framework for it, we believe, reflects better our understanding of probability and scientific inquiry. There are two major differences in understanding of concepts between the two approaches towards statistics: that of role of prior knowledge and that of probability. 
+
+In the frequentist framework, prior knowledge does not play too much of a role and the inference is shaped solely by the observed data, whereas in the Bayesian framework prior knowledge is updated with new data to form new posterior conclusions. In other words, the Bayesian statistician concerns themselves not with the uncertainty of the data but also with how it fits into his prior knowledge.
+
+That is reflected in different understandings of probability. The frequentist understanding of probability refers to the long-run relative frequency of a repeatable event. In other words, the main concern of frequentist statistics is what would the frequency of any event be if we could repeat it as many times as possible. The Bayesian probability measures the relative plausibility of an event [@johnsonBayesRulesIntroduction2022].
+
+Science in general is based on the frequentist framework. The typical quantitative studies  are driven by finding a low enough p-value, i.e., the measure of probability of having observed data as or more extreme than the observed data if in fact the original null hypothesis is incorrect. In simple terms, the search for statistical significance is a search for data so unlikely to have occurred due to chance, even if we could gather them again and again.
+
+The Bayesian framework rather than measuring the uncertainty about observed data measures the uncertainty of the parameters of interests, given the observed data and our prior knowledge. In simple terms, the Bayesian statistician puts into doubt their conclusions about parameters of a certain model, given the observed data and their prior knowledge. Mathematically, the uncertainty is reflected in the fact that the posterior parameters are drawn from a posterior distribution of the model and are just an approximation of thereof in the form of probability density function rather than a single value. The posterior distribution of a parameter comes from simulating in our case 40000 (4 chains*10000 simulations) possible posterior models via the Monte Carlo Markov Chain simulations.
+
+The Lee Epstein et al. original study employs the frequentist framework and hence they report statistically significant relationships between the variables of interest. Our approach will be Bayesian. We will firstly see whether the employed models actually make sense for the data by running posterior predictive checks and afterwards we will draw the parameters from the posterior distribution to see whether their distribution indeed looks similar to the ones reached by Epstein et al.
 
 # Model 1: Effect of presence of dissenting opinion on the length of majority argumentation
 ## Caselaw partitioning classification

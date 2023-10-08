@@ -15,13 +15,10 @@ library(parallel)
 library(multilevelmod)
 tidymodels_prefer()
 library(doMC)
+library(patchwork)
 registerDoMC(cores = parallel::detectCores() - 2)
 
-data_metadata = readr::read_rds("../data/US_metadata.rds") %>%
-  mutate(year_submission = year(date_submission),
-         year_decision = year(date_decision)) %>%
-  filter(!grepl(pattern = "procesní", x = .$type_verdict)) %>%
-  filter(formation %in% "Plenum")
+chains = 4L
 
 #Load data filter all Plenum decisions and chamber decisions on merits
 data_metadata = readr::read_rds("../data/US_metadata.rds") %>%
@@ -29,12 +26,8 @@ data_metadata = readr::read_rds("../data/US_metadata.rds") %>%
          year_decision = year(date_decision)) %>%
   filter(!grepl(pattern = "procesní", x = .$type_verdict)) %>%
   filter(formation == "Plenum" | (formation %in% c("First Chamber", "Second Chamber", "Third Chamber") & type_decision != "Usnesení"))
-  
-data_dissents = readr::read_rds("../data/US_dissents.rds")
 
-# remove(data_citations, data_metadata, data_dissents, data_judges)
-# Set the number of chains & cores
-chains = 4L
+data_dissents = readr::read_rds("../data/US_dissents.rds")
 
 # RQ1: LENGTH X DISSENT
 data_length = readr::read_rds(file = "../data/data_paragraphs_classified.rds") %>%
@@ -54,15 +47,57 @@ data_length = readr::read_rds(file = "../data/data_paragraphs_classified.rds") %
   one_dissent = if_else(count_dissents == 1, 1, 0),
   more_dissent = if_else(count_dissents > 1, 1, 0),
   type_decision = factor(type_decision)) %>%
-  select(-count_dissents)
+  select(-count_dissents) %>%
+  left_join(., read_rds("../data/US_citations.rds") %>%
+              group_by(doc_id) %>%
+              count() %>%
+              rename(n_citations = n)) %>%
+  mutate(n_citations = replace_na(n_citations, 0))
 
 data_length %>%
   ggplot(aes(x = argument_length)) +
   geom_density()
 
+# Test correlation between importance proxied by number of citations and by formation of the CC
+final_distributions = inner_join(
+  readr::read_rds("../data/US_metadata.rds") %>%
+    mutate(year_submission = year(date_submission),
+           year_decision = year(date_decision)) %>%
+    select(formation) %>%
+    drop_na() %>%
+    mutate(formation = case_when(
+      formation == "Plenum" ~ "Plenary",
+      .default = "Panel"
+    )) %>%
+    group_by(formation) %>%
+    summarise(Count_total = n()) %>%
+    mutate(Percent_total = paste(round(
+      100 * Count_total / sum(Count_total), 1
+    ), "%")),
+  readr::read_rds("../data/US_citations.rds") %>%
+    left_join(
+      .,
+      y = readr::read_rds("../data/US_metadata.rds") %>%
+        select(case_id, formation),
+      by = join_by(matched_case_id == case_id)
+    ) %>%
+    drop_na() %>%
+    mutate(formation = case_when(
+      formation == "Plenum" ~ "Plenary",
+      .default = "Panel"
+    )) %>%
+    group_by(formation) %>%
+    summarise(Count_cited = n()) %>%
+    mutate(Percent_cited = paste(round(
+      100 * Count_cited / sum(Count_cited), 1
+    ), "%")),
+  by = join_by(formation)
+)
+final_distributions
+
 # Prior intercept mean - the length of a typical decision
 prior_intercept = log(mean(data_length$argument_length))
-  
+
 # All models
 com_pooled_mod_length_neg2 = linear_reg() %>%
   set_engine("stan",
@@ -75,7 +110,7 @@ com_pooled_mod_length_neg2 = linear_reg() %>%
              prior_aux = exponential(1, autoscale = TRUE),
              cores = chains) %>%
   set_mode("regression") %>% 
-  fit(argument_length ~ one_dissent + more_dissent + formation + type_decision, data = data_length) %>% 
+  fit(argument_length ~ one_dissent + more_dissent + formation + n_citations, data = data_length) %>% 
   extract_fit_engine()
 
 com_pooled_mod_length_poisson = linear_reg() %>%
@@ -87,8 +122,8 @@ com_pooled_mod_length_poisson = linear_reg() %>%
              iter = 5000*2, 
              seed = 84735, cores = chains) %>%
   set_mode("regression") %>% 
-  fit(argument_length ~ one_dissent + more_dissent + formation + type_decision, data = data_length) %>% 
-  extract_fit_engine() 
+  fit(argument_length ~ one_dissent + more_dissent + formation + n_citations, data = data_length) %>% 
+  extract_fit_engine()
 
 # MCMC Diagnosis
 mcmc_trace(com_pooled_mod_length_neg2)
@@ -97,9 +132,9 @@ mcmc_acf(com_pooled_mod_length_neg2, pars = c("one_dissent","more_dissent"))
 # Posterior diagnosis
 pp_check_length_negbinom = pp_check(com_pooled_mod_length_neg2) +
   xlim(0,20000) +
-  labs(x = "words of the majority opinion argumentation",
-       title = "Posterior predictive check of the Negative Binomial model",
-       subtitle = "Dependence of length of majority opinion argumentation on presence of dissenting opinion")
+  labs(x = "Words of the majority opinion argumentation",
+       title = "Fig 1: Posterior predictive check of the Negative Binomial model") +
+  theme(plot.title = element_text(hjust = 0.5))
 pp_check_length_negbinom
 
 
@@ -114,15 +149,20 @@ prediction_summary(model = com_pooled_mod_length_neg2, data = data_length)
 prediction_summary_cv_length = prediction_summary_cv(model = com_pooled_mod_length_neg2, data = data_length, k = 10)
 
 # Parameters
-mcmc_dens_overlay(com_pooled_mod_length_neg2, pars = c("one_dissent","more_dissent"))
 mcmc_areas_length = mcmc_areas(com_pooled_mod_length_neg2, pars = c("one_dissent","more_dissent")) +
-  labs(title = "Density plot of estimates of parameters of one or two and more dissents ",
-       subtitle = "The inner area is for 50 % posterior credible interval, the outer for 95 %")
-mcmc_dens(com_pooled_mod_length_neg2, pars = c("one_dissent","more_dissent"))
+  labs(title = "Fig 2: Density plot of estimates of parameters of one or two and more dissents",
+       subtitle = "The inner area is for 50 % posterior credible interval, the outer for 95 %") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
+mcmc_areas_length
 
-mcmc_intervals_length = mcmc_intervals(com_pooled_mod_length_neg2, pars = c("one_dissent","more_dissent")) +
-  labs(title = "Plot of uncertainty intervals of estimates of parameters of one or two and more dissents ",
-       subtitle = "The inner whisker is for 50 % posterior credible interval, the outer for 95 %")
+# mcmc_intervals_length = mcmc_intervals(com_pooled_mod_length_neg2, pars = c("one_dissent","more_dissent")) +
+#   labs(title = "Fig 3: Plot of uncertainty intervals of estimates of parameters of one or two and more dissents ",
+#        subtitle = "The inner whisker is for 50 % posterior credible interval, the outer for 95 %") +
+#   theme(plot.title = element_text(hjust = 0.5),
+#         plot.subtitle = element_text(hjust = 0.5))
+# mcmc_intervals_length
+
 
 # Save the output parameters of the model
 output_length = tidy(com_pooled_mod_length_neg2, 
@@ -131,7 +171,7 @@ output_length = tidy(com_pooled_mod_length_neg2,
   mutate(across(where(is.numeric), ~exp(.x))) %>%
   mutate(across(where(is.numeric), ~round(.x, digits = 2)))
 output_length
-  
+
 
 negbin_distribution = data_length %>%
   ggplot(aes(x = argument_length)) +

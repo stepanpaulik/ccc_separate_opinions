@@ -171,10 +171,7 @@ analysis of the Czech Constitutional Court }
 \makeatother
 \hypersetup{breaklinks=true,
             bookmarks=true,
-            pdfauthor={Štěpán Paulík (Humboldt Universität zu Berlin,
-\href{mailto:stepan.paulik.1@hu-berlin.de}{\nolinkurl{stepan.paulik.1@hu-berlin.de}}) and Gor
-Vartazaryan (Charles University,
-\href{mailto:gorike2000@gmail.com}{\nolinkurl{gorike2000@gmail.com}})},
+            pdfauthor={Author 1 () and Author 2 ()},
              pdfkeywords = {empirical legal research, courts, dissents,
 judicial behavior, political science, Bayesian statistics, regression
 analysis},
@@ -242,10 +239,8 @@ quantitative empirical analysis of the Czech Constitutional Court},
 
 {
    \vskip 13.5pt\relax \normalsize\fontsize{11}{12}
-   \MakeUppercase{Štěpán Paulík}, \small{Humboldt Universität zu Berlin,
-\href{mailto:stepan.paulik.1@hu-berlin.de}{\nolinkurl{stepan.paulik.1@hu-berlin.de}}}   \par \vskip -3.5pt \MakeUppercase{Gor
-Vartazaryan}, \small{Charles University,
-\href{mailto:gorike2000@gmail.com}{\nolinkurl{gorike2000@gmail.com}}}   
+   \MakeUppercase{Author
+1}, \small{}   \par \vskip -3.5pt \MakeUppercase{Author 2}, \small{}   
 
 }
 
@@ -295,18 +290,9 @@ statistics, regression analysis \par
 
 \vskip -8.5pt
 
-{
-\hypersetup{linkcolor=black}
-\setcounter{tocdepth}{2}
-\tableofcontents
-}
 
  % removetitleabstract
 
-{
-\setcounter{tocdepth}{2}
-\tableofcontents
-}
 
 \setlength{\parindent}{16pt}
 \setlength{\parskip}{0pt}
@@ -631,17 +617,17 @@ the tidymodels framework. We include all the model specifications and
 diagnoses in the appendix. In this article, we mainly focus on the
 output of the models and the interpretation of thereof.
 
-The data used for our analysis comprises the dataset CCC decisions. The
-Czech Apex Court dataset was built by Štěpán Paulík and includes
-complete database of decisions of the CCC, SAC and the Czech Supreme
-Court, including comprehensive metadata, text corpus, as well as
-additional information mined from the texts or publicly available
-sources, such as case references, compositions, or background
-information of the judges. The analysis was limited up until the end of
-2022. We filtered only those decisions, where a variation in the
-dissenting behavior could procedurally be observed: procedural decisions
-were filtered out as they require unanimity among the judges and do not
-leave any space for disagreement.
+The Czech Apex Court dataset used for our analysis comprises the dataset
+CCC decisions. The Czech Apex Court dataset includes complete database
+of decisions of the CCC, SAC and the Czech Supreme Court, including
+comprehensive metadata, text corpus, as well as additional information
+mined from the texts or publicly available sources, such as case
+references, compositions, or background information of the judges. The
+analysis was limited up until the end of 2022. We filtered only those
+decisions, where a variation in the dissenting behavior could
+procedurally be observed: procedural decisions were filtered out as they
+require unanimity among the judges and do not leave any space for
+disagreement.
 
 \hypertarget{model-specifications-and-results}{%
 \section{Model specifications and
@@ -866,7 +852,7 @@ model did a resonable job of predicting the underlying data.
 
 \vspace{10pt}
 
-\includegraphics{dissents_article_files/figure-latex/length_pp_check-1.pdf}
+\includegraphics{dissents_article-anonymised_files/figure-latex/length_pp_check-1.pdf}
 
 Parameters of both variables of interest are significantly different
 from 0 as revealed by the density with 80 \% and 95 \% posterior
@@ -874,7 +860,7 @@ credible intervals.
 
 \vspace{10pt}
 
-\includegraphics{dissents_article_files/figure-latex/length_parameter_plots-1.pdf}
+\includegraphics{dissents_article-anonymised_files/figure-latex/length_parameter_plots-1.pdf}
 
 Even after controlling for all potential observable confounding
 variables, the already unlogged regression table looks as follows
@@ -986,7 +972,7 @@ judges increases over time and so does the number of dissents.
 
 \vspace{10pt}
 
-\includegraphics{dissents_article_files/figure-latex/caseload_over_time-1.pdf}
+\includegraphics{dissents_article-anonymised_files/figure-latex/caseload_over_time-1.pdf}
 We opt for the Bayesian logistic regression model because the dependent
 variable is a binomial variable with 1 trial, i.e.~our \emph{Y}, the
 decision to dissent or not to dissent of a judge in any given decision:
@@ -1013,7 +999,7 @@ to proceed with substantive interpretation of the result.
 
 \vspace{10pt}
 
-\includegraphics{dissents_article_files/figure-latex/interpreting_posterior2-1.pdf}
+\includegraphics{dissents_article-anonymised_files/figure-latex/interpreting_posterior2-1.pdf}
 
 The regression table is already transformed into odds from the log odds
 output of the model. At first glance, the results are in line with our
@@ -1074,7 +1060,7 @@ conclusions from our model.
 
 \vspace{10pt}
 
-\includegraphics{dissents_article_files/figure-latex/interpreting_posterior_term2-1.pdf}
+\includegraphics{dissents_article-anonymised_files/figure-latex/interpreting_posterior_term2-1.pdf}
 
 Even if we attempted to interpret the results, the results would be
 consistent with the original. The model reveals the trend that the
@@ -1166,7 +1152,7 @@ parameters are \textasciitilde2.
 
 \vspace{10pt}
 
-\includegraphics{dissents_article_files/figure-latex/interval_coalition-1.pdf}
+\includegraphics{dissents_article-anonymised_files/figure-latex/interval_coalition-1.pdf}
 
 Interpreting the repercussions for theory is quite difficult, especially
 given the lack of data on the second and given the rather large standard

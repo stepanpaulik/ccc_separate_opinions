@@ -26,9 +26,10 @@ data_dissents = readr::read_rds("../data/US_dissents.rds") %>%
   left_join(., readr::read_rds("../data/US_metadata.rds") %>%
               mutate(year_submission = year(date_submission),
                      year_decision = year(date_decision)) %>% select(doc_id, formation, year_decision)) %>%
-  filter(year_decision < 2023) %>%
+  filter(year_decision < 2023 & formation == "Plenum") %>%
   group_by(dissenting_judge, year_decision) %>%
-  summarise(count_dissents = n())
+  summarise(count_dissents = n()) %>%
+  ungroup()
 
 data_term = readr::read_rds("../data/US_judges.rds") %>%
   mutate(end = case_when(
@@ -70,25 +71,40 @@ model_hierarchical_term = linear_reg() %>%
 mcmc_trace(model_hierarchical_term)
 mcmc_acf(model_hierarchical_term)
 
+# Posterior diagnosis
+pp_check_term = pp_check(model_hierarchical_term) +
+  labs(x = "Dissent count",
+       title = "Fig 5: Posterior predictive check of the start and end of terms model") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
+pp_check_term
+
 # Parameters
 mcmc_dens_term = mcmc_dens_overlay(model_hierarchical_term, pars = c("start_term", "end_term"))   +
   labs(title = "Density plot of estimates of parameters of start and end of a judge's term",
-       subtitle = "The inner area is for 50 % posterior credible interval, the outer for 95 %")
-mcmc_areas_term = mcmc_areas(model_hierarchical_term, pars = c("start_term", "end_term"))
+       subtitle = "The inner area is for 50 % posterior credible interval, the outer for 95 %") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
+mcmc_dens_term
+mcmc_areas_term = mcmc_areas(model_hierarchical_term, pars = c("start_term", "end_term"))  +
+  labs(title = "Fig. 5: Density plot of estimates of parameters of start and end of the term",
+       subtitle = "The inner area is for 50 % posterior credible interval, the outer for 95 %")  +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
+mcmc_areas_term
 mcmc_dens(model_hierarchical_term, pars = c("start_term", "end_term"))
 
 mcmc_intervals_term = mcmc_intervals(model_hierarchical_term, pars = c("start_term", "end_term"))  +
   labs(title = "Plot of uncertainty intervals of estimates of parameters of start and end of a judge's term",
        subtitle = "The inner whisker is for 50 % posterior credible interval, the outer for 95 %")
+mcmc_intervals_term
 
 output_term = tidy(model_hierarchical_term, conf.int = TRUE, conf.level = 0.8, effects = "fixed") %>%
   mutate(across(where(is.numeric), ~exp(.x))) %>%
   mutate(across(where(is.numeric), ~round(.x, digits = 2)))
+output_term
 
-# Posterior diagnosis
-pp_check_term = pp_check(model_hierarchical_term) +
-  labs(x = "Dissent count",
-       title = "Posterior predictive check of the start and end of terms model")
+
 
 data_term %>% 
   add_epred_draws(object = model_hierarchical_term, ndraws = 4) %>%

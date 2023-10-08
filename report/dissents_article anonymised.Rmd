@@ -2,17 +2,14 @@
 output: 
   stevetemplates::article2:
     keep_tex: true
-    toc: true
     number_sections: true
   word_document:
       reference_docx: word_style.docx
   distill::distill_article: default
 title: "Disagreement and dissent on a bench: a quantitative empirical analysis of the Czech Constitutional Court"
 author:
-- name: Štěpán Paulík
-  affiliation: Humboldt Universität zu Berlin, stepan.paulik.1@hu-berlin.de
-- name: Gor Vartazaryan
-  affiliation: Charles University, gorike2000@gmail.com
+- name: "Author 1"
+- name: "Author 2"
 abstract: "The decision of a judge to dissent or not to dissent opens up avenue for strategical considerations. Building on the economic-strategic account of judicial behavior developed by Lee Epstein, Richard A. Posner and William M. Landes, we develop and test multiple hyptotheses on the Czech Constitutional Court. To test the hypotheses, we utilize Bayesian regression analyses. We find that the workload of a judge does affect their dissenting behavior as previous research in the US context suggests. We also find that a dissent imputes substantial costs on the majority that produces longer arguments to address a dissent, the effect being stronger the more disagreement there is on the bench. Thirdly, we find that dissents bring about significant collegiality costs to the dissenter. Lastly, we confirm the carry over effect of alleged judicial coalitions formed in the plenary proceedings to the 3-member panel proceedings. Simply put, CCC judges are more likely to disagree when sitting on a bench with members from both coalitions."
 keywords: "empirical legal research, courts, dissents, judicial behavior, political science, Bayesian statistics, regression analysis"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
@@ -113,7 +110,7 @@ Our study deviates in that we utilize the *Bayesian* rather than *frequentist* f
 
 The Basian computations are implemented in the R programming language and STAN software, connected via the RStan package and utilized within the tidymodels framework. We include all the model specifications and diagnoses in the appendix. In this article, we mainly focus on the output of the models and the interpretation of thereof.
 
-The data used for our analysis comprises the dataset CCC decisions. The Czech Apex Court dataset was built by Štěpán Paulík and includes complete database of decisions of the CCC, SAC and the Czech Supreme Court, including comprehensive metadata, text corpus, as well as additional information mined from the texts or publicly available sources, such as case references, compositions, or background information of the judges. The analysis was limited up until the end of 2022. We filtered only those decisions, where a variation in the dissenting behavior could procedurally be observed: procedural decisions were filtered out as they require unanimity among the judges and do not leave any space for disagreement.
+The Czech Apex Court dataset used for our analysis comprises the dataset CCC decisions. The Czech Apex Court dataset includes complete database of decisions of the CCC, SAC and the Czech Supreme Court, including comprehensive metadata, text corpus, as well as additional information mined from the texts or publicly available sources, such as case references, compositions, or background information of the judges. The analysis was limited up until the end of 2022. We filtered only those decisions, where a variation in the dissenting behavior could procedurally be observed: procedural decisions were filtered out as they require unanimity among the judges and do not leave any space for disagreement.
 
 # Model specifications and results
 ## H~1~: Effect of presence of dissenting opinion on the length of majority argumentation
