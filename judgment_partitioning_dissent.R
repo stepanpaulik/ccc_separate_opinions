@@ -164,9 +164,32 @@ model_dissents = wflow_set_tune %>%
 predicted = augment(model_dissents, data_dissent)
 
 
-save.image("models/partinitioning_dissents.RData")
-readr::write_rds(model_dissents, file = "models/model_dissents.rds")
+# save.image("models/partinitioning_dissents.RData")
+# readr::write_rds(model_dissents, file = "models/model_dissents.rds")
 load("models/partinitioning_dissents.RData")
+
+# DATA for appendix
+appendix_conf_mat_dissent = final_wflow_aug %>%
+  conf_mat(truth = class, .pred_class)  %>% 
+  autoplot(type = "mosaic")
+
+appendix_conf_mat_dissent
+
+# Some basic comparison of models RESULT OF cross-validation
+appendix_tuning_comp_dissent = wflow_set_tune %>% 
+  rank_results() %>% 
+  filter(.metric == c("accuracy")) %>% 
+  select(model, .config, accuracy = mean, rank)
+
+appendix_tuning_comp_dissent
+
+# Final fit
+appendix_final_fit = collect_metrics(final_wflow)
+appendix_final_fit
+
+to_remove = ls()
+rm(list=to_remove[!grepl("^appendix_", to_remove)])
+save.image(file = "models/appendix_classification_dissent.RData")
   
 
 

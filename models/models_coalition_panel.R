@@ -82,11 +82,7 @@ mcmc_acf(model_coalition_panel)
 
 # Parameters
 mcmc_dens_coalition_panel = mcmc_dens_overlay(model_coalition_panel)
-mcmc_areas_coalition_panel = mcmc_areas(model_coalition_panel) +
-  labs(title = "Fig. 6: Density plot of estimates of parameters of our model",
-       subtitle = "The inner area is for 50 % posterior credible interval, the outer for 95 %")  +
-  theme(plot.title = element_text(hjust = 0.5),
-        plot.subtitle = element_text(hjust = 0.5))
+mcmc_areas_coalition_panel = mcmc_areas(model_coalition_panel)
 mcmc_areas_coalition_panel
 mcmc_dens(model_coalition_panel)
 
@@ -95,6 +91,12 @@ mcmc_intervals_coalition_panel = mcmc_intervals(model_coalition_panel)  +
        subtitle = "The inner whisker is for 50 % posterior credible interval, the outer for 95 %")
 
 pp_check_coalition_panel = pp_check(model_coalition_panel)
+pp_check_coalition_panel
+
+prediction_summary_coalition_panel = prediction_summary(model = model_coalition_panel, data = data_coalition_panel) %>%
+  mutate(model = "pooled_coalition") %>%
+  relocate(model, .before = mae)
+prediction_summary_coalition_panel
 
 output_coalition_panel = tidy(model_coalition_panel, conf.int = TRUE, conf.level = 0.8, effects = "fixed") %>%
   mutate(across(where(is.numeric), ~exp(.x))) %>%
@@ -103,9 +105,11 @@ output_coalition_panel = tidy(model_coalition_panel, conf.int = TRUE, conf.level
   
 output_coalition_panel
 
-
+# SAVE data
 rm(list=ls(pattern="^data_"))
 save.image(file = "models/models_fitted_coalition_panel.RData")
+
+# LOAD data
 load(file = "models/models_fitted_coalition_panel.RData")
 
 

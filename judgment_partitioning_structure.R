@@ -21,7 +21,7 @@ metadata = readr::read_rds("../data/US_metadata.rds")
 # For the remaining classes classification
 data_structure = data %>% 
   filter(!class %in% c("dissent", "costs")) %>%
-  remove_dissents_recalculate() %>%
+  remove_structures_recalculate() %>%
   mutate(class = case_when(
     class == "comments" ~ "procedure history",
     .default = class
@@ -167,6 +167,29 @@ model_structure = wflow_set_tune %>%
   fit(data_structure)
 
 
-save.image("models/partinitioning_structure.RData")
-readr::write_rds(model_structure, file = "models/model_structure.rds")
+# save.image("models/partinitioning_structure.RData")
+# readr::write_rds(model_structure, file = "models/model_structure.rds")
 load("models/partinitioning_structure.RData")
+
+
+# DATA for appendix
+appendix_conf_mat_structure = final_wflow_aug %>%
+  conf_mat(truth = class, .pred_class)
+
+appendix_conf_mat_structure
+
+# Some basic comparison of models RESULT OF cross-validation
+appendix_tuning_comp_structure = wflow_set_tune %>% 
+  rank_results() %>% 
+  filter(.metric == c("precision")) %>% 
+  select(model, .config, precision = mean, rank)
+
+appendix_tuning_comp_structure
+
+# Final fit
+appendix_final_fit_structure = collect_metrics(final_wflow)
+appendix_final_fit_structure
+
+to_remove = ls()
+rm(list=to_remove[!grepl("^appendix_", to_remove)])
+save.image(file = "models/appendix_classification_structure.RData")

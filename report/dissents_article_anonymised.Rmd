@@ -10,7 +10,7 @@ title: "Disagreement and dissent on a bench: a quantitative empirical analysis o
 author:
 - name: "Author 1"
 - name: "Author 2"
-abstract: "The decision of a judge to dissent or not to dissent opens up avenue for strategical considerations. Building on the economic-strategic account of judicial behavior developed by Lee Epstein, Richard A. Posner and William M. Landes, we develop and test multiple hyptotheses on the Czech Constitutional Court. To test the hypotheses, we utilize Bayesian regression analyses. We find that the workload of a judge does affect their dissenting behavior as previous research in the US context suggests. We also find that a dissent imputes substantial costs on the majority that produces longer arguments to address a dissent, the effect being stronger the more disagreement there is on the bench. Thirdly, we find that dissents bring about significant collegiality costs to the dissenter. Lastly, we confirm the carry over effect of alleged judicial coalitions formed in the plenary proceedings to the 3-member panel proceedings. Simply put, CCC judges are more likely to disagree when sitting on a bench with members from both coalitions."
+abstract: "Building on the economic-strategic account of judicial behavior developed by Epstein, Posner and Landes, we develop and test multiple hyptotheses on the Czech Constitutional Court utilizing Bayesian regression analyses. We find that the workload of a judge does affect their dissenting behavior, that a dissent imputes costs on the majority that produces longer arguments to address a dissent, the effect being stronger the more disagreement there is on the bench, that dissents bring about significant collegiality costs to the dissenter. Lastly, we confirm the carry over effect of alleged judicial coalitions formed in the plenary proceedings to 3-member panel proceedings."
 keywords: "empirical legal research, courts, dissents, judicial behavior, political science, Bayesian statistics, regression analysis"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 geometry: margin=1in
@@ -42,12 +42,19 @@ load(file = "../models/models_fitted_length_dissent.RData")
 load(file = "../models/models_fitted_workload_dissent.RData")
 load(file = "../models/models_fitted_term_dissent.RData")
 load(file = "../models/models_fitted_coalition_panel.RData")
+
+library(knitr)
+if(is_latex_output()) {
+  plot_default <- knit_hooks$get("plot")
+  knit_hooks$set(plot = function(x, options) { 
+    x <- c(plot_default(x, options), "\\vspace{25pt}")
+  })
+}
 ```
 
-\vspace{30pt}
+\vspace{25pt}
 
 # Introduction
-
 Empirical legal research has been slowly but surely finding it's outside the predominant US context. Historically though most of the empirical studies have been conducted in the US, especially the Supreme Court, context [such as @boydUntanglingCausalEffects2010; @carrubbaWhoControlsContent2012; @epsteinWhyWhenJudges2011]. We now know that judgments are what judges had for a breakfast. Put less pompously, there are many theories and approaches for explanation of judicial behavior [@posnerHowJudgesThink2010]. What we do not know is the extent to which these theories and explanations carry over to other legal systems and context.
 
 In our article, we set out to conduct an empirical research into the circumstances of disagreement on a court bench, more specifically whether Czech constitutional justices behave strategically in when and under what circumstances they dissent and whether there is an interplay between the behavior at different institutional level within the Czech Constitutional Court ("CCC"). 
@@ -56,7 +63,7 @@ Our research is loosely inspired by a similar research by @epsteinWhyWhenJudges2
 
 We adapt the theories constructed in the US context to the civil law and Czech judiciary contexts. We test whether the length of majority argumentation depends on the presence of one or more dissents, whether the workload of a judge affects their dissenting behavior, whether the dissenting behavior of judges changes at the start and end of their terms, and, lastly, whether relationships formed during the plenary sessions, as posited by the Czech legal scholarship, carry over to 3-member panel proceedings.
 
-We find that a dissent imputes costs on the majority that produces longer arguments to address a dissent. The effect is stronger the more disagreement there is on the bench. We find that the workload of a judge does decrease the likelihood of dissent.  Moreover, our analysis corresponds to the theory that dissents bring about significant collegiality costs for the dissenter. Lastly, we reveal similar trends in behavior of judicial coalitions from plenary proceedings also in the 3-member panel proceedings.
+We find that a dissent imputes costs on the majority that produces longer arguments to address a dissent. The effect is stronger the more disagreement there is on the bench. We find that the workload of a judge does decrease the likelihood of dissent.  Moreover, our analysis corresponds to the theory that dissents bring about significant collegiality costs for the dissenter. Lastly, we reveal similar trends in behavior of judicial coalitions from plenary proceedings also in the 3-member panel proceedings, although rather inconclusively.
 
 Our article proceeds as follows. We start out with a theory. We explain the main differences between the expectations based on the theory in the CCC context in comparison to the SCOTUS context and based on that we draw the hypotheses for the empirical part. We briefly explain the choice of our broad methodological framework: the Bayesian statistics. We proceed to test the hypotheses in empirical part divided into sections one per each hypothesis. We discuss the pitfalls of our research and potential room for improvement afterwards. Lastly, we conclude with a summary of our findings.
 
@@ -108,14 +115,14 @@ Methodologically, we rely on regression based research design with observational
 
 Our study deviates in that we utilize the *Bayesian* rather than *frequentist* framework of statistics. Without delving too much into the Bayesian versus frequentist statistics, we opt for the Bayesian framework for it, we believe, reflects better our understanding of probability and scientific inquiry.^[We include a longer description of our reasoning in the appendix] There are two major differences in understanding of concepts between the two approaches towards statistics: that of role of prior knowledge and that of probability. The Bayesian framework rather than measuring the uncertainty about observed data (personified by the p-value) measures the uncertainty of the parameters of interests, given the observed data and our prior knowledge. In simple terms, the Bayesian statistician puts into doubt their conclusions about parameters of a certain model, given the observed data and their prior knowledge. Mathematically, the uncertainty is reflected in the fact that the posterior parameters are drawn from a posterior distribution of the model and are just an approximation of thereof.
 
-The Basian computations are implemented in the R programming language and STAN software, connected via the RStan package and utilized within the tidymodels framework. We include all the model specifications and diagnoses in the appendix. In this article, we mainly focus on the output of the models and the interpretation of thereof.
+The Basian computations are implemented in the R programming language and STAN software, connected via the RStan package and utilized within the tidymodels framework. We include most of the model specifications and diagnoses in the appendix. In this article, we mainly focus on the output of the models and the interpretation of thereof, we explicitly explain only major research choices.
 
-The Czech Apex Court dataset used for our analysis comprises the dataset CCC decisions. The Czech Apex Court dataset includes complete database of decisions of the CCC, SAC and the Czech Supreme Court, including comprehensive metadata, text corpus, as well as additional information mined from the texts or publicly available sources, such as case references, compositions, or background information of the judges. The analysis was limited up until the end of 2022. We filtered only those decisions, where a variation in the dissenting behavior could procedurally be observed: procedural decisions were filtered out as they require unanimity among the judges and do not leave any space for disagreement.
+The Czech Apex Court dataset used for our analysis comprises the dataset CCC decisions. The Czech Apex Court dataset includes complete database of decisions of the CCC, SAC and the Czech Supreme Court, including comprehensive metadata, text corpus, as well as additional information mined from the texts or publicly available sources, such as case references, compositions, or background information of the judges. The analysis was limited up until the end of 2022. To avoid bias, we filtered only those decisions, where a variation in the dissenting behavior could procedurally be observed: procedural decisions were filtered out as they require unanimity among the judges and do not leave any space for disagreement.
 
 # Model specifications and results
 ## H~1~: Effect of presence of dissenting opinion on the length of majority argumentation
 ### Model specification
-In the original study, the authors collected roughly 446 SCOTUS and 1025 US court of appeals decisions. They then create regression models to see whether the presence of at least one dissenting opinion affected the length of the majority opinion. Based on application of their model to the SCOTUS data, the trio of authors found a statistically significant and positive relationship between presence of at least two dissenting opinions and the length of the majority decision, as well as control variable - the importance of the case. While we are aware that the importance or salience of a case is probably the key confounding variable, measuring as a post-treatment amount of references of that decision might introduce further bias
+In the original US study, the authors collected roughly 446 SCOTUS and 1025 US court of appeals decisions. They then create regression models to see whether the presence of at least one dissenting opinion affected the length of the majority opinion. Based on application of their model to the SCOTUS data, the trio of authors found a statistically significant and positive relationship between presence of at least two dissenting opinions and the length of the majority decision, as well as control variable - the importance of the case. We build our model very similarly, because the CCC lends itself to it. While we are aware that the importance or salience of a case is probably the key confounding variable, measuring as a post-treatment amount of references of that decision might introduce further bias.
 
 #### Conceptualizing importance of a case as a control variable
 In general, when utilizing a regression design with observational data, as is our case, a researcher must satisfy certain conditions to be able to interpret regression results as a causal relationship. The first is the stable unit treatment value assumption (SUTVA) and the other is usually referred to as *conditional independence assumption*. This condition requires that the assignment of treatment T to unit *i* is independent of any covariates *X* of the unit *i* that also influence their outcome *Y*. The CIA may be formalized as follows: 
@@ -171,23 +178,24 @@ We opted for a completely pooled model as the data did not contain any inherent 
 $$
 Y_{words} | \mu, r \sim NegBin(\mu, r)
 $$
-As for the priors, we based the priors a cursory exploratory peak into the data. All our priors follow a normal distribution, the intercept being centered around the population mean. The remaining priors were kept uninformative, because we simply have no previous knowledge on the CCC. The negative binomial family employs a log link, therefore the resulting estimates have to be interpreted as such. The model did a resonable job of predicting the underlying data.
+As for the priors, we based the priors a cursory exploratory peak into the data. All our priors follow a normal distribution, the intercept being centered around the population mean. The remaining priors were kept uninformative, because we simply have no previous knowledge on the CCC. The negative binomial family employs a log link, therefore the resulting estimates have to be interpreted as such.
 
-\vspace{10pt}
-``` {r length_pp_check}
-pp_check_length_negbinom
-```
+\vspace{25pt}
 
-Parameters of both variables of interest are significantly different from 0 as revealed by the density with 80 % and 95 % posterior credible intervals.
+Parameters of both variables of interest are significantly different from 0 as revealed by the density with 80 % and 95 % posterior credible intervals (Fig. 1).
 
-\vspace{10pt}
+\vspace{25pt}
 ``` {r length_parameter_plots}
-mcmc_areas_length
+mcmc_areas_length  +
+  labs(title = "Fig. 1: Density plot of estimates of parameters of\n one or two and more dissents",
+       subtitle = "The inner area is for 50 % posterior credible interval, the outer for 95 %") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
 ```
 
-Even after controlling for all potential observable confounding variables, the already unlogged regression table looks as follows
+Even after controlling for all potential observable confounding variables, the already unlogged regression table (Table 1) looks as follows
 
-``` {r length_regression, render = lemon_print}
+``` {r length_regression, render = lemon_print, caption = "Regression table of Model 1"}
 output_length %>%
   filter(!term == "type_decisionStanovisko pléna")
 ```
@@ -212,11 +220,15 @@ Similarly, instead of measuring dissent rate on the Constitutional court in gene
 
 To address potential sources of bias in our regression analysis, we consider the caseload of a judge to be assigned as good as random. The cases once submitted to the CCC get assigned to individual judges based on the alphabetic order of their surnames. There is no intentional case selection in play. Therefore the assignment of the treatment, the workload of a judge, is independent of other covariates and so is the outcome of interest. The same applies to our last hypothesis. We include time as a control variable because we observe that the workload of judges increases over time and so does the number of dissents.
 
-\vspace{10pt}
+\vspace{25pt}
 ``` {r caseload_over_time}
-caseload_ot
+caseload_ot  +
+  labs(x = element_blank(),
+       title = "Fig. 2: Development of CCC caseload over time") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
 ```
-We opt for the Bayesian logistic regression model because the dependent variable is a binomial variable with 1 trial, i.e. our *Y*, the decision to dissent or not to dissent of a judge in any given decision:
+We opt for the Bayesian logistic regression model because the dependent variable is a binomial variable, i.e. our *Y*, the decision to dissent or not to dissent of a judge in any given decision:
 
 $$
 Y | \pi \sim Bern(\pi)
@@ -229,18 +241,22 @@ $$
 
 ### Result
 #### Interpreting the posterior
-We observe that the estimate of the workload parameter significantly differs from 0, as the 95 % and 80 % uncertainty intervals of the posterior draws of the parameter lay on the left of 0. We're thus able to proceed with substantive interpretation of the result.
+We observe that the estimate of the workload parameter significantly differs from 0, as the 95 % and 80 % uncertainty intervals of the posterior draws of the parameter lay on the left of 0 (Fig. 3). We're thus able to proceed with substantive interpretation of the result.
 
-\vspace{10pt}
+\vspace{25pt}
 ``` {r interpreting_posterior2}
 # Parameters
-mcmc_areas_workload
+mcmc_areas_workload  +
+  labs(title = "Fig. 3: Density plot of estimates of parameter number\n of unfinished cases",
+       subtitle = "The inner area is for 50 % posterior credible interval, the outer for 95 %") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
 # mcmc_intervals_workload
 ```
 
-The regression table is already transformed into odds from the log odds output of the model. At first glance, the results are in line with our theoretical predictions.
+The regression table (Table 2) is already transformed into odds from the log odds output of the model. At first glance, the results are in line with our theoretical predictions.
 
-``` {r interpreting_posterior1, render = lemon_print}
+``` {r interpreting_posterior1, render = lemon_print, caption = "Regression table of Model 2"}
 output_workload
 ```
 
@@ -257,16 +273,18 @@ $$
 Because of the introduction of the system of bi-yearly rotations of the 3-member panels in 2016, we include in our analysis only the plenary decisions, where the composition remained relatively stable throughout the judges' terms.
 
 ### Results
-Unfortunately, neither of the relevant parameters differs significantly from zero. Therefore, we're unable able to draw any inferential conclusions from our model.
+Unfortunately, neither of the relevant parameters differs significantly from zero (Fig. 4). Therefore, we're unable able to draw any inferential conclusions from our model.
 
-\vspace{10pt}
+\vspace{25pt}
 ``` {r interpreting_posterior_term2}
-mcmc_areas_term
+mcmc_areas_term   +
+  labs(title = "Fig. 4: Plot of uncertainty intervals of estimates\n of parameters of start and end of a judge's term",
+       subtitle = "The inner whisker is for 50 % posterior credible interval, the outer for 95 %")
 ```
 
 Even if we attempted to interpret the results, the results would be consistent with the original. The model reveals the trend that the judges seem to change their dissenting behavior depending on in which phase of their term do they find themselves, they would be more likely to dissent at the end and less likely at the beginning of their terms.
 
-``` {r interpreting_posterior_term1, render = lemon_print}
+``` {r interpreting_posterior_term1, render = lemon_print, caption = "Regression table of Model 3"}
 output_term %>%
   filter(!term %in% "reelection")
 ```
@@ -287,17 +305,21 @@ The assignment to panels is as good as random, thus, there is no need to control
 ### Results
 The regression table is already transformed into odds from the log odds output of the model.
 
-``` {r output_coalition, render = lemon_print}
+``` {r output_coalition, render = lemon_print, caption = "Regression table of Model 4"}
 output_coalition_panel
 ```
 
-The estimated odds of dissent are already pretty low, the predicted likelihood of dissent appearing in any 3-member panel decision on merits is ~3 % (which isn't at odds with our workload model, where the pool of considered decisions is slightly wider). In our data, there is not a single dissent among a panel composed of completely of members from the second coalition, which explains the 0. On the other hand, the full presence of the first coalition decreases the odds of dissent considerably by ~20 %. Lastly, the effects of having both panels mixed are in either case positive, the odds of both parameters are ~2.
+The estimated odds of dissent are already pretty low (Table 4), the predicted likelihood of dissent appearing in any 3-member panel decision on merits is ~3 % (which isn't at odds with our workload model, where the pool of considered decisions is slightly wider). In our data, there is not a single dissent among a panel composed of completely of members from the second coalition, which explains the 0, as well as the large standard errors (Fig. 5). On the other hand, the full presence of the first coalition decreases the odds of dissent considerably by ~20 %. Lastly, the effects of having both panels mixed are in either case positive, the odds of both parameters are ~2.
 
-\vspace{10pt}
+\vspace{25pt}
 
 ``` {r interval_coalition}
 # mcmc_intervals_coalition_panel
-mcmc_areas_coalition_panel
+mcmc_areas_coalition_panel  +
+  labs(title = "Fig. 5: Density plot of estimates of parameters of our model",
+       subtitle = "The inner area is for 50 % posterior credible interval, the outer for 95 %")  +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
 ```
 
 Interpreting the repercussions for theory is quite difficult, especially given the lack of data on the second and given the rather large standard errors. While we steer clear of using the language of causal relationship, the trend is clear: a panel composed of members from both coalitions from the plenary proceedings increases the disagreement on the bench. We could not confirm any heterogenous effects between the two coalitions. We also cannot exactly pin point the mechanism of the effect: Do the relationships from the plenary proceedings subsequently carry over to the 3-member panel proceedings? Is there a 2-way effect? We thus conclude rather cautiously that our data and evidence seems reasonably compatible with the explanation of Czech legal scholars, however, due to large standard errors, the evidence remains inconclusive.
@@ -315,7 +337,7 @@ Regarding the substantive results, to us a little surprisingly, we reached very 
 
 We believe those to be very interesting findings that can be further developed. While we found some clear trends, it is uncertain whether our explanation always fits the data perfectly as there are always plausible competing explanations. To this end we believe that a qualitative study utilizing interviews could shed more light to our substantive findings.^[Which we are currently working on.]
 
-\vspace{30pt}
+\vspace{25pt}
 
 # Literature
 

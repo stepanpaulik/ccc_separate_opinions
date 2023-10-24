@@ -2,17 +2,14 @@
 output: 
   stevetemplates::article2:
     keep_tex: true
-    toc: true
     number_sections: true
   distill::distill_article: default
   word_document:
       reference_docx: word_style.docx
-title: "Appendix of: Why and when do (Czech) judges dissent: a quantitative empirical analysis of the Czech Constitutional Court"
+title: "APPENDIX: Disagreement and dissent on a bench: a quantitative empirical analysis of the Czech Constitutional Court"
 author:
-- name: Štěpán Paulík
-  affiliation: Humboldt Universität zu Berlin, stepan.paulik.1@hu-berlin.de
-- name: Gor Vartazaryan
-  affiliation: Charles University, gorike2000@gmail.com
+- name: "Author 1"
+- name: "Author 2"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 geometry: margin=1in
 fontsize: 11pt
@@ -33,6 +30,8 @@ bibliography: "`r rbbt::bbt_write_bib('bibliography.bib', overwrite = TRUE)`"
 library(tidyverse)
 library(ggplot2); theme_set(theme_minimal())
 library(lemon)
+library(bayesplot)
+library(patchwork)
 knit_print.tibble = lemon_print
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
@@ -41,40 +40,95 @@ load(file = "../models/models_fitted_length_dissent.RData")
 load(file = "../models/models_fitted_workload_dissent.RData")
 load(file = "../models/models_fitted_term_dissent.RData")
 load(file = "../models/models_fitted_coalition_panel.RData")
+load(file = "../models/appendix_classification_dissent.RData")
+load(file = "../models/appendix_classification_structure.RData")
+
+library(knitr)
+if(is_latex_output()) {
+  plot_default <- knit_hooks$get("plot")
+  knit_hooks$set(plot = function(x, options) { 
+    x <- c(plot_default(x, options), "\\vspace{25pt}")
+  })
+}
 ```
 \vspace{30pt}
 
-This is an appendix, in which we diagnose and compare the models from our main article and explain our choices in higher detail.
-
-In this article, we utilize Bayesian regression analyses. In other words, we rely on quantitative methods of social science research. That is not without its limits. To not rely on one methodological approach, we set this article into a broader mixed effects effort. We conducted semi-structured interviews with the CCC judges to gain deeper understanding of the judicial behavior, to paint more details to our quantitative effort, and to help with further development of our theory. Parts of the interviews mirror our findings in this article. To name an example, in the interviews, we inquire into the effect of the coalitions at the CCC, whose effect we measure in the last part of this article. In terms of the output of our effort, we divide it into two articles: one utilizing the quantitative methods, the other utilizing qualitative methods.
+In this appendix, we explain our methodological choice of utilizing Bayesian statistics, compare the performance of our machine learning algorithm, and we diagnose and compare the models from our main article and explain our research choices in finer detail.
 
 # Bayesian framework
 Without delving too much into the Bayesian versus frequentist statistics, we opt for the Bayesian framework for it, we believe, reflects better our understanding of probability and scientific inquiry. There are two major differences in understanding of concepts between the two approaches towards statistics: that of role of prior knowledge and that of probability. 
 
 In the frequentist framework, prior knowledge does not play too much of a role and the inference is shaped solely by the observed data, whereas in the Bayesian framework prior knowledge is updated with new data to form new posterior conclusions. In other words, the Bayesian statistician concerns themselves not with the uncertainty of the data but also with how it fits into his prior knowledge.
 
-That is reflected in different understandings of probability. The frequentist understanding of probability refers to the long-run relative frequency of a repeatable event. In other words, the main concern of frequentist statistics is what would the frequency of any event be if we could repeat it as many times as possible. The Bayesian probability measures the relative plausibility of an event [@johnsonBayesRulesIntroduction2022].
+That is reflected in different understandings of probability. The frequentist understanding of probability refers to the long-run relative frequency of a repeatable event. In other words, the main concern of frequentist statistics is what would the frequency of any event be if we could repeat it as many times as possible. The Bayesian probability measures the relative plausibility of an event.
 
 Science in general is based on the frequentist framework. The typical quantitative studies  are driven by finding a low enough p-value, i.e., the measure of probability of having observed data as or more extreme than the observed data if in fact the original null hypothesis is incorrect. In simple terms, the search for statistical significance is a search for data so unlikely to have occurred due to chance, even if we could gather them again and again.
 
-The Bayesian framework rather than measuring the uncertainty about observed data measures the uncertainty of the parameters of interests, given the observed data and our prior knowledge. In simple terms, the Bayesian statistician puts into doubt their conclusions about parameters of a certain model, given the observed data and their prior knowledge. Mathematically, the uncertainty is reflected in the fact that the posterior parameters are drawn from a posterior distribution of the model and are just an approximation of thereof in the form of probability density function rather than a single value. The posterior distribution of a parameter comes from simulating in our case 40000 (4 chains*10000 simulations) possible posterior models via the Monte Carlo Markov Chain simulations.
+The Bayesian framework rather than measuring the uncertainty about observed data measures the uncertainty of the parameters of interests, given the observed data and our prior knowledge. In simple terms, the Bayesian statistician puts into doubt their conclusions about parameters of a certain model, given the observed data and their prior knowledge. Mathematically, the uncertainty is reflected in the fact that the posterior parameters are drawn from a posterior distribution of the model and are just an approximation of thereof in the form of probability density function rather than a single value. The posterior distribution of a parameter comes from simulating in our case 40000 (4 chains*10000 simulations) possible posterior models via the Monte Carlo Markov Chain simulations. 
 
-The Lee Epstein et al. original study employs the frequentist framework and hence they report statistically significant relationships between the variables of interest. Our approach will be Bayesian. We will firstly see whether the employed models actually make sense for the data by running posterior predictive checks and afterwards we will draw the parameters from the posterior distribution to see whether their distribution indeed looks similar to the ones reached by Epstein et al.
+# Model specifications and diagnoses
+## Model 1 classification performance
+To access the length of the majority argumentation, we needed to train a classification algorithm that would automatically classify the over 90000 CCC decisions into their structural components, including the court argumentation. We opted for a supervised machine learning algorithm as performing such a task by hand was impossible.
 
-# Model 1: Effect of presence of dissenting opinion on the length of majority argumentation
-## Caselaw partitioning classification
-## Statistical model
-### Model specification
-We opted for a completely pooled model as the data did not contain any inherent structure (there were no clusters). At first glance, we assumed that 
+Therefore, we manually annotated 200 randomly sampled decisions of the CCC on the paragraph level. The categories that were to be classified by the trained model: (1) heading, (2) verdict, (3) procedure history, (4) complainant arguments, (5) court arguments, (6) conclusion, (7) information on further legal remedies, (8) signature, and (9) dissenting opinion.
+
+We tested different classification algorithms and different ways to represent the text. Following an unpublished Lüders paper [@ludersProportionalityArgumentIdentification2023], we tested both the bag-of-words approach, in the form of td-idf vectors, and dense word2vec vectors. In both cases, the basis for the representation was the lemmatized text using the package UDPipe as we found out that the lemmatization increased accuracy considerably in either case.
+
+It very quickly became clear that the dense word2vec vectors yielded superior results, thus, we quickly abandoned the tf-idf representation of text.^[In comparison to the Lüders paper, who got reasonable results with the bag-of-words approach. Our assumption is that it is due to the fact that they tried to classify paragraphs based mostly on a presence of the word 'proportionality'] Shortly put, we represented the paragraphs as dense 300-dimensional vectors based on a pre-trained word2vec model [@mikolovEfficientEstimationWord2013] on the whole text corpus of the CCC, which we then recalculated for the whole paragraphs using doc2vec. To the dense vectors, we added a very simple positional encoding in the form of three additional features: the relative start position, end position and length of the paragraph within the decision as whole following previous research @eliasekAutomatickaKlasifikaceVyznamovych2020].
+
+We tried a variety of common classifying algorithms: support vector machines, XGBoost and random forests. The whole classification was implemented using the tidymodels framework in R.
+
+Because the positional encoding caused the issue of differing meanings for the position between decisions with a dissenting opinion and without^[for example, in those without a dissenting opinion, the decision would typically end with court argumentation followed by signature, whereas in those with a dissenting opinion, the dissenting opinion was always at the end of the decision], we ran our classification in two steps. In the first step, a binary classification model was trained only on the decisions including a dissenting opinion to classify dissenting opinion paragraphs and the rest. The positional encoding was then recalculated and a second classification model was trained that classified the rest of the structure. The ensuing prediction on previously unseen unannotated followed in the same two steps.
+
+We now present overview of the performance of the machine learning algorithms. All the results are based only on the dense vector representations, as we scraped the tf-idf early on in the process. The tuning and testing process was done using a 10-fold cross-validation. The training dataset was balanced out using SMOTE oversampling, because the classes were heavily imbalanced. The XGBoost algorithm came out as the most appropriate for the first step model with the highest accuracy (and other metrics too, including the area under ROC curve, precision etc.). The following table includes the top 5 performing algorithms with differently tuned parameters.
+
+``` {r dissent_classification1, render = lemon_print, caption = "Comparison of the performance of the first-step algorithms"}
+appendix_tuning_comp_dissent %>%
+  select(!.config) %>%
+  mutate(across(where(is.numeric), ~round(.x, digits = 3)))
+```
+
+The final fitted model yielded the following metrics. The precision is satisfactory for our purposes as here we were interested mainly in separating dissents from the rest. The zero rule for our dataset is 0.77, the proportion of our majority class, i.e., our precision of 0.86 is well above the zero rule.
+
+```{r dissent_classification2, render = lemon_print, caption="Performance of the final first-step fit XGBoost algorithm"}
+appendix_final_fit %>%
+  select(!c(.config,.estimator)) %>% 
+  mutate(across(where(is.numeric), ~round(.x, digits = 3))) %>%
+  rename(metric = .metric,
+         value = .estimate)
+```
+In the second step, we recalculated the positional encoding of the decisions by separating the dissenting opinion from the rest of the decision so that the structure now resembled the decisions without a dissenting opinion. We again tested multiple classification algorithms, with the XGBoost coming out on top.
+
+``` {r structure_classification, render = lemon_print, caption = "Comparison of the performance of the second-step algorithms"}
+appendix_tuning_comp_structure %>%
+  select(!.config) %>%
+  mutate(across(where(is.numeric), ~round(.x, digits = 3)))
+```
+
+The resulting metrics are reasonably good, the zero rule lays at 0.38, thus, our trained model greatly outperforms the zero rule.
+
+``` {r structure_classification2, render = lemon_print, caption="Performance of the final second-step fit XGBoost algorithm"}
+appendix_final_fit_structure %>%
+  select(!c(.config,.estimator)) %>% 
+  mutate(across(where(is.numeric), ~round(.x, digits = 3))) %>%
+  rename(metric = .metric,
+         value = .estimate)
+```
+
+## Model 1 diagnosis
+Our first model concerns the length of the decision, with the outcome variable of interest being a discrete count of words. At first glance, we assumed that 
 
 $$
-Y | \lambda \sim Pois(\lambda)
+Y_{words} | \lambda \sim Pois(\lambda)
 $$
 
-because our outcome variable of interest is a discrete count and the density plot of the length of court argumentation suggests so.
+because our outcome variable of interest is a discrete count and the density plot (Fig. 1) of the length of court argumentation suggests so.
 
+\vspace{25pt}
 ``` {r negbinom}
-negbin_distribution
+negbin_distribution  +
+  labs(x = "Words of the majority opinion argumentation",
+       title = "Fig. 1: Distribution of number of words of argumentation of the majority")
 ```
 
 However, as the posterior checking revealed, the Y was actually overdispersed and the Poisson regression was not able to capture the overdispersion. Therefore, we instead opted for the Negative Binomial model, which allows for relaxing the assumption of equality of variance of Y to its expected value. Thus, the explanatory variable, the number of words of argumentation of the CCC *Y*
@@ -83,28 +137,124 @@ $$
 Y_{words} | \mu, r \sim NegBin(\mu, r)
 $$
 
-As for the priors, we based the priors on the Epstein results as well as a cursory exploratory peak into the data. All our priors follow a normal distribution, the intercept being centered around the population mean. The remaining priors were kept uninformative, because we simply have no previous knowledge on the CCC.
+We opted for a completely pooled model as the data did not contain any inherent structure (there were no clusters). As for the priors, we based the priors on the cursory exploratory peak into the data. All our priors follow a normal distribution, the intercept being centered around the population mean. The remaining priors were kept uninformative via the autoscale = TRUE argument, because we simply have no previous knowledge about the CCC.
 
-### Model diagnosis
-We ran the model via Stan with 4 Monte Carlo Markov Chains (MCMC) of 20000 iterations each, the first 10000 warm up iterations being discarded. The trace plot shows that the chains were stable and probed plausible parameter values, the density plots of the MCMC show that all 4 chains exhibited similar behavior, and the autocorrelation between the iterations always dropped quickly and that the chains were moving around the potential parameter values quickly.
+We ran the model via Stan with 4 Monte Carlo Markov Chains (MCMC) of 20000 iterations each, the first 10000 warm up iterations being discarded. The trace plot shows that the chains were stable and probed plausible parameter values, the density plots of the MCMC show that all 4 chains exhibited similar behavior, and the autocorrelation between the iterations always dropped quickly and that the chains were moving around the potential parameter values quickly (Fig. 2).
 
-The posterior diagnosis confirms that although the simulations are not perfect, they do reasonably capture the features of the observed number of words of court arguments. In other words, we selected the correct model and the priors are not too off either. Thus, our Negative Binomial regression assumptions are reasonable.
-
-``` {r pp_check_negbinom}
-pp_check_length_negbinom
+\vspace{25pt}
+``` {r model1_diagnosis}
+mcmc_trace(com_pooled_mod_length_neg2) + 
+mcmc_acf(com_pooled_mod_length_neg2, pars = c("one_dissent","more_dissent")) +
+  plot_annotation(title = "Fig. 2: Model 1 MCMC diagnosis")
 ```
 
-# Model 2: Effect of workload on the dissenting behavior
-## Model diagnosis
+The posterior predictive check (Fig. 3) confirms that although the simulations are not perfect, they do reasonably capture the features of the observed number of words of court arguments. In other words, we selected the correct model and the priors are not too off either. Thus, our Negative Binomial regression assumptions are reasonable.
+
+\vspace{25pt}
+``` {r pp_check_negbinom}
+pp_check_length_negbinom +
+  labs(x = "Words of the majority opinion argumentation",
+       title = "Fig. 3: Posterior predictive check of the Negative Binomial model")
+```
+The model got the median posterior prediction 0.57 standard deviations off the observed Y with 93 % of the observed Y values falling within the 95 % posterior credible interval. It is also clear that the negative binomial model yields far more accurate results than the poisson (compare the scaled MAE). 10-fold cross-validated posterior check reveals the model did not overfit.
+
+``` {r prediction_summary_length, render = lemon_print, caption = "Posterior prediction summaries of performance of Model 1"}
+prediction_summary_length %>%
+  mutate(across(where(is.numeric), ~round(.x, digits = 2)))
+```
+
+## Model 2 diagnosis
+Our second model features a binomial variable as the outcome variable of interest. Thus, we opt for a Bayesian logistic regression.
+
 We tried two models, a completely pooled and hierarchical model clustered around the judges.  The main difference between the two models is that the former model completely ignores individual intercept. The latter allows for differentiating intercepts between the groups (in our case the individual judges) and the global intercept. The global parameter of interest is then informed both by the global trends as well as the individual intercepts. That can usually lead to higher accuracy in case of structured or time series data at the cost of higher computational expenses.
 
-We ran both the models via Stan with 4 Monte Carlo Markov Chains (MCMC) of 20000 iterations each, the first 10000 warm up iterations being discarded. We did a diagnosis of all the models. In all cases, the trace plots show that the chains were stable and probed plausible parameter values, the density plots of the MCMC show that all 4 chains exhibited similar behavior, and the autocorrelation between the iterations always dropped quickly and that the chains were moving around the potential parameter values quickly.
- 
-We now compare the pooled against the hierarchical models. The former model got the posterior prediction 1.2 of the number of dissents per judge wrong (0.84 standard deviations off), whereas the former model got the posterior prediction wrong only by 0.94 of the number of dissents per judge (0.7 standard deviations off), with 99 % of the predictions falling within the 95 % posterior credible interval. 6-fold cross-validated check reveals that neither of the models overfitted. Thus, while the hierarchical model is slightly more computationally expensive, it yields better results.
-# Model 3: Collegiality costs of dissenting at the CCC
-## Model diagnosis
-We ran the model via Stan with 4 Monte Carlo Markov Chains (MCMC) of 20000 iterations each, the first 10000 warm up iterations being discarded. We did diagnosis of all the models. The trace plots reveal that the chains were stable and probed plausible parameter values, the density plots of the MCMC show that all 4 chains exhibited similar behavior, and the autocorrelation between the iterations always dropped quickly and that the chains were moving around the potential parameter values quickly.The posterior predictive check again reveals that our posterior model reasonably captures the underlying data.
+We ran both the models via Stan with 4 Monte Carlo Markov Chains (MCMC) of 20000 iterations each, the first 10000 warm up iterations being discarded. We did a diagnosis of all the models. In both cases, the trace plots show that the chains were stable and probed plausible parameter values, the density plots of the MCMC show that all 4 chains exhibited similar behavior, and the autocorrelation between the iterations always dropped quickly and that the chains were moving around the potential parameter values quickly (Fig. 4).
 
-``` {r posterior_check_term}
-pp_check_term
+\vspace{25pt}
+``` {r mcmc_diagnosis_workload}
+mcmc_trace(model_workload_pooled) +
+mcmc_acf(model_workload_pooled) +
+  plot_annotation(title = "Fig. 4: Model 2 MCMC diagnosis")
 ```
+
+The posterior predictive check (Fig. 5) confirms that although the simulations are not perfect, they do reasonably capture the features of the observed number of words of court arguments. In other words, we selected the correct model and the priors are not too off either. Thus, our Negative Binomial regression assumptions are reasonable.
+
+\vspace{25pt}
+``` {r pp_check_workload}
+pp_check_workload +
+  labs(x = "Workload",
+       title = "Fig. 5: Posterior predictive check of the pooled model")
+```
+ 
+We now compare the pooled against the hierarchical models. Both models got almost indistinguishably similar results. Thus, because the hierarchical model is computationally more expensive, we opted for the pooled model.
+
+``` {r prediction_summary_workload, render = lemon_print, caption = "Posterior prediction summaries of performance of Model 2"}
+prediction_summary_workload %>%
+  mutate(across(where(is.numeric), ~round(.x, digits = 2)))
+```
+
+## Model 3 diagnosis
+Our third model includes a count as a variable of interest. More specifically, our outcome of interest is the number of dissenting opinions that a judge wrote in any given year. We thus assume that
+
+$$
+Y_{dissents\:count} | \lambda \sim Pois(\lambda)
+$$
+Because this time, we have a time series data and because there are clusters in the form of the judges themselves, we tested both the hierarchical and pooled model. The hierarchical model was clustered around the dissenting judge. The hierarchical model yielded more accurate results, thus, we opted for the hierarchical model at the cost of higher computational costs.
+
+``` {r prediction_summary_term, render = lemon_print, , caption = "Posterior prediction summaries of performance of Model 3"}
+prediction_summary_term
+```
+
+We ran the third model via Stan with 4 Monte Carlo Markov Chains (MCMC) of 20000 iterations each, the first 10000 warm up iterations being discarded. We did diagnosis of all the models. The trace plots reveal that the chains were stable and probed plausible parameter values, the density plots of the MCMC show that all 4 chains exhibited similar behavior, and the autocorrelation between the iterations always dropped quickly and that the chains were moving around the potential parameter values quickly.
+
+The posterior predictive check (Fig. 6) reveals that our posterior model could have done a slightly better job, despite that we couldn't find a better constelation.
+
+\vspace{25pt}
+``` {r posterior_check_term}
+pp_check_term +
+  labs(x = "Dissent count",
+       title = "Fig. 6: Posterior predictive check of the start and end of terms model")
+```
+The diagnostic plots (Fig. 7) also look as they should: the trace plots show that the chains were stable and probed plausible parameter values, the density plots of the MCMC show that all 4 chains exhibited similar behavior, and the autocorrelation between the iterations always dropped quickly and that the chains were moving around the potential parameter values quickly.
+
+\vspace{25pt}
+``` {r mcmc_diagnosis_term}
+mcmc_trace(model_hierarchical_term, pars = c("start_term", "end_term")) +
+mcmc_acf(model_hierarchical_term, pars = c("start_term", "end_term")) +
+  plot_annotation(title = "Fig. 7: Model 3 MCMC diagnosis") 
+```
+
+## Model 4 diagnosis
+
+The outcome variable of interest of our fourth model, the probability of a judge dissenting in any given decision, is a binomial variable, i.e., a Bernoulli distributed variable with 1 trial. The outcome variable thus follows:
+
+$$ 
+Y_{dissent} | \pi \sim Bern(\pi)
+$$
+There were no clusters, thus, we went for a completely pooled model. As before, because we have zero prior information on the parameters, we went with weakly uninformative priors. Regarding the diagnosis of the MCMC chains, the trace plots show that the chains were stable and probed plausible parameter values, the density plots of the MCMC show that all 4 chains exhibited similar behavior, and the autocorrelation between the iterations always dropped reasonably quickly, although it could've been slightly quicker, and that the chains were moving around the potential parameter values quickly, with the exception of the full_coalition_2 parameter, the explanation of which is down to very few data points.
+
+\vspace{25pt}
+``` {r mcmc_diagnosis_coalition}
+mcmc_trace(model_coalition_panel) +
+mcmc_acf(model_coalition_panel) +
+  plot_annotation(title = "Fig. 8: Model 4 MCMC diagnosis") 
+```
+Despite that, the posterior predictive check reveals that our posterior model did a very good job. 
+
+\vspace{25pt}
+``` {r pp_check_coalition}
+pp_check_coalition_panel +
+  labs(x = "The probability of a judge dissenting in any given decision",
+       title = "Fig. 9: Posterior predictive check of the coalition model")
+```
+
+Our model yields reasonably accurate prediction of the underlying data, the posterior predictive median is only 0.26 standard deviation off from the observed Y value. Vast majority of the observed Y values fall even within the 50 % posterior predictive intervals.
+
+``` {r prediction_summary_coalition, render = lemon_print, caption = "Posterior prediction summaries of performance of Model 4"}
+prediction_summary_coalition_panel %>%
+  mutate(across(where(is.numeric), ~round(.x, digits = 2)))
+```
+
+\vspace{25pt}
+
+# Literature

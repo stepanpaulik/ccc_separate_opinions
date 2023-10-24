@@ -49,8 +49,6 @@ data_dissents_workload = foreach(i = seq_along(data_dissents_workload$doc_id), .
   right_join(., data_dissents_workload, by = join_by(doc_id, judge))
   
 
-
-
 # As a prior for intercept, we use the frequency of dissenting opinions in our datasets as the mean of a normal distribution
 prior_intercept_freq = data_dissents_workload %>%
   group_by(dissent) %>%
@@ -59,7 +57,7 @@ prior_intercept_freq = data_dissents_workload %>%
   mutate(freq = n/sum(n)) %>%
   pluck(3,2)
 
-model_workload_pooled_abs = linear_reg() %>%
+model_workload_pooled = linear_reg() %>%
   set_engine("stan",
              family = binomial,
              prior_intercept = normal(log(prior_intercept_freq/(1-prior_intercept_freq)), 1),
@@ -71,7 +69,7 @@ model_workload_pooled_abs = linear_reg() %>%
   fit(dissent ~ unfinished_cases, data = data_dissents_workload) %>%
   extract_fit_engine()
 
-model_workload_hierarchical_abs = linear_reg() %>%
+model_workload_hierarchical = linear_reg() %>%
   set_engine("stan_glmer",
              family = binomial,
              prior_intercept = normal(log(prior_intercept_freq/(1-prior_intercept_freq)), 1),
@@ -84,28 +82,29 @@ model_workload_hierarchical_abs = linear_reg() %>%
   fit(dissent ~ unfinished_cases + (1 | judge), data = data_dissents_workload) %>%
   extract_fit_engine()
 
-mcmc_trace(model_workload_pooled_abs)
-mcmc_acf(model_workload_pooled_abs)
+mcmc_trace(model_workload_pooled)
+mcmc_acf(model_workload_pooled)
 
 # Posterior diagnosis
-pp_check(model_workload_pooled_abs)
+pp_check_workload = pp_check(model_workload_pooled)
 
-# prediction_summary(model = model_workload_pooled_abs, data = data_dissents_workload)
+# Posterior accuracy check
+prediction_summary_workload_pooled = prediction_summary(model = model_workload_pooled, data = data_dissents_workload) %>% as_tibble() %>% mutate(model = "pooled")
+prediction_summary_workload_hierarchical = prediction_summary(model = model_workload_hierarchical, data = data_dissents_workload) %>% as_tibble() %>% mutate(model = "hierarchical")
+prediction_summary_workload = bind_rows(prediction_summary_workload_hierarchical, prediction_summary_workload_pooled) 
+prediction_summary_workload
 # 
 # # K-fold crossvalidation - In this case, the results are similar, suggesting that our model is not overfit to our sample data.
-# prediction_summary_cv(model = model_workload_pooled_abs, data = data_dissents_workload, k = 6)
+# prediction_summary_cv(model = model_workload_pooled, data = data_dissents_workload, k = 6)
 
 # Parameters
-mcmc_dens_overlay(model_workload_pooled_abs, pars = c("unfinished_cases"))
-mcmc_areas_workload = mcmc_areas(model_workload_pooled_abs, pars = c("unfinished_cases")) +
-  labs(title = "Fig 4: Density plot of estimates of parameter number of unfinished cases",
-       subtitle = "The inner area is for 50 % posterior credible interval, the outer for 95 %") +
-  theme(plot.title = element_text(hjust = 0.5),
-        plot.subtitle = element_text(hjust = 0.5))
-mcmc_dens(model_workload_pooled_abs, pars = c("unfinished_cases"))
-mcmc_intervals_workload = mcmc_intervals(model_workload_pooled_abs, pars = c("unfinished_cases"))
+mcmc_dens_overlay(model_workload_pooled, pars = c("unfinished_cases"))
+mcmc_areas_workload = mcmc_areas(model_workload_pooled, pars = c("unfinished_cases"))
 
-output_workload = tidy(model_workload_pooled_abs, 
+mcmc_dens(model_workload_pooled, pars = c("unfinished_cases"))
+mcmc_intervals_workload = mcmc_intervals(model_workload_pooled, pars = c("unfinished_cases"))
+
+output_workload = tidy(model_workload_pooled, 
      conf.int = TRUE, conf.level = 0.80) %>%
   mutate(across(where(is.numeric), ~exp(.x))) %>%
   mutate(across(where(is.numeric), ~round(.x, digits = 3))) %>%
@@ -125,16 +124,14 @@ caseload_ot = readr::read_rds("../data/US_metadata.rds") %>%
   ggplot(aes(x = year_submission, y = Caseload)) +
   geom_point() +
   geom_smooth(se = F, color = "black", linewidth = 0.8) +
-  scale_x_continuous(breaks = scales::breaks_width(2)) +
-  labs(x = element_blank(),
-       title = "Fig 3: Development of CCC caseload over time") +
-  theme(plot.title = element_text(hjust = 0.5),
-        plot.subtitle = element_text(hjust = 0.5))
+  scale_x_continuous(breaks = scales::breaks_width(2))
 caseload_ot
 
-
+# SAVE data
 rm(list=ls(pattern="^data_"))
 save.image(file = "models/models_fitted_workload_dissent.RData")
+
+# LOAD data
 load(file = "models/models_fitted_workload_dissent.RData")
 
   

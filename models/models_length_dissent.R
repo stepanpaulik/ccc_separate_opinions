@@ -15,7 +15,7 @@ library(parallel)
 library(multilevelmod)
 tidymodels_prefer()
 library(doMC)
-library(patchwork)
+# library(patchwork)
 registerDoMC(cores = parallel::detectCores() - 2)
 
 chains = 4L
@@ -57,43 +57,43 @@ data_length = readr::read_rds(file = "../data/data_paragraphs_classified.rds") %
 data_length %>%
   ggplot(aes(x = argument_length)) +
   geom_density()
-
-# Test correlation between importance proxied by number of citations and by formation of the CC
-final_distributions = inner_join(
-  readr::read_rds("../data/US_metadata.rds") %>%
-    mutate(year_submission = year(date_submission),
-           year_decision = year(date_decision)) %>%
-    select(formation) %>%
-    drop_na() %>%
-    mutate(formation = case_when(
-      formation == "Plenum" ~ "Plenary",
-      .default = "Panel"
-    )) %>%
-    group_by(formation) %>%
-    summarise(Count_total = n()) %>%
-    mutate(Percent_total = paste(round(
-      100 * Count_total / sum(Count_total), 1
-    ), "%")),
-  readr::read_rds("../data/US_citations.rds") %>%
-    left_join(
-      .,
-      y = readr::read_rds("../data/US_metadata.rds") %>%
-        select(case_id, formation),
-      by = join_by(matched_case_id == case_id)
-    ) %>%
-    drop_na() %>%
-    mutate(formation = case_when(
-      formation == "Plenum" ~ "Plenary",
-      .default = "Panel"
-    )) %>%
-    group_by(formation) %>%
-    summarise(Count_cited = n()) %>%
-    mutate(Percent_cited = paste(round(
-      100 * Count_cited / sum(Count_cited), 1
-    ), "%")),
-  by = join_by(formation)
-)
-final_distributions
+# 
+# # Test correlation between importance proxied by number of citations and by formation of the CC
+# final_distributions = inner_join(
+#   readr::read_rds("../data/US_metadata.rds") %>%
+#     mutate(year_submission = year(date_submission),
+#            year_decision = year(date_decision)) %>%
+#     select(formation) %>%
+#     drop_na() %>%
+#     mutate(formation = case_when(
+#       formation == "Plenum" ~ "Plenary",
+#       .default = "Panel"
+#     )) %>%
+#     group_by(formation) %>%
+#     summarise(Count_total = n()) %>%
+#     mutate(Percent_total = paste(round(
+#       100 * Count_total / sum(Count_total), 1
+#     ), "%")),
+#   readr::read_rds("../data/US_citations.rds") %>%
+#     left_join(
+#       .,
+#       y = readr::read_rds("../data/US_metadata.rds") %>%
+#         select(case_id, formation),
+#       by = join_by(matched_case_id == case_id)
+#     ) %>%
+#     drop_na() %>%
+#     mutate(formation = case_when(
+#       formation == "Plenum" ~ "Plenary",
+#       .default = "Panel"
+#     )) %>%
+#     group_by(formation) %>%
+#     summarise(Count_cited = n()) %>%
+#     mutate(Percent_cited = paste(round(
+#       100 * Count_cited / sum(Count_cited), 1
+#     ), "%")),
+#   by = join_by(formation)
+# )
+# final_distributions
 
 # Prior intercept mean - the length of a typical decision
 prior_intercept = log(mean(data_length$argument_length))
@@ -131,10 +131,7 @@ mcmc_acf(com_pooled_mod_length_neg2, pars = c("one_dissent","more_dissent"))
 
 # Posterior diagnosis
 pp_check_length_negbinom = pp_check(com_pooled_mod_length_neg2) +
-  xlim(0,20000) +
-  labs(x = "Words of the majority opinion argumentation",
-       title = "Fig 1: Posterior predictive check of the Negative Binomial model") +
-  theme(plot.title = element_text(hjust = 0.5))
+  xlim(0,20000)
 pp_check_length_negbinom
 
 
@@ -143,17 +140,21 @@ data_length %>%
   ggplot(aes(x = one_dissent, y = argument_length)) +
   geom_line(aes(y = .epred))
 
-prediction_summary(model = com_pooled_mod_length_neg2, data = data_length)
+# Posterior accuracy check
+predictions = posterior_predict(com_pooled_mod_length_neg2, newdata = data_length)
+ppc_intervals(data_length$argument_length, yrep = predictions, 
+              prob = 0.5, prob_outer = 0.95)
+
+prediction_summary_length_neg2 = prediction_summary(model = com_pooled_mod_length_neg2, data = data_length) %>% as_tibble() %>% mutate(model = "neg_bin")
+prediction_summary_length_poisson = prediction_summary(model = com_pooled_mod_length_poisson, data = data_length) %>% as_tibble() %>% mutate(model = "poisson")
+prediction_summary_length = bind_rows(prediction_summary_length_poisson, prediction_summary_length_neg2) %>%
+  relocate(model, .before = mae)
 
 # K-fold crossvalidation - In this case, the results are similar, suggesting that our model is not overfit to our sample data.
 prediction_summary_cv_length = prediction_summary_cv(model = com_pooled_mod_length_neg2, data = data_length, k = 10)
 
 # Parameters
-mcmc_areas_length = mcmc_areas(com_pooled_mod_length_neg2, pars = c("one_dissent","more_dissent")) +
-  labs(title = "Fig 2: Density plot of estimates of parameters of one or two and more dissents",
-       subtitle = "The inner area is for 50 % posterior credible interval, the outer for 95 %") +
-  theme(plot.title = element_text(hjust = 0.5),
-        plot.subtitle = element_text(hjust = 0.5))
+mcmc_areas_length = mcmc_areas(com_pooled_mod_length_neg2, pars = c("one_dissent","more_dissent"))
 mcmc_areas_length
 
 # mcmc_intervals_length = mcmc_intervals(com_pooled_mod_length_neg2, pars = c("one_dissent","more_dissent")) +
@@ -176,11 +177,12 @@ output_length
 negbin_distribution = data_length %>%
   ggplot(aes(x = argument_length)) +
   geom_density() +
-  xlim(0,10000) +
-  labs(x = "Words of the majority opinion argumentation",
-       title = "Distribution of number of words of argumentation of the majority")
+  xlim(0,10000)
 
+# SAVE data
 rm(list=ls(pattern="^data_"))
 save.image(file = "models/models_fitted_length_dissent.RData")
+
+# LOAD data
 load(file = "models/models_fitted_length_dissent.RData")
 

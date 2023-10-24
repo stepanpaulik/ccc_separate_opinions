@@ -95,7 +95,7 @@
 \title{Disagreement and dissent on a bench: a quantitative empirical
 analysis of the Czech Constitutional Court}
 \author{true \and true}
-\date{October 08, 2023}
+\date{October 12, 2023}
 
 % Jesus, okay, everything above this comment is default Pandoc LaTeX template. -----
 % ----------------------------------------------------------------------------------
@@ -171,10 +171,7 @@ analysis of the Czech Constitutional Court }
 \makeatother
 \hypersetup{breaklinks=true,
             bookmarks=true,
-            pdfauthor={Štěpán Paulík (Humboldt Universität zu Berlin,
-\href{mailto:stepan.paulik.1@hu-berlin.de}{\nolinkurl{stepan.paulik.1@hu-berlin.de}}) and Gor
-Vartazaryan (Charles University,
-\href{mailto:gorike2000@gmail.com}{\nolinkurl{gorike2000@gmail.com}})},
+            pdfauthor={Author 1 () and Author 2 ()},
              pdfkeywords = {empirical legal research, courts, dissents,
 judicial behavior, political science, Bayesian statistics, regression
 analysis},
@@ -242,10 +239,8 @@ quantitative empirical analysis of the Czech Constitutional Court},
 
 {
    \vskip 13.5pt\relax \normalsize\fontsize{11}{12}
-   \MakeUppercase{Štěpán Paulík}, \small{Humboldt Universität zu Berlin,
-\href{mailto:stepan.paulik.1@hu-berlin.de}{\nolinkurl{stepan.paulik.1@hu-berlin.de}}}   \par \vskip -3.5pt \MakeUppercase{Gor
-Vartazaryan}, \small{Charles University,
-\href{mailto:gorike2000@gmail.com}{\nolinkurl{gorike2000@gmail.com}}}   
+   \MakeUppercase{Author
+1}, \small{}   \par \vskip -3.5pt \MakeUppercase{Author 2}, \small{}   
 
 }
 
@@ -289,18 +284,9 @@ statistics, regression analysis \par
 
 \vskip -8.5pt
 
-{
-\hypersetup{linkcolor=black}
-\setcounter{tocdepth}{2}
-\tableofcontents
-}
 
  % removetitleabstract
 
-{
-\setcounter{tocdepth}{2}
-\tableofcontents
-}
 
 \setlength{\parindent}{16pt}
 \setlength{\parskip}{0pt}
@@ -308,7 +294,7 @@ statistics, regression analysis \par
 % We'll put doublespacing here
 \doublespacing
 % Remember to cut it out later before bib
-\vspace{30pt}
+\vspace{25pt}
 
 \hypertarget{introduction}{%
 \section{Introduction}\label{introduction}}
@@ -357,7 +343,7 @@ does decrease the likelihood of dissent. Moreover, our analysis
 corresponds to the theory that dissents bring about significant
 collegiality costs for the dissenter. Lastly, we reveal similar trends
 in behavior of judicial coalitions from plenary proceedings also in the
-3-member panel proceedings.
+3-member panel proceedings, although rather inconclusively.
 
 Our article proceeds as follows. We start out with a theory. We explain
 the main differences between the expectations based on the theory in the
@@ -621,21 +607,22 @@ approximation of thereof.
 
 The Basian computations are implemented in the R programming language
 and STAN software, connected via the RStan package and utilized within
-the tidymodels framework. We include all the model specifications and
-diagnoses in the appendix. In this article, we mainly focus on the
-output of the models and the interpretation of thereof.
+the tidymodels framework. We include most of the model specifications
+and diagnoses in the appendix. In this article, we mainly focus on the
+output of the models and the interpretation of thereof, we explicitly
+explain only major research choices.
 
-The data used for our analysis comprises the dataset CCC decisions. The
-Czech Apex Court dataset was built by Štěpán Paulík and includes
-complete database of decisions of the CCC, SAC and the Czech Supreme
-Court, including comprehensive metadata, text corpus, as well as
-additional information mined from the texts or publicly available
-sources, such as case references, compositions, or background
-information of the judges. The analysis was limited up until the end of
-2022. We filtered only those decisions, where a variation in the
-dissenting behavior could procedurally be observed: procedural decisions
-were filtered out as they require unanimity among the judges and do not
-leave any space for disagreement.
+The Czech Apex Court dataset used for our analysis comprises the dataset
+CCC decisions. The Czech Apex Court dataset includes complete database
+of decisions of the CCC, SAC and the Czech Supreme Court, including
+comprehensive metadata, text corpus, as well as additional information
+mined from the texts or publicly available sources, such as case
+references, compositions, or background information of the judges. The
+analysis was limited up until the end of 2022. To avoid bias, we
+filtered only those decisions, where a variation in the dissenting
+behavior could procedurally be observed: procedural decisions were
+filtered out as they require unanimity among the judges and do not leave
+any space for disagreement.
 
 \hypertarget{model-specifications-and-results}{%
 \section{Model specifications and
@@ -649,17 +636,18 @@ argumentation}{H1: Effect of presence of dissenting opinion on the length of maj
 \hypertarget{model-specification}{%
 \subsubsection{Model specification}\label{model-specification}}
 
-In the original study, the authors collected roughly 446 SCOTUS and 1025
-US court of appeals decisions. They then create regression models to see
-whether the presence of at least one dissenting opinion affected the
-length of the majority opinion. Based on application of their model to
-the SCOTUS data, the trio of authors found a statistically significant
-and positive relationship between presence of at least two dissenting
-opinions and the length of the majority decision, as well as control
-variable - the importance of the case. While we are aware that the
-importance or salience of a case is probably the key confounding
+In the original US study, the authors collected roughly 446 SCOTUS and
+1025 US court of appeals decisions. They then create regression models
+to see whether the presence of at least one dissenting opinion affected
+the length of the majority opinion. Based on application of their model
+to the SCOTUS data, the trio of authors found a statistically
+significant and positive relationship between presence of at least two
+dissenting opinions and the length of the majority decision, as well as
+control variable - the importance of the case. We build our model very
+similarly, because the CCC lends itself to it. While we are aware that
+the importance or salience of a case is probably the key confounding
 variable, measuring as a post-treatment amount of references of that
-decision might introduce further bias
+decision might introduce further bias.
 
 \hypertarget{conceptualizing-importance-of-a-case-as-a-control-variable}{%
 \paragraph{Conceptualizing importance of a case as a control
@@ -855,25 +843,29 @@ into the data. All our priors follow a normal distribution, the
 intercept being centered around the population mean. The remaining
 priors were kept uninformative, because we simply have no previous
 knowledge on the CCC. The negative binomial family employs a log link,
-therefore the resulting estimates have to be interpreted as such. The
-model did a resonable job of predicting the underlying data.
+therefore the resulting estimates have to be interpreted as such.
 
-\vspace{10pt}
-
-\includegraphics{dissents_article_files/figure-latex/length_pp_check-1.pdf}
+\vspace{25pt}
 
 Parameters of both variables of interest are significantly different
 from 0 as revealed by the density with 80 \% and 95 \% posterior
-credible intervals.
+credible intervals (Fig. 1).
 
-\vspace{10pt}
+\vspace{25pt}
 
-\includegraphics{dissents_article_files/figure-latex/length_parameter_plots-1.pdf}
+\includegraphics{dissents_article_anonymised_files/figure-latex/length_parameter_plots-1.pdf}
+\vspace{25pt}
 
 Even after controlling for all potential observable confounding
-variables, the already unlogged regression table looks as follows
+variables, the already unlogged regression table (Table 1) looks as
+follows
 
 \begin{longtable}[]{@{}lrrrr@{}}
+\caption{Regression table of Model 1}\tabularnewline
+\toprule\noalign{}
+term & estimate & std.error & conf.low & conf.high \\
+\midrule\noalign{}
+\endfirsthead
 \toprule\noalign{}
 term & estimate & std.error & conf.low & conf.high \\
 \midrule\noalign{}
@@ -978,11 +970,11 @@ outcome of interest. The same applies to our last hypothesis. We include
 time as a control variable because we observe that the workload of
 judges increases over time and so does the number of dissents.
 
-\vspace{10pt}
+\vspace{25pt}
 
-\includegraphics{dissents_article_files/figure-latex/caseload_over_time-1.pdf}
-We opt for the Bayesian logistic regression model because the dependent
-variable is a binomial variable with 1 trial, i.e.~our \emph{Y}, the
+\includegraphics{dissents_article_anonymised_files/figure-latex/caseload_over_time-1.pdf}
+\vspace{25pt} We opt for the Bayesian logistic regression model because
+the dependent variable is a binomial variable, i.e.~our \emph{Y}, the
 decision to dissent or not to dissent of a judge in any given decision:
 
 \[
@@ -1002,18 +994,24 @@ posterior}\label{interpreting-the-posterior}}
 
 We observe that the estimate of the workload parameter significantly
 differs from 0, as the 95 \% and 80 \% uncertainty intervals of the
-posterior draws of the parameter lay on the left of 0. We're thus able
-to proceed with substantive interpretation of the result.
+posterior draws of the parameter lay on the left of 0 (Fig. 3). We're
+thus able to proceed with substantive interpretation of the result.
 
-\vspace{10pt}
+\vspace{25pt}
 
-\includegraphics{dissents_article_files/figure-latex/interpreting_posterior2-1.pdf}
+\includegraphics{dissents_article_anonymised_files/figure-latex/interpreting_posterior2-1.pdf}
+\vspace{25pt}
 
-The regression table is already transformed into odds from the log odds
-output of the model. At first glance, the results are in line with our
-theoretical predictions.
+The regression table (Table 2) is already transformed into odds from the
+log odds output of the model. At first glance, the results are in line
+with our theoretical predictions.
 
 \begin{longtable}[]{@{}lrrrr@{}}
+\caption{Regression table of Model 2}\tabularnewline
+\toprule\noalign{}
+term & estimate\_odds & std.error & conf.low & conf.high \\
+\midrule\noalign{}
+\endfirsthead
 \toprule\noalign{}
 term & estimate\_odds & std.error & conf.low & conf.high \\
 \midrule\noalign{}
@@ -1063,12 +1061,13 @@ the judges' terms.
 \subsubsection{Results}\label{results-1}}
 
 Unfortunately, neither of the relevant parameters differs significantly
-from zero. Therefore, we're unable able to draw any inferential
+from zero (Fig. 4). Therefore, we're unable able to draw any inferential
 conclusions from our model.
 
-\vspace{10pt}
+\vspace{25pt}
 
-\includegraphics{dissents_article_files/figure-latex/interpreting_posterior_term2-1.pdf}
+\includegraphics{dissents_article_anonymised_files/figure-latex/interpreting_posterior_term2-1.pdf}
+\vspace{25pt}
 
 Even if we attempted to interpret the results, the results would be
 consistent with the original. The model reveals the trend that the
@@ -1077,6 +1076,11 @@ phase of their term do they find themselves, they would be more likely
 to dissent at the end and less likely at the beginning of their terms.
 
 \begin{longtable}[]{@{}lrrrr@{}}
+\caption{Regression table of Model 3}\tabularnewline
+\toprule\noalign{}
+term & estimate & std.error & conf.low & conf.high \\
+\midrule\noalign{}
+\endfirsthead
 \toprule\noalign{}
 term & estimate & std.error & conf.low & conf.high \\
 \midrule\noalign{}
@@ -1134,6 +1138,11 @@ The regression table is already transformed into odds from the log odds
 output of the model.
 
 \begin{longtable}[]{@{}lrrrr@{}}
+\caption{Regression table of Model 4}\tabularnewline
+\toprule\noalign{}
+term & estimate\_odds & std.error & conf.low & conf.high \\
+\midrule\noalign{}
+\endfirsthead
 \toprule\noalign{}
 term & estimate\_odds & std.error & conf.low & conf.high \\
 \midrule\noalign{}
@@ -1147,20 +1156,22 @@ mixed\_coal\_1\_min & 2.03 & 21.58 & 0.04 & 99.94 \\
 mixed\_coal\_2\_min & 2.12 & 21.35 & 0.04 & 104.20 \\
 \end{longtable}
 
-The estimated odds of dissent are already pretty low, the predicted
-likelihood of dissent appearing in any 3-member panel decision on merits
-is \textasciitilde3 \% (which isn't at odds with our workload model,
-where the pool of considered decisions is slightly wider). In our data,
-there is not a single dissent among a panel composed of completely of
-members from the second coalition, which explains the 0. On the other
-hand, the full presence of the first coalition decreases the odds of
-dissent considerably by \textasciitilde20 \%. Lastly, the effects of
-having both panels mixed are in either case positive, the odds of both
-parameters are \textasciitilde2.
+The estimated odds of dissent are already pretty low (Table 4), the
+predicted likelihood of dissent appearing in any 3-member panel decision
+on merits is \textasciitilde3 \% (which isn't at odds with our workload
+model, where the pool of considered decisions is slightly wider). In our
+data, there is not a single dissent among a panel composed of completely
+of members from the second coalition, which explains the 0, as well as
+the large standard errors (Fig. 5). On the other hand, the full presence
+of the first coalition decreases the odds of dissent considerably by
+\textasciitilde20 \%. Lastly, the effects of having both panels mixed
+are in either case positive, the odds of both parameters are
+\textasciitilde2.
 
-\vspace{10pt}
+\vspace{25pt}
 
-\includegraphics{dissents_article_files/figure-latex/interval_coalition-1.pdf}
+\includegraphics{dissents_article_anonymised_files/figure-latex/interval_coalition-1.pdf}
+\vspace{25pt}
 
 Interpreting the repercussions for theory is quite difficult, especially
 given the lack of data on the second and given the rather large standard
@@ -1235,7 +1246,7 @@ competing explanations. To this end we believe that a qualitative study
 utilizing interviews could shed more light to our substantive
 findings.\footnote{Which we are currently working on.}
 
-\vspace{30pt}
+\vspace{25pt}
 
 \hypertarget{literature}{%
 \section*{Literature}\label{literature}}
