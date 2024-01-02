@@ -1,0 +1,194 @@
+---
+output: 
+  stevetemplates::article2:
+    keep_tex: true
+    toc: true
+    number_sections: true
+  word_document:
+      reference_docx: word_style.docx
+  distill::distill_article: default
+title: "„I have spoken and saved my soul“: a qualitative analysis of Czech constitutional judges dissenting behaviour"
+author:
+- name: Štěpán Paulík
+  affiliation: Humboldt Universität zu Berlin, stepan.paulik.1@hu-berlin.de
+- name: Gor Vartazaryan
+  affiliation: Charles University, gorike2000@gmail.com
+abstract: "Dissent presents an oportunity for judges to break away from the majority opinion and express their stance. Doctrinal research has presented many views on positive and negative aspects of the possibility to dissent. Research on judicial decision-making explained a various aspects of dissent aversion and its effect in the courts of various instances. The rule of thumb is that judges dissent most in the superior courts. This paper contributes to existing research by analysing the attitudes of judges towards dissent. A thematic analysis of semi-structured interview with Czech constitutional court judges (N=9) of the third decade was conducted. Our results present the process od dissent making and the role of opinion leaders in the proces. We also reveal that there are three attitudinal groups of dissenting justices - haters, fans and strategist. The interviews revealed that four factors primarily influence CCC judges: prior professional experience, regulation of one's own emotions and frustrations, caseload and importance of the particular case."
+keywords: "dissent, dissent aversion, constitutional court, decision-making, qualiative research "
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+geometry: margin=1in
+fontsize: 11pt
+doublespacing: TRUE
+endnote: no
+# pandocparas: TRUE
+sansitup: FALSE
+header-includes:
+  - \usepackage{longtable}
+  - \LTcapwidth=.95\textwidth
+  - \linespread{1.05}
+  - \usepackage{hyperref}
+  - \usepackage{float}
+bibliography: "`r rbbt::bbt_write_bib('bibliography.bib', overwrite = TRUE, library_id = rbbt::bbt_libraries()$id[rbbt::bbt_libraries()$name == 'Kvalitativní disenty'])`"
+csl: chicago-author-date.csl
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+```
+
+# Introduction
+
+In collegial court judges can disagree for many reasons in heated debates. Some courts enable judges to dissent and publicly express a different opinion (For the purposes of this article, concurring judgments that are written separately from the reasons of the majority will be treated the same as dissenting judgments). This decision-making question, „why judges dissent?“, has attracted the attention of scholars in many fields: political scientis, lega scholars sociologist (Blackstone & Collins, 2014; Cross, 2007; Epstein et al., 2011, 2013; Garoupa & Botelho, 2022; Posner, 1993; Sunstein et al., 2006). There are many empirical approaches for judicial-decision explanation: the rational-choice theory, principal-agent model, explanation based on legal culture and others. In empirical research models are based on doctrinal theory or legal philosophy that brings hypotheses of judicial dissent making. Research in US suggest to use indirect method to understand judicial behaviour since judges are permmited to be, and most are, quite secretive (Epstein et al., 2013). This paper challenge this view in different legal culture and present a  qualitative approach that would explore how judges perceive dissent.
+Our previous research replicated rational-choice theory  on the Czech Constitutional Court (Paulík & Vartazaryan, 2023). We decided to further investigate why, when and how judges decide to break from the majority opinion. Qualitative approach of the Czech Constitutional Court („CCC“)  brings new insights into the decision-making process of judges. We choose CCC for four main reasons: firstly, CCC allowes judges to dissent, however it is not an obligation. The vote is not public, so if a judge votes against a decision but does not exercise a dissent, there is no way for the public to know. This allows judges to perform so-called dissent aversion (Epstein et al., 2011, 2013; Posner, 2010). From previous interview with CCC judges many confirmed that they do so (Kysela et al., 2015; Smekal et al., 2021). Secondly, judges can dissent solely or jointy with other judges. The question of dissenting coalition is less research topic so far. Thirdly, the literature suggest that the third decade of CCC presents the most polarized period in terms of voting or dissenting coalitions (Chmel, 2021; Smekal et al., 2021; Vartazaryan, 2022) and finally, judges of the third decade experienced a period before and after the implementation of chamber rotation, which influenced the  panel-compositio of each chamber of CCC. 
+This paper presents the proces of dissenting making and the the importance of unwritten rules, the typology of dissenting Justices and four main themes of  explanation of their dissenting behaviour.
+
+# Context and Literature review
+
+In this section, we situate our research in the existing literature. First, we present the normative and positive theory and then we further investigate in existing literature on dissenting behaviour. Subsequently, to give the reader sufficient context, we present back-ground information on the CCC and its Justices.
+
+## Dissenting behaviour of judges in literature
+
+In theory there are two main approaches towards dissents. We can research the advantages and disadvantages of dissenting - the normative theory or we can focuses on the explanation, why judges dissent - the positive theory  (Garoupa & Botelho, 2022). However, these two approaches are not separate since judges can be influenced by normative and positive factors and vice versa. 
+In theory, judges can benefit from the dissent but always at some cost. The benefit is that dissent can undermine the influence of the majority, draw their attention, bring reputation, be a factor for overruling in the future etc. On the other hand it cost an effort it can possibly fray the collegiality between judges, it takes a time to write a dissent and the caseload my be a factor for judges and some may say that it can burden reputation or also it can undermine the authority of the Court. 
+That said, Peterson presens the influences cause and impact of a dissent which he categorize to four parts: a) legal culture, b) organizational and institutional factors, c) socio-political system and d) individuals (Peterson, 1981). He also presetens set of hypothesis derived from those categories that were mostly not test at that time. For example he proposes that (i) size of the court is directly related to the likelihood, (ii) the greater the workload, the less the dissent , (iii)  greater the diversity among judges on a court, the higher will be dissent level.  Most of those hypotheses were already empirically tested.
+Most empirical models are testing hypotheses taken from doctrinal research or it is based on a vision of the judge as a rational, self-interested utility maximizer (Posner, 2010). Empirical research explored the phenomenon of dissent aversion - motivation of judges not to dissent. Epstein et al. tested hypothesis on Court of Appleas and Supreme Court. They found out that dissents are negatively related to the caseload and positively related to ideological diversity among judges in the circuit and circuit size in the court of appeals. In the Supreme Court, the dissent rate is negatively related to the caseload and positively related to ideological differences, that majority opinions are longer when there is a dissent (Epstein et al., 2011). 
+However not all of those hypotheses and models are replicable at different legal context. In some CCE countries, information about voting is not public, also the process of appointment of judges differs and it affect the politicization of their decision-making.
+Our replication on the CCC was methodologically limited, since in CCC data of judges voting are not public. We proved that a dissent opinion imposes costs on the majority that produces longer arguments to address a dissent. The effect is stronger the more disagreement there is on the bench. We find that the workload of a judge does decrease the likelihood of dissent. Moreover, although inconclusively, the dissenting behavior of a CCC judge seems to vary depending on the stage of their term. Lastly, we reveal similar trends in behavior of judicial coalitions from plenary proceedings also in the 3-member panel proceedings. 
+Qualitative research based on interviews with justices are not uncommon (Domnarski, 2009; Epstein & Knight, 1997; Smekal et al., 2021) however they are not a typical tool for their decision-making analysis since they can be bound by the law on confidentiality, not wiling to participate (Nir, 2018) or a guinea pig effect can occur (Smekal et al., 2021).  Despite these problems and possible distortions of qualitative research we argue that in some legal culture, empirical limitation can be further developed on qualitative research. Thus deper understanding of the institutional context is needed.
+
+## Czech Constitutitonal Court
+
+The Czech Constitutional Court was established i 1993 and consist of 15 judges appointent for 10 year office term. The national literature distinguishes between the "first" "second" and "third" decade of the Constitutional Court because of the  ten-year mandate. Of the 15 Justices three of are not members of chambers since they perform a certain function (Chairman, Vice-Chairmen). The rest is divided into four three-member chambers. CCC decides only in two panel formats - chambers or plenary. Chambers decide on constitutional complaints while plenary deals with abstract control of norms (repeals a law or part of a law). During the third decade, in 2016, CCC decided to implement rotation of the Chambers, since the panel-composition in Chambers was unchanged for the duration of the judge's term of office. Which meant that the same judges spent their entire terms together. After 2016 the chairman of the Chamber shifts to the next Chamber (Chairmain of first chamber shifts two second, second to third, third to fourth and fourth to first). The composition of Chambers rotate every two year. 
+Justice can dissent both in chambers or plenary decision. The Venice Commision report on separate opinion of Constiutional Courts states that:  „In the Czech Republic, the experience of the communist regime led to the introduction of separate opinions, which were seen as a means of protecting the personal integrity of individual judges. *They continue to fulfil this role to this day. It is therefore important for a judge of the Czech Constitutional Court that a clear indication in the heading of each decision is included stating the name of the judge rapporteur who prepared the majority finding….The Czech doctrine claims that judges who draft separate opinions take off their mask of anonymity, because they have openly admitted that they do not agree with the majority and that the Court’s decision was not reached unanimously. It also shows that the winning legal opinion was not accepted unequivocally, but that it was reached after difficult deliberations and after consideration of various arguments. Linking separate opinions to the name of a particular judge increases his or her responsibility for voting and content of the separate opinion.“* (Venice Commission, b.r.)
+However it is important to note, that dissent in chambers reveal the result of vote since the outcome is 2-1. Also most of the cases (95%)  will result in inadmissibility by decision of the case. This is a quasi-meritorious review that says the case does not rise to the level of constitutional law.  In the case of a rejection, it is already a merits review, which is decided by a judgment. For inadmissibility decision one need an unanonimous vote. If one of the judges decide to dissent in chamber, not only he transformers decision to judgment, he also makes it legally more binding and the Judge-Rapporteur is forced to change the structure of the decision. In plenary judgements, judges can choose if they want to write dissent jointly and form coalitions or be write it soliterly.
+Dissents have appeared at 18%  of all cases at CCC. 
+
+Deskritiptivní data o disentování soud a soudce
+
+
+# Method and Data
+
+The study asks three research questions: 1. What are the attitudes of judges of the CCC towards dissent? 2. What motivates a judge of the CCC to write a dissent? 3. How a joint dissenting opinion arises at the CCC ? To answer these questions, we conducted semi-structured interview, “a qualitative data collection strategy in which the researcher asks informants a series of predetermined but open-ended questions” (Given, 2008) with judges of the third decade of the CCC. 
+We contacted all fifteen constitutional court judges of the third decade to explore their perspectives and experiences.  Of the fifteen judges, 9 agreed to participate in the research, 2 refused to participate and the rest did not respond to our repeated requests. Interviewee provided interviews with the condition of subsequent anonymization and approval. To unify anonymization, we present quotes from all interviewees in generic masculin.
+A written interview guide with a list of topics to be covered was developed in advance in accordance with the literature reivew. Once informed consent was obtained from the participants, interviews were conducted by one of the authors in a office of individual judges directly in the building of the CCC located in Brno from  July 2023 to August 2023. The interviews took 50 minutes on average.
+The interviews were recorded, transcribed verbatim, and analysed using the ATLAS.ti software kit. Thematic analysis, “a method for identifying, analysing and reporting patterns (themes) within data” (Braun & Clarke, 2006), was used to organise and describe the dataset. The authors coded the interviews and consolidated codes into several content domains using the inductive approach. 
+Thematic analysis revealed two main themes.  Firstly we will focus on the proces of making a dissent: what are the unwritten rules, how rotation of chambers affected the CCC, which cases made an impact and aspects of interaction and communication at CCC. Secondly we present the three types of dissenting judges  and motivation of judges towards disents. There are four subthemes: previous experience, emotional vent, caseload and importance of the case.  
+
+# The birth of dissent at CCC
+
+Since CCC do not have a act on rule of procedure, it is important to map the internal process that takes place before courts decision. Since panel-composition affect the process we start with the decision-making process in Chambers. First of all, when case arises at CCC judge-rapporteur is assigned. Judge-rapporteur mostly prepare the draft of the court decision after some familiarisation with the file and send it to his colleagues for further discussion.  Judge-rapporteur than disscuses the case with other judges. The style of communication in chambers depends on prior agreement. Some of the judges like to meet in person other communicate better by e-mails. It could be said, that some judges prefer more personal approach rather than e-mail communication. However, when the case is complicated or something is problematic one of the judges always suggest a meeting in person.
+
+*„E-mail corespodence at the beginning, followed by a phase when the colleagues you have approached are asked to express themselves. So they'll respond electronically again, actually send the text back after editing, and some will ask for in-person meting. If that doesn't settle the matter, then the three-judge panel meet all together.“*
+
+During disscusion judges presents their opinion. It is this phase that creates the embryo of dissent, if one of the judges decide to break the majority opinion. Surely, judges are coming prepared for the discussion, but it is unlikely, that the decision of dissent was already made. Furthemore, the cost of dissent in chamber is higher sice it forces the judge-rapporteur to do more work. 
+
+*„If the Judge-Rapporteur proposes inadmissability by decision, and I disagree, I will force the Judge-Rapporteur to invite the parties to make a statement, others to reply… I feel obliged to write the dissent for the sake of it and not to let everything wear down the judge-rapporteur, who suddenly has a lot more work to do, and so in that case I feel obliged to also spit out some idea and explain to some extent why the ruling is being made by way of a ruling.“*
+
+It is not only the colegiality cost that judges consider in chamber dissent. Strategical moves are also considerate, since the dissent can transform from  non-binding decision  to binding judgment.
+
+*„It's just that in some cases, I've made, and I'll say this as a frankly strategic consideration, that knowing that I would be in the minority, you actually when you do a dissent in the Senate, you make a denial of a resolution that is not intended to preclude a binding denied finding. So I was making and even in this case I was making and even on the floor a strategic consideration that it was better to be denied than to be rejected.“*
+
+Interestingly, strategist judges also consider with whom to they rule on the decision. Since rotation of judges is available, one of the judges revealed, that he strategically wanted to resolve the case with the current composition, as the judge considered those more prominent in the legal community and cared about the academic impact of the case.
+
+*„…so actually by passing it in the more difficult Chamber and gaining support from my colleagues, had a lot more public legitimacy.“*
+
+After the signing of voting protocol, judge-rapporteur waits for the dissent and then announce the case. The situation in plenary cases is quite different, since plenary meeting are mandatory in person and planned on every tuesday. If judge-rapporteur want to discuss his case on plenary meeting, he has to send by e-mail his draft with the information on the case and his solution a week before. This is a non-writen rules which is respected by all judges. After judge-rapporteur send his draft some of the judges decide to react to the draft by sending in reply  their comments and any suggestions for that particular case. These judges are called "opinion leaders". 
+
+*„Usually it's that the judge who has some reservations about it before the plenary session and writes out in advance what his reservations are and sends it out to everybody else becomes the leader of the dissenting group and then most people tend to sort of join in and possibly write something of their own here and that's sort of the way that the group is formed. Whoever starts dissenting.“*
+
+It is not by any mean that the “opinion leaders” are always the same judges. Opinion leader has a intrinsic reason why he is willing to invest his free time in preparing and commenting on the case. Some of the judges argue, that opinion leaders are based on the area of the law. Some of them presentes themselves as an opinion leaders, since they consider it their duty to always speak up when they have some arguments against. Also it could happen that the opinion leader will arise during the debate at plenary meeting. It is not a rule, that opinion leader are only those, who comment on the case in advance. After all the e-mails judges meet at the plenary meeting, when judge-rapporteur debates with other judges. In this phase voting coalitions are emerging. Most of the judges agree that they know from the debate, even before the voting, how other judges will vote since most of the judges present their opinion or at least announce with whom they agree.
+
+*„And then my experience is that after voting, when I know that four colleagues vote against the  judgment like me, I always offer them: do you want to sign my dissent or not?“*
+
+However, there are some exception, when judges do not speak up and then quietly announce that they will express themselves in dissent. But that really does happen in exceptional situations.  After the debate, if the chairman finds that the case has been sufficiently discussed, he will open the vote. The non-written rule is that juges at this stage will definitely confirm whether they will dissent or not. In the case of dissent, it is necessary to give dissenters time to write their dissent. In practice, judges are usually given a week to write the dissent. After the vote, they decide when the case will be announced. The dissenters have time until then to file a dissent. A curious case occurred in the case of the repeal of the law on elections to the Chamber of Deputiesm Pl. US 44/17. This case was mentioned by all of our nine intervenes in this context. The problem that arised there was that the case held the judge-rapporteur for three-years due to numerous reasons. After the vote however chairman of CCC decided that the case will be announced the next day, since it repealed part of the law three months before the elections to the Chamber of Deputies. Dissenting judges criticzied in the dissent the lack of time given which then lead to new agreement between judges that a week should be guaranteed at minimum for writing a dissent.  
+The vote in plenary decision can also bring a situation, when judge-rapporteur will lose his case. In that scenario, the chairman put the case forward to the “most louder opinion leader” that becomes judge-rapporteur. In this cases judge-rapportur uses his draft as a basis for dissent.
+After the voting, opinion leader asks other  their colleagues  if they want to join. Most of the judges perceive joint dissent as an advantage. However even here we can spot some exceptions.
+
+Researcher: *…. and has it ever happened to you that maybe a judge wanted to have a solitary dissent and didn't want to invite you?*
+Interviewee: *Yeah as far as I recall there was a situation like that with one the justices.*
+
+After deciding who will write with whom the dissent, the judges get down to writing. The Justices perceive greater literary freedom in the possibility of a solitary dissent. Joint dissents are most often written by the opinion leader. The other justices in the dissenting coalition modify or comment on its text. In a few cases, there has also been joint writing of dissents (each writing a specific portion).
+
+# The fan, hater and strategist 
+
+There are three types of judges attitude toward dissent: there is the fan, the hater and the strategist. Respondents revealed that those attitudes toward dissenting represents a scale with to sides: One the one end, there are “haters” who do not like disensts and dissent only exceptionally; on the other side there are “fans” who like to dissents and dissent everytime (as much as possible). In the middle of the scale, there is the third group of judges who dissent strategically. They are neither completely open to dissent nor completely closed to it, simply put, they dissent where it suits them.
+
+Example of hater: *„I don't like them (dissents). […] I believe that when a decision is taken by a majority, it is not to comment further on some B that someone thought otherwise.“* 
+Example of fan: *„I'm a big fan of dissent […] And I can safely say that so far, I've been on the CCC for many years now, I've dissented every time I've voted no. It's a sign of fairness to explain even outwardly why I didn't support the majority opinion here.“*
+
+After identification of the three types of judges attitude towards dissent we need answer the question why they dissent? Even the judges from the group of those who don't like dissent, dissent in some cases. There is not a single judges without a dissent at CCC. One of the main factor is the previous profession of constitutional judge. When the constitutional judge is coming from the ordinary court system, he is not used to dissent unles he was judge at the Supreme Court or Supreme Administrative Court where is the possibility to dissent. For a carrier judge one of the main aspect of judicial decision-making is to create legal certainty for the public. Dissent however these certainties, from their point of view, undermine.
+
+*„Basically, from my point of view, it undermines the authority of the court to some extent. It was simply decided by majority vote, period.“*
+
+On the other hand, even those judges dissent sometimes. They explained to us, that there are some cases where is it strongly principal opinion for them and also a possibility to join in someone elses dissents, since they wouldn't want to waste time on writing a dissent:
+
+*„Whether it's a  values… so yeah I made an agreement with a colleague who felt the need to write the dissent. I would read it to consider whether or not to join.“*
+
+Furthemore judges who like to dissent and dissent as much as possible have different reasons why they do so. They manage to dissent every time, they vote against the resolution, however that do not mean that they are always the authors of the dissents, since it would be nearly impossible due to time management and the amount of workload at the CCC. These reasons are in the end perceived as an obligation:
+
+Interviewee: *„it may not be a legal obligation, but I feel it's my professional obligation. to write a dissent from a legal standpoint is a judge's possibility  not a duty, but I feel it's an ethical duty for a judge to always write a dissent if they vote no.“*
+Interviewee: *„it should simply be the principle that the judge should reveal why he was against.“*
+
+There are four main  aspects that further explains the decision of CCC justice to dissent: 1) previous experience, 2) emotional valve, 3) caseload and 4) importance of the case.
+
+## Previous experience
+
+CCC presents a Legal Olymp and happens to be the highest rank that a lawyer can obtain in the Czech Republic. President of the Czech Republic nominates candidates for CCC Justices and Senate approves them. Only experienced and prominent candidates are considered. As a rule, the president tries to nominate as diverse a constitutional court as possible - he seeks diversity not only in terms of gender but also in terms of profession. The judges include academics, lawyers, but also judges of higher and lower courts. Of course, for many it is not possible to identify one profession (e.g. a judge who also works in the academy). This also influence the familiarity of CCC justices - some have already met at distric court or department at university, some of them dont know eeach other. 
+
+*„Often those social relationships come from some previous work - I don't know, I know some of my colleagues from the university department.“*
+
+Our interview revealed, that Justices perceive the previous profession of their colleagues and at the same time transfer their knowledge from the former profession to the current one.
+
+Interviewee: *„Then some academic comes along at CC and he's used to writing academic papers and that's a bit different than judgments or disent. In an academic paper you're completely free, you can just write whatever you want and you're the only one behind it and it actually like influences some of the other academic discussion, but it doesn't directly affect people's fates.“*
+Interviewee: *„Many colleagues see the judgment as some kind of scientific work. For me, as a common judge, it's a judgment….the basis of judicial work is to respect the majority ruling. If the majority outvotes me, I click my heels and secondly, it is equally basic to judicial work to respect the binding legal opinion of a higher authority.“*
+Interviewee: *„Obviously, for example, if somebody is not a judge and now he's actually judging here for the first time, it's a bit of a problem for him to learn the procedures at court.“*
+
+Three hypothesis arises from this. Firstly, judges from lower courts are less like to dissent since they are usde to the binding nature of the decision of the Court of Appeal and at the same time they are more aware of the aspect of undermining the authority of the court by dissent. Secondly, judges who come from the Supreme Court and Supreme Administrative Court do not perceive this effect as they are at the top of the hierarchy and their courts allow dissent to be exercised in certain cases. Also judges at higher level have the power to determine what direction the case law should take, while lower court judges must learn to obey the higher courts. That situation was described by one of our respondents as follows: 
+
+*„If you're asking about the judicial career, it's related to the fact that as you grow to the higher levels, then of course you're more interested in influencing that jurisprudence by your rulings.“*
+
+Thirdly, Justice who are academic and do not have any experience as judges will have the ambition to take on an academic dimension in the decision/judgment. At the same time, one can also expect more freedom in writing dissent.
+
+## Emotional vent
+
+Every Interviewee touched upon the topic of emotions and frustration after the plenary or chamber discussion. A portion of the judges admitted that frustration sometimes leads them to write dissents. Dealing with emotions has proven to be a big issue for Constitutional Court judges. The strong attitude that emerged viewed the dissent as a positive tool for the judges' common ground. In a fundamental disagreement, a judge do not need need to bottle up his emotions but he can just vent them out through dissent.
+
+Researcher: *So if I may start - what is the meaning of a written descent for you?*
+Interviewee: *„It's kind of a relief, if we don't agree that we do, in the reasoning or something else - it's a safety valve to agree at all.“*
+
+Also judges agreed that emotional dissent is easily written soliterly than jointly. Since soliteraly dissent does not have to be approved by anyone else: „Honestly when you write it yourself you are making less compromises.“ The rest of Justices said, that they do not feel the need to vent emotions. Interestingly, those who do not experience such frustrations reminisced about their previous judicial careers:
+
+*„I'd have to hang myself if I was that emotional in the justice system. Of course, when I was young and stupid, the court of appel dissmised some of my cases. So I read  it and wrote it like they wanted from me, period.“*
+
+Our hypothesis is, that those Justices are experienced vented their emotions in a different way, as their previous judicial profession led them to do so. 
+Emotions also lead to strong personal expressions in dissent. Most held the view that dissent should not interfere on a personal level and argued that it is strictly unethical and unprofesional. But the minority defended opposit approach with the following argument:
+
+*„Someone said that simply the dissent is lost. yeah I just failed to get a majority for my arguments, but when there is a loss it should be as fair. So I recognize that if it's not fair, there's an opportunity to argue back on a more personal level.“*
+
+Those judges simply feel that something procedural was done unfair against them, and the only way to  draw attention to this problem is to write a dissent that is intended to inform the public of some injustice that has taken place in the Constitutional Court.
+
+## Caseload
+
+One of the big factors that influences the decisions judges is caseload. CCC is considered as one of the busiest court in the Czech Repubic. But how does caseload affect individual judges at CCC? Dissenting haters are more likely to spend time on their cases ratther than writing dissent. However dissenting fans are more likely to overlook the caseload for dissent. Strategist decide wheter he can aford to disent regarding the amount of caseload he is dealing with at the moment.
+
+Hater: *„Well, I don't have time to write dissents and stuff like that (laughs).“*
+Fan: *„I dissent every time.“*
+Strategist: *„If I'm against it but it's not worth a dissent, either because I don't consider it so fundamental, or that or just for completely prosaic reasons that I just don't have the time.“*
+
+Furthemore, we releaved collegiality effect regarding caseload. Judges feels the obligation to dissent, if they by their dissent, assign extra work to the Judge-Rapporteur. Extra work can be a situation where the judge-rapporteur is forced to rewrite decision to judgment. Other situation occurs when dissent is caused by delays in the proceedings. The dissenting judge tries as much as possible to convince the judge-reporter to the contrary, which ultimately delays the entire process of the decision-making and subsequent announcement of the judgment. Such time delays, which can lead to an increase in the caseload of both judges, lead the dissenting judge to exercise dissent. 
+Collegiality effect was also revealed in joint dissent. Some judges are agreed in advance to take turns writing dissents when voting together, or simply ask each other to write the dissent for time reasons. Long-term joint dissenting collaborations arise from frequent forms of voting and consensus.
+
+*„We decided who would write the dissent and then we communicated among ourselves and sent it to the other judges. We took the comments into account, so like then it was a collective work, but like every text, somebody just has to write the basis.“*
+
+## Importance of the case
+
+All of the dissenting judges type have one thing in common, they dissent. That means that for every judge there is a plausibility for dissenting. Turning point for every judge stand on importance of the case. This factor is however very subjective, since the boundaries of importance are entirely dependent on the personality of the judge and his perception:
+
+*„I think dissent is a fairly strong expression of disagreement, and often one disagrees over less substantive things. I think that dissent is meaningful if one is expressing a fundamental position or a fundamental opinion.“*
+*„It is really just supposed to be a question of legal opinion, strong legal opinion, not some kind of impressionology that I think something and it is a big question whether to bring into it the way of, for example, making that decision.“*
+*„Really depends on the particular case. I distinguish the dissenters by how I see them, of course. There may be someone else may say it's just different it's not that important. I judge it by what I think of it and if I then pay more attention to it, but that doesn't mean I don't pay less attention to those at it as important. Of course it's how they handle it. Because just like the decision you have it the same that yeah I address that decision as more important so I give it more attention.“*
+
+# Conclusion
+
