@@ -36,8 +36,10 @@ csl: chicago-author-date.csl
 knitr::opts_chunk$set(echo = FALSE)
 library(patchwork)
 library(tidyverse); theme_set(theme_minimal())
+library(jtools)
 
 load("descriptive_statistics.RData")
+model = read_rds("model_results.rds")
 ```
 
 # Introduction
@@ -126,7 +128,7 @@ Following the identification-disagreement model, the likelihood of a separate op
 
 **H~2~:** *The probability of observing a separate opinion is higher for cases with a higher level of disagreement than in cases with a lower level of disagreement.*
 
-According to @epsteinWhyWhenJudges2011: "[t]he economic theory of judicial behavior predicts that a decline in the judicial workload would lower the opportunity cost of dissenting and increase the frequency of separate opinions, and also that the greater the ideological heterogeneity among judges the more likely they are to disagree and so the higher the dissent rate will be." The authors find a positive relationship between the dissent rate, i.e., number of dissents divided by the number of cases, and caseload. Using the language of the identification-disagreement model, we believe leisure to be an example of the individiual utility a judge may consider. We believe individual utility may also pull the other way: against a separate opinion. Therefore, our hypothesis 3 suggests:
+According to @epsteinWhyWhenJudges2011: "[t]he economic theory of judicial behavior predicts that a decline in the judicial workload would lower the opportunity cost of dissenting and increase the frequency of separate opinions, and also that the greater the ideological heterogeneity among judges the more likely they are to disagree and so the higher the dissent rate will be." The authors find a positive relationship between the dissent rate, i.e., number of dissents divided by the number of cases, and caseload. Using the language of the identification-disagreement model, we believe leisure to be an example of the individual utility a judge may consider. We believe individual utility may also pull the other way: against a separate opinion. Therefore, our hypothesis 3 suggests:
 
 **H~3~:** *The higher the workload of a judge, the lower their likelihood of dissent.*
 
@@ -150,7 +152,12 @@ Lastly, we test whether the 3-member chambers with members from both judicial co
 ## Data description
 The data is based on the CCC dataset, which contains all decisions published by the CCC since its foundation, complete text corpus as well as plenty of metadata. We narrow our cases to all plenum decisions and to all 3-member chamber decisions on merits up until the end of 2022. The admissibility decisions of the 3-member chambers must be made unanimously, concurring decisions therein are a rarity.^[On top of that out of the 39 separate opinions in admissibility 3-chamber decisions, 25 of that are a copypasta from justice Jan Filip and 6 are a copypasta from justice Josef Fiala in alike cases. Thus, there is only a few left for a meaningful analysis. The class imbalance of the remaining ~10 decisions would be too large against the XXX of all chamber decisions on admissibility]. We also limit our analysis until the end of 2022 as the CCC entered its 4th term in 2023 and started to undergo a complete personal change.
 
-The final dataset for analysis contains XXX decisions. 
+The final dataset for analysis contains 6480 decisions of the CCC. Out of them, 80 % are decisions by the 3-member chambers on merits, 10 % are plenum decisions on merits and the remaining 10 % are plenum decisions on admissibility. At least one separate opinion contain 4 % decisions out of the 3-member decisions, 8 % decisions of the plenum decisions on admissibility, and 36 % decisions of the plenum decisions on merits.
+
+```{r}
+overall_table
+```
+
 
 ## Operationalization
 
@@ -198,6 +205,9 @@ Lastly, we include a dummy variable mixed coalitions, which takes up the value 1
 
 ## Identification strategy
 ## Results
+```{r}
+jtools::export_summs(model)
+```
 
 # Conclusions
 

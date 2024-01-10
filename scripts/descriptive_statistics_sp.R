@@ -11,10 +11,10 @@ data_metadata = read_rds("../data/US_metadata.rds") %>%
            str_detect(as.character(type_verdict), "procesní") & !str_detect(as.character(type_verdict), "vyhověno|zamítnuto|odmítnutno") ~ "procedural",
            .default = "admissibility")) %>%
   filter(year(date_decision) < 2023) %>%
-  filter(merits_admissibility == "merits" | formation == "Plenum")
+  filter(merits_admissibility == "merits" | formation == "Plenum") %>%
+  filter(merits_admissibility != "procedural")
   
 data_judges = read_rds("../data/US_judges.rds") %>%
-  unnest(term) %>%
   mutate(judge_term_end = case_when(is.na(judge_term_end) ~ judge_term_start %m+% years(10),
                                     .default = judge_term_end))
 data_dissents = read_rds("../data/US_dissents.rds") %>%
@@ -84,6 +84,14 @@ dissents_prevalence = data_metadata %>%
   ggplot(aes(x = forcats::fct_infreq(presence_dissent))) +
   geom_bar() +
   labs(x = NULL, y = NULL)
+
+overall_table = data_metadata %>%
+  mutate(formation = if_else(formation == "Plenum", "Plenum", "Chamber"),
+         presence_dissent = if_else(is.na(as.character(dissenting_opinion)), 0, 1)) %>%
+  group_by(formation, merits_admissibility) %>%
+  summarise(count = n(),
+            ratio_total = scales::percent(x = n()/nrow(.), accuracy = 2),
+            ratio_dissent = scales::percent(x = sum(presence_dissent)/n(), accuracy = 2))
 
 
 save.image("report/descriptive_statistics.RData")
