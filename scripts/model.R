@@ -1,60 +1,103 @@
-library(tidyverse)
 library(tidymodels)
 library(parsnip)
+library(rcompanion)
+library(corrr)
+library(stargazer)
+source("scripts/load_data.R")
 
-controversial_topics = c("diskriminace", "spotřebitel", "vyvlastnění", "restituční nárok", "restituce", "církevní majetek", "sexuální orientace", "základní práva a svobody/rovnost v základních právech a svobodách a zákaz diskriminace", "základní práva a svobody/rovnost v právech a důstojnosti a zákaz diskriminace", "hospodářská, sociální a kulturní práva/právo na ochranu zdraví", "základní práva a svobody/právo vlastnit a pokojně užívat majetek/restituce", "základní práva a svobody/svoboda projevu a právo na informace/svoboda projevu", "základní ústavní principy/zákaz vázání státu na ideologii nebo náboženství (laický stát)")
+data = data %>%
+  mutate(dissenting_opinion = as_factor(dissenting_opinion))
 
-# data wrangling ----------------------------------------------------------
-data_metadata = read_rds("../data/US_metadata.rds") %>% 
-  mutate(presence_dissent = if_else(is.na(as.character(dissenting_opinion)), "None", "At least 1"),
-         merits_admissibility = case_when(
-           str_detect(as.character(type_verdict), "vyhověno|zamítnuto") ~ "merits",
-           str_detect(as.character(type_verdict), "procesní") & !str_detect(as.character(type_verdict), "vyhověno|zamítnuto|odmítnutno") ~ "procedural",
-           .default = "admissibility")) %>%
-  filter(year(date_decision) < 2023) %>%
-  filter(merits_admissibility == "merits" | formation == "Plenum")
+# MODEL -------------------------------------------------------------------
+# model = logistic_reg() %>%
+#   set_engine("glm") %>%
+#   fit(dissenting_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + merits_admissibility + judge_profession + time_in_office + judge_profession:time_in_office + controversial,
+#       data = data) %>%
+#   extract_fit_engine()
 
-data_judges = read_rds("../data/US_judges.rds") %>%
-  mutate(judge_term_end = case_when(is.na(judge_term_end) ~ judge_term_start %m+% years(10),
-                                    .default = judge_term_end))
-data_dissents = read_rds("../data/US_dissents.rds") %>%
-  filter(doc_id %in% data_metadata$doc_id)
-data_compositions = read_rds("../data/US_compositions.rds") %>%
-  filter(doc_id %in% data_metadata$doc_id)
 
-data = left_join(data_compositions, data_dissents, by = join_by(doc_id, judge_id == dissenting_judge_id)) %>%
-  mutate(dissenting_opinion = as.factor(if_else(condition = is.na(dissenting_opinion), true = 0, false = 1))) %>%
-  left_join(., data_metadata %>% select(doc_id, date_decision, subject_proceedings, field_register, formation, type_decision, type_proceedings, concerned_acts, concerned_constitutional_acts, type_verdict)) %>%
-  mutate(n_concerned_acts = lengths(concerned_acts),
-         n_concerned_constitutional_acts = lengths(concerned_constitutional_acts)) %>%  # REWRITE WHEN THE DATA IS UPDATED
-  rename(dissenting_judge = judge_name) %>%
-  mutate(separate_opinion = pmap(., function(doc_id, dissenting_judge, date_decision, ...) data_judges %>%
-                                   filter(date_decision >= judge_term_start & date_decision <= judge_term_end & dissenting_judge == judge_name) %>%
-                                   select(judge_gender, judge_uni, judge_degree, judge_profession, judge_term_start, judge_term_end, judge_term_court))) %>%
-  unnest(separate_opinion) %>%
-  mutate(across(where(is.character), ~as.factor(.)),
-         time_in_office = interval(judge_term_start, date_decision) %/% months(1)) %>%
-  rowwise() %>%
-  mutate(controversial = if_else(any((subject_proceedings %>% pluck(1)) %in% controversial_topics) | any((field_register %>% pluck(1)) %in% controversial_topics), 1, 0)) %>%
-  ungroup()
+model = glm(dissenting_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + merits_admissibility + judge_profession + time_in_office + judge_profession:time_in_office + controversial,
+    data = data, family = "binomial")
 
-data_metadata %>% 
-  select(field_register) %>%
-  unnest(field_register) %>%
-  pluck(1) %>%
-  unique()
+summary(model)
+with(summary(model), 1 - deviance/null.deviance)
+tidy(model)
+car::vif(model)
 
-data_metadata %>% 
-  select(subject_proceedings) %>%
-  unnest(subject_proceedings) %>%
-  pluck(1) %>%
-  unique()
+stargazer(model)
+  
 
-# model -------------------------------------------------------------------
-model = logistic_reg() %>%
-  set_engine("glm") %>%
-  fit(dissenting_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + judge_profession + time_in_office + judge_profession:time_in_office + judge_gender + controversial,
-      data = data) %>%
-  extract_fit_engine()
+# DIAGNOSTICS -------------------------------------------------------------
+# do a LINK TEST
+linktest = function(model){
+  dat = model$model
+  fit = predict.glm(model, newdata = dat)
+  fit2 = fit ^ 2
+  resp = model$y
+  newdat = data.frame(fit = fit, fit2 = fit2, resp = resp)
+  link_model = glm(resp ~ fit + fit2, data = newdat, family = binomial(link = "logit"))
+  summary(link_model)
+}
+linktest(model)
 
-write_rds(model, "report/model_results.rds")
+
+corr_acts = data %>% 
+  select(c(n_concerned_acts, n_concerned_constitutional_acts, n_citations)) %>%
+  correlate(method = "spearman") %>%
+  shave(upper = TRUE) %>%
+  fashion(decimals = 2, na_print = "—")
+
+mixed_assoc = function(df, cor_method="spearman", adjust_cramersv_bias=TRUE){
+  df_comb = expand.grid(names(df), names(df),  stringsAsFactors = F) %>% set_names("X1", "X2")
+  
+  is_nominal = function(x) class(x) %in% c("factor", "character")
+  # https://community.rstudio.com/t/why-is-purr-is-numeric-deprecated/3559
+  # https://github.com/r-lib/rlang/issues/781
+  is_numeric <- function(x) { is.integer(x) || is_double(x)}
+  
+  f = function(xName,yName) {
+    x =  pull(df, xName)
+    y =  pull(df, yName)
+    
+    result = if(is_nominal(x) && is_nominal(y)){
+      # use bias corrected cramersV as described in https://rdrr.io/cran/rcompanion/man/cramerV.html
+      cv = cramerV(as.character(x), as.character(y), bias.correct = adjust_cramersv_bias)
+      data.frame(xName, yName, assoc=cv, type="cramersV")
+      
+    }else if(is_numeric(x) && is_numeric(y)){
+      correlation = cor(x, y, method=cor_method, use="complete.obs")
+      data.frame(xName, yName, assoc=correlation, type="correlation")
+      
+    }else if(is_numeric(x) && is_nominal(y)){
+      # from https://stats.stackexchange.com/questions/119835/correlation-between-a-nominal-iv-and-a-continuous-dv-variable/124618#124618
+      r_squared = summary(lm(x ~ y))$r.squared
+      data.frame(xName, yName, assoc=sqrt(r_squared), type="anova")
+      
+    }else if(is_nominal(x) && is_numeric(y)){
+      r_squared = summary(lm(y ~x))$r.squared
+      data.frame(xName, yName, assoc=sqrt(r_squared), type="anova")
+      
+    }else {
+      warning(paste("unmatched column type combination: ", class(x), class(y)))
+    }
+    
+    # finally add complete obs number and ratio to table
+    result %>% mutate(complete_obs_pairs=sum(!is.na(x) & !is.na(y)), complete_obs_ratio=complete_obs_pairs/length(x)) %>% rename(x=xName, y=yName)
+  }
+  
+  # apply function to each variable combination
+  map2_df(df_comb$X1, df_comb$X2, f)
+}
+
+correlation_complete = mixed_assoc(data %>% 
+              select(c(n_concerned_acts, n_concerned_constitutional_acts, n_citations, merits_admissibility, judge_profession, time_in_office, controversial))) %>%
+  select(x, y, assoc) %>%
+  pivot_wider(names_from = y, values_from = assoc) %>%
+  column_to_rownames(var = "x") %>%
+  as_cordf() %>%
+  shave(upper = TRUE) %>%
+  fashion(decimals = 2, na_print = "—") 
+
+rm(list=ls(pattern="^data_"))
+save.image("report/model_results.RData")
+

@@ -87,9 +87,9 @@
 analysis of the Czech Constitutional Court\thanks{Replication files are
 available on the author's Github account
 (\url{https://github.com/stepanpaulik/apex_courts_dataset/}).
-\textbf{Current version}: January 07, 2024}}
+\textbf{Current version}: January 19, 2024}}
 \author{true \and true}
-\date{January 07, 2024}
+\date{January 19, 2024}
 
 % Jesus, okay, everything above this comment is default Pandoc LaTeX template. -----
 % ----------------------------------------------------------------------------------
@@ -127,7 +127,7 @@ available on the author's Github account
 analysis of the Czech Constitutional Court\thanks{Replication files are
 available on the author's Github account
 (\url{https://github.com/stepanpaulik/apex_courts_dataset/}).
-\textbf{Current version}: January 07, 2024}  }
+\textbf{Current version}: January 19, 2024}  }
 
 \date{}
 
@@ -202,20 +202,20 @@ quantitative empirical analysis of the Czech Constitutional Court},
 \linespread{1.05}
 \usepackage{hyperref}
 \usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
 \usepackage{array}
-\usepackage{caption}
-\usepackage{graphicx}
-\usepackage{siunitx}
-\usepackage[normalem]{ulem}
-\usepackage{colortbl}
 \usepackage{multirow}
-\usepackage{hhline}
-\usepackage{calc}
-\usepackage{tabularx}
-\usepackage{threeparttable}
 \usepackage{wrapfig}
-\usepackage{adjustbox}
-\usepackage{hyperref}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
 
 \newtheorem{hypothesis}{Hypothesis}
 
@@ -865,6 +865,78 @@ dissent.}
 \hypertarget{empirical-analysis}{%
 \section{Empirical analysis}\label{empirical-analysis}}
 
+Wittig's model:
+
+\begin{itemize}
+\tightlist
+\item
+  Dependent variable
+
+  \begin{itemize}
+  \tightlist
+  \item
+    A Judge's Vote - done
+  \end{itemize}
+\item
+  Explanatory variables
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Norm identification
+
+    \begin{itemize}
+    \tightlist
+    \item
+      a profession the judge has pursued after their time in the office
+      - done as before
+    \end{itemize}
+  \item
+    time in office - months until judges exit from the office - done
+  \item
+    potential for disagreement
+
+    \begin{itemize}
+    \tightlist
+    \item
+      paragraphs - number of paragraphs in the facts of the
+      case/procedure history part - complexity in the form of number of
+      references to other law/CCC caselaw
+    \item
+      controversial topics - done
+    \end{itemize}
+  \end{itemize}
+\item
+  Control variables
+
+  \begin{itemize}
+  \tightlist
+  \item
+    institutional rules
+
+    \begin{itemize}
+    \tightlist
+    \item
+      admissibility - whether a case was admissible or not - can be
+      added
+    \item
+      number of parties - cannot be added
+    \item
+      political procedure - if it's initiated by a political actor
+    \item
+      president of the senate / judge rapportuer - don't understand
+    \end{itemize}
+  \item
+    role of law
+
+    \begin{itemize}
+    \tightlist
+    \item
+      number of references to scholarly literature per paragraph
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+
 \hypertarget{data-description}{%
 \subsection{Data description}\label{data-description}}
 
@@ -879,27 +951,38 @@ unanimously, concurring decisions therein are a rarity.\footnote{On top
   a copypasta from justice Josef Fiala in alike cases. Thus, there is
   only a few left for a meaningful analysis. The class imbalance of the
   remaining \textasciitilde10 decisions would be too large against the
-  XXX of all chamber decisions on admissibility}. We also limit our
-analysis until the end of 2022 as the CCC entered its 4th term in 2023
-and started to undergo a complete personal change.
+  XXX of all chamber decisions on admissibility}. We skip the first
+decade of the CCC as the data on it are rather incomplete and
+inconsistent: For example, very few decisions contain the information on
+the composition in the text and many do not contain the name of the
+dissenting judge. We also limit our analysis until the end of 2022 as
+the CCC entered its 4th term in 2023 and started to undergo a complete
+personal change.
 
-The final dataset for analysis contains 6480 decisions of the CCC. Out
-of them, 80 \% are decisions by the 3-member chambers on merits, 10 \%
-are plenum decisions on merits and the remaining 10 \% are plenum
+The final dataset for analysis contains 4669 decisions of the CCC. Out
+of them, 81 \% are decisions by the 3-member chambers on merits, around
+9 \% are plenum decisions on merits and the remaining 9 \% are plenum
 decisions on admissibility. At least one separate opinion contain 4 \%
-decisions out of the 3-member decisions, 8 \% decisions of the plenum
-decisions on admissibility, and 36 \% decisions of the plenum decisions
+decisions out of the 3-member decisions, 11 \% decisions of the plenum
+decisions on admissibility, and 39 \% decisions of the plenum decisions
 on merits.
 
-\begin{verbatim}
-## # A tibble: 3 x 5
-## # Groups:   formation [2]
-##   formation merits_admissibility count ratio_total ratio_dissent
-##   <chr>     <chr>                <int> <chr>       <chr>        
-## 1 Chamber   merits                5170 80%         4%           
-## 2 Plenum    admissibility          667 10%         8%           
-## 3 Plenum    merits                 643 10%         36%
-\end{verbatim}
+\begin{table}
+
+\caption{\label{tab:unnamed-chunk-1}Summary statistics for the whole dataset}
+\centering
+\begin{tabular}[t]{l|l|r|l|l}
+\hline
+\textbf{Formation} & \textbf{Admissibility} & \textbf{Count} & \textbf{Ratio - Total} & \textbf{Dissents - Ratio}\\
+\hline
+Chamber & merits & 3862 & 81.2\% & 4.3\%\\
+\hline
+Plenum & admissibility & 456 & 9.6\% & 11.2\%\\
+\hline
+Plenum & merits & 436 & 9.2\% & 39.4\%\\
+\hline
+\end{tabular}
+\end{table}
 
 \hypertarget{operationalization}{%
 \subsection{Operationalization}\label{operationalization}}
@@ -917,7 +1000,7 @@ to a decision or not.\footnote{Unlike Wittig we do not call our
   for a disposition of a case and still attach a concurrence separate
   opinion.} Our dependent variable is thus a binomial variable that has
 two categories: either a justice did attach a separate opinion or she
-did not.
+did not in any given case.
 
 We do not distinguish between a concurrence and a dissent for one
 reason. The difference between the two lays only in the disposition of
@@ -929,7 +1012,7 @@ Lax 2007--2008}; \protect\hyperlink{ref-laxNewJudicialPolitics2011}{Lax
 justice attaches ``only'' concurrence. The difference is that in the
 cases containing concurrence, the case facts may have completely
 accidentally fallen on the same side both of the concurring judge as
-well as the majority, whereas in the cases containg a dissenting
+well as the majority, whereas in the cases containing a dissenting
 opinion, the case fell in between the cut points. We do not consider
 this phenomenon as theoretically interesting.
 
@@ -952,23 +1035,49 @@ As Corley, Steigerwalt, and Ward
 argue and empirically measure, complexity of a case leads to less
 certainty and more ambiguity for the justices, which leads to a higher
 likelihood of disagreement. The authors define legal complexity as the
-number of legal issues a case has to address.
-
-Witting operationalizes the complexity of a case as the length of the
-facts of the case section of a decision. The CCC decisions are
-unfortunately not as clearly structured as the decisions of its German
-counterpart. We opt for a different approach. True to the Corley,
+number of legal issues a case has to address. True to the Corley,
 Steigerwalt, and Ward
 (\protect\hyperlink{ref-corleyPuzzleUnanimityConsensus2013}{2013})
 study, our operationalization of complexity relies on the assumption
 that the more legal issues there are in any given case, the higher the
 number of references to other laws and caselaw in the text of the
 corresponding decision. The variable \emph{concerned acts} captures the
-number of concerned legal acts on the legal-rule level and variable
-\emph{caselaw} captures the number of citations to CCC caselaw. The
-information on the former variable is based on the metadata provided by
-the CCC, the second is based on the regular expressions search of the
+number of concerned ordinary legal acts on the legal-act level, the
+variable \emph{concerned constitutional acts} captures the number of
+articles of the constitutional legal acts (mostly the Czech Constitution
+and the Charter of Fundamental Rights and Freedoms) and variable
+\emph{caselaw} captures the number of citations to its own caselaw. The
+information on the first two variables is based on the metadata provided
+by the CCC, the last is based on the regular expressions search of the
 text of the decisions.
+
+The first two we believe to be sufficiently different from each other: a
+typical right to fair proceedings case may concern only one
+constitutional article (the article 36 of the Charter) but many legal
+acts, whereas a typical separation of powers case concerning the
+Parliament concerns many consitutional articles but only few ordinary
+laws. On the other hand, the number of (concerned) constitutional acts
+and references to the CCC caselaw may be correlated. We therefore run
+diagnostics, which reveal that the citations to CCC caselaw and the
+number of references to constitutional acts are rather correlated.
+
+\begin{table}
+
+\caption{\label{tab:unnamed-chunk-2}Correlations between Independent Variables of Case Complexity}
+\centering
+\begin{tabular}[t]{l|l|l|l}
+\hline
+\textbf{Variable} & \textbf{1} & \textbf{2} & \textbf{3}\\
+\hline
+1. \# of Ordinary Acts & — & — & —\\
+\hline
+2. \# of Constitutional Articles & .35 & — & —\\
+\hline
+3. \# of CCC References & .32 & .48 & —\\
+\hline
+\multicolumn{4}{l}{\rule{0pt}{1em}\textit{Note.} Correlation was calculated using the Spearman Correlation Coefficient.}\\
+\end{tabular}
+\end{table}
 
 In a similar vein, certain typically value-laden topics may generate
 more disagreement even if they raise only one or few legal questions.
@@ -976,11 +1085,15 @@ Typically, the restitution cases or cases concerning fundamental human
 rights have been coined as rather controversial. Wittig identifies a
 number of topics in the FCC database as prone for controversy. The CCC
 dataset contains a variable \emph{subject\_proceedings}, which roughly
-corresponds to the FCC topics data. \#\#\#\# Norm-identification Wittig,
-we believe rightfully, draws a relationship between the adherence to
-norm of consensus and one's career choices. Theoretically, the actors
-socialized within the judiciary and its values are more likely to adhere
-to them.
+corresponds to the FCC topics data.
+
+\hypertarget{norm-identification}{%
+\paragraph{Norm-identification}\label{norm-identification}}
+
+Wittig, we believe rightfully, draws a relationship between the
+adherence to norm of consensus and one's career choices. Theoretically,
+the actors socialized within the judiciary and its values are more
+likely to adhere to them.
 
 Wittig thus operationalizes the norm-identification as the justices'
 career choice after their term. The justices that chose to stay within
@@ -998,7 +1111,7 @@ operationalize it as the profession before they entered the CCC.
 
 \begin{figure}
 \centering
-\includegraphics{separate_opinions_files/figure-latex/unnamed-chunk-2-1.pdf}
+\includegraphics{separate_opinions_files/figure-latex/unnamed-chunk-3-1.pdf}
 \caption{Kernel density of justices' ages at the start and and the end
 of their terms}
 \end{figure}
@@ -1010,14 +1123,23 @@ CCC were quite balanced in terms of the professions, its 3rd term is
 heavily skewed towards the more to the norm of consensus adherent
 professions.
 
-\includegraphics{separate_opinions_files/figure-latex/unnamed-chunk-3-1.pdf}
-\#\#\#\# Time in office We code the time in office variables as the
-number of days a justice has left until their end of mandate. That
-allows us to account both for the collegiality costs hypothesis as well
-as the difference between professions hypothesis. We also operationalize
-the time in the office variable as a number of months between the month
-of the decision and the month at which the justice is expected to leave
-their office. The variable ranges from XXX to XXX.
+\begin{figure}
+\centering
+\includegraphics{separate_opinions_files/figure-latex/unnamed-chunk-4-1.pdf}
+\caption{The distribution of professions of the CCC justices across its
+3 terms.}
+\end{figure}
+
+\hypertarget{time-in-office}{%
+\paragraph{Time in office}\label{time-in-office}}
+
+We code the time in office variables as the number of days a justice has
+left until their end of mandate. That allows us to account both for the
+collegiality costs hypothesis as well as the difference between
+professions hypothesis. We also operationalize the time in the office
+variable as a number of months between the month of the decision and the
+month at which the justice is expected to leave their office. The
+variable ranges from XXX to XXX.
 
 \hypertarget{workload}{%
 \paragraph{Workload}\label{workload}}
@@ -1048,243 +1170,70 @@ judges from both coalitions.
 \hypertarget{results}{%
 \subsection{Results}\label{results}}
 
-\begin{verbatim}
-## Registered S3 methods overwritten by 'broom':
-##   method            from  
-##   tidy.glht         jtools
-##   tidy.summary.glht jtools
-\end{verbatim}
-
- 
-  \providecommand{\huxb}[2]{\arrayrulecolor[RGB]{#1}\global\arrayrulewidth=#2pt}
-  \providecommand{\huxvb}[2]{\color[RGB]{#1}\vrule width #2pt}
-  \providecommand{\huxtpad}[1]{\rule{0pt}{#1}}
-  \providecommand{\huxbpad}[1]{\rule[-#1]{0pt}{#1}}
-
-\begin{table}[ht]
-\begin{centerbox}
-\begin{threeparttable}
- \label{tab:unnamed-chunk-4}
-\setlength{\tabcolsep}{0pt}
-\begin{tabular}{l l}
-
-
-\hhline{>{\huxb{0, 0, 0}{0.8}}->{\huxb{0, 0, 0}{0.8}}-}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}c!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\centering \hspace{6pt}  \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{c!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\centering \hspace{6pt} Model 1 \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{>{\huxb{255, 255, 255}{0.4}}->{\huxb{0, 0, 0}{0.4}}-}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} (Intercept) \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} -4.25 *** \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt}  \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} (0.14)\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} n\_concerned\_acts \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} 0.07 *** \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt}  \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} (0.01)\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} n\_concerned\_constitutional\_acts \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} 0.46 *** \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt}  \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} (0.03)\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} judge\_professionlawyer \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} -0.29\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt}  \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} (0.24)\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} judge\_professionpolitician \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} 0.12\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt}  \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} (0.25)\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} judge\_professionscholar \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} 0.33 *\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt}  \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} (0.15)\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} time\_in\_office \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} -0.00\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt}  \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} (0.00)\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} judge\_genderM \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} -0.13\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt}  \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} (0.08)\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} controversial \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} 0.65 *** \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt}  \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} (0.11)\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} judge\_professionlawyer:time\_in\_office \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} 0.00\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt}  \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} (0.00)\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} judge\_professionpolitician:time\_in\_office \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} -0.01 *\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt}  \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} (0.00)\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} judge\_professionscholar:time\_in\_office \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} -0.00\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt}  \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} (0.00)\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{>{\huxb{255, 255, 255}{0.4}}->{\huxb{0, 0, 0}{0.4}}-}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} N \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} 24234\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} AIC \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} 7457.10\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} BIC \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} 7554.25\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-
-\multicolumn{1}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt} Pseudo R2 \hspace{6pt}\huxbpad{6pt}} &
-\multicolumn{1}{r!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedleft \hspace{6pt} 0.07\hphantom{0}\hphantom{0}\hphantom{0}\hphantom{0} \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{>{\huxb{0, 0, 0}{0.8}}->{\huxb{0, 0, 0}{0.8}}-}
-\arrayrulecolor{black}
-
-\multicolumn{2}{!{\huxvb{0, 0, 0}{0}}l!{\huxvb{0, 0, 0}{0}}}{\huxtpad{6pt + 1em}\raggedright \hspace{6pt}  *** p $<$ 0.001;  ** p $<$ 0.01;  * p $<$ 0.05. \hspace{6pt}\huxbpad{6pt}} \tabularnewline[-0.5pt]
-
-
-\hhline{}
-\arrayrulecolor{black}
-\end{tabular}
-\end{threeparttable}\par\end{centerbox}
-
+The results reveal quite an interesting trend at the CCC.
+
+\% Table created by stargazer v.5.2.3 by Marek Hlavac, Social Policy
+Institute. E-mail: marek.hlavac at gmail.com \% Date and time: Fri, Jan
+19, 2024 - 21:57:42
+
+\begin{table}[!htbp] \centering 
+  \caption{Results from the Logit Model} 
+  \label{} 
+\begin{tabular}{@{\extracolsep{5pt}}lc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+ & \multicolumn{1}{c}{\textit{Dependent variable:}} \\ 
+\cline{2-2} 
+\\[-1.8ex] & dissenting\_opinion \\ 
+\hline \\[-1.8ex] 
+ n\_concerned\_acts & 0.054$^{***}$ \\ 
+  & (0.010) \\ 
+  & \\ 
+ n\_concerned\_constitutional\_acts & 0.111$^{***}$ \\ 
+  & (0.010) \\ 
+  & \\ 
+ n\_citations & 0.032$^{***}$ \\ 
+  & (0.003) \\ 
+  & \\ 
+ merits\_admissibilitymerits & $-$0.228$^{**}$ \\ 
+  & (0.105) \\ 
+  & \\ 
+ judge\_professionlawyer & $-$0.349 \\ 
+  & (0.259) \\ 
+  & \\ 
+ judge\_professionpolitician & 0.551$^{**}$ \\ 
+  & (0.270) \\ 
+  & \\ 
+ judge\_professionscholar & 0.253$^{*}$ \\ 
+  & (0.152) \\ 
+  & \\ 
+ time\_in\_office & $-$0.002 \\ 
+  & (0.002) \\ 
+  & \\ 
+ controversial & 0.636$^{***}$ \\ 
+  & (0.114) \\ 
+  & \\ 
+ judge\_professionlawyer:time\_in\_office & 0.003 \\ 
+  & (0.004) \\ 
+  & \\ 
+ judge\_professionpolitician:time\_in\_office & $-$0.014$^{***}$ \\ 
+  & (0.004) \\ 
+  & \\ 
+ judge\_professionscholar:time\_in\_office & 0.001 \\ 
+  & (0.002) \\ 
+  & \\ 
+ Constant & $-$3.997$^{***}$ \\ 
+  & (0.146) \\ 
+  & \\ 
+\hline \\[-1.8ex] 
+Observations & 21,741 \\ 
+Log Likelihood & $-$3,328.673 \\ 
+Akaike Inf. Crit. & 6,683.347 \\ 
+\hline 
+\hline \\[-1.8ex] 
+\textit{Note:}  & \multicolumn{1}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+\end{tabular} 
 \end{table}
- 
 
 \hypertarget{conclusions}{%
 \section{Conclusions}\label{conclusions}}
