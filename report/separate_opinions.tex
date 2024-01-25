@@ -87,9 +87,9 @@
 analysis of the Czech Constitutional Court\thanks{Replication files are
 available on the author's Github account
 (\url{https://github.com/stepanpaulik/apex_courts_dataset/}).
-\textbf{Current version}: January 19, 2024}}
+\textbf{Current version}: January 25, 2024}}
 \author{true \and true}
-\date{January 19, 2024}
+\date{January 25, 2024}
 
 % Jesus, okay, everything above this comment is default Pandoc LaTeX template. -----
 % ----------------------------------------------------------------------------------
@@ -127,7 +127,7 @@ available on the author's Github account
 analysis of the Czech Constitutional Court\thanks{Replication files are
 available on the author's Github account
 (\url{https://github.com/stepanpaulik/apex_courts_dataset/}).
-\textbf{Current version}: January 19, 2024}  }
+\textbf{Current version}: January 25, 2024}  }
 
 \date{}
 
@@ -216,6 +216,16 @@ quantitative empirical analysis of the Czech Constitutional Court},
 \usepackage[normalem]{ulem}
 \usepackage{makecell}
 \usepackage{xcolor}
+\usepackage{siunitx}
+
+  \newcolumntype{d}{S[
+    input-open-uncertainty=,
+    input-close-uncertainty=,
+    parse-numbers = false,
+    table-align-text-pre=false,
+    table-align-text-post=false
+  ]}
+  
 
 \newtheorem{hypothesis}{Hypothesis}
 
@@ -955,21 +965,24 @@ unanimously, concurring decisions therein are a rarity.\footnote{On top
 decade of the CCC as the data on it are rather incomplete and
 inconsistent: For example, very few decisions contain the information on
 the composition in the text and many do not contain the name of the
-dissenting judge. We also limit our analysis until the end of 2022 as
-the CCC entered its 4th term in 2023 and started to undergo a complete
-personal change.
+dissenting judge at all. We also limit our analysis until the end of
+2022 as the CCC entered its 4th term in 2023 and started to undergo a
+complete personal change. The following plot confirms our intuition
+about the lack of variance among the admissibility decisions.
 
-The final dataset for analysis contains 4669 decisions of the CCC. Out
-of them, 81 \% are decisions by the 3-member chambers on merits, around
-9 \% are plenum decisions on merits and the remaining 9 \% are plenum
-decisions on admissibility. At least one separate opinion contain 4 \%
-decisions out of the 3-member decisions, 11 \% decisions of the plenum
-decisions on admissibility, and 39 \% decisions of the plenum decisions
+\includegraphics{separate_opinions_files/figure-latex/unnamed-chunk-1-1.pdf}
+
+The final dataset for analysis contains 4668 decisions of the CCC. Out
+of them, 81.2\% are decisions by the 3-member chambers on merits, around
+9.2\% are plenum decisions on merits and the remaining 9.6\% are plenum
+decisions on admissibility. At least one separate opinion contain 4.3\%
+decisions out of the 3-member decisions, 11.2\% decisions of the plenum
+decisionson admissibility, and 39.4\% decisions of the plenum decisions
 on merits.
 
 \begin{table}
 
-\caption{\label{tab:unnamed-chunk-1}Summary statistics for the whole dataset}
+\caption{\label{tab:unnamed-chunk-2}Summary statistics for the whole dataset}
 \centering
 \begin{tabular}[t]{l|l|r|l|l}
 \hline
@@ -991,21 +1004,23 @@ Plenum & merits & 436 & 9.2\% & 39.4\%\\
 \subsubsection{Dependent variable: a separate
 opinion}\label{dependent-variable-a-separate-opinion}}
 
-Our dependent variable is whether a justice attached a separate opinion
-to a decision or not.\footnote{Unlike Wittig we do not call our
-  dependent variable a judge's vote, as that refers to a slightly
-  different thing within the CCC context. A judge may vote against the
-  majority opinion but since they are not mandated to write a separate
-  opinion, these do not necessarily overlap. Similarly, a judge may vote
-  for a disposition of a case and still attach a concurrence separate
-  opinion.} Our dependent variable is thus a binomial variable that has
-two categories: either a justice did attach a separate opinion or she
-did not in any given case.
+We conceptualize our dependent variable as the information whether a
+justice attached a separate opinion to a decision or not.\footnote{Unlike
+  Wittig we do not call our dependent variable a judge's vote, as that
+  refers to a slightly different thing within the CCC context. A judge
+  may vote against the majority opinion but since they are not mandated
+  to write a separate opinion, these do not necessarily overlap.
+  Similarly, a judge may vote for a disposition of a case and still
+  attach a concurrence separate opinion.} Our dependent variable
+\emph{Separate opinion} is thus a dummy variable that has two
+categories: either a justice did attach a separate opinion (1) or she
+did not in any given case (0).
 
-We do not distinguish between a concurrence and a dissent for one
-reason. The difference between the two lays only in the disposition of
-the case. The justices may equally disagree on the interpretation of
-legal rules, thus, in the case-space model terms
+We do not distinguish between a concurrence and a dissent. The reason is
+two-fold: practical and theoretical. Theoretically, the difference
+between the two lays only in the disposition of the case. The justices
+may equally disagree on the interpretation of legal rules, thus, in the
+case-space model terms
 (\protect\hyperlink{ref-landaDisagreementsCollegialCourts2007}{Landa and
 Lax 2007--2008}; \protect\hyperlink{ref-laxNewJudicialPolitics2011}{Lax
 2011}), the judge cut points in any given case differ even when a
@@ -1014,7 +1029,10 @@ cases containing concurrence, the case facts may have completely
 accidentally fallen on the same side both of the concurring judge as
 well as the majority, whereas in the cases containing a dissenting
 opinion, the case fell in between the cut points. We do not consider
-this phenomenon as theoretically interesting.
+this phenomenon as theoretically interesting. Practically, it was
+impossible to distinguish between the two categories as some decisions
+simply do not contain the information whether a separate opinion was a
+concurring or dissenting opinion.
 
 \hypertarget{explanatory-variables}{%
 \subsubsection{Explanatory variables}\label{explanatory-variables}}
@@ -1030,6 +1048,9 @@ specifically, we expect the potential for disagreement to be captured by
 two characteristics of any given case: (1) its complexity and (2) its
 controversy.
 
+\hypertarget{complexity}{%
+\subparagraph{Complexity}\label{complexity}}
+
 As Corley, Steigerwalt, and Ward
 (\protect\hyperlink{ref-corleyPuzzleUnanimityConsensus2013}{2013}), p70
 argue and empirically measure, complexity of a case leads to less
@@ -1041,29 +1062,20 @@ Steigerwalt, and Ward
 study, our operationalization of complexity relies on the assumption
 that the more legal issues there are in any given case, the higher the
 number of references to other laws and caselaw in the text of the
-corresponding decision. The variable \emph{concerned acts} captures the
-number of concerned ordinary legal acts on the legal-act level, the
-variable \emph{concerned constitutional acts} captures the number of
-articles of the constitutional legal acts (mostly the Czech Constitution
-and the Charter of Fundamental Rights and Freedoms) and variable
-\emph{caselaw} captures the number of citations to its own caselaw. The
-information on the first two variables is based on the metadata provided
-by the CCC, the last is based on the regular expressions search of the
-text of the decisions.
+corresponding decision.
 
-The first two we believe to be sufficiently different from each other: a
-typical right to fair proceedings case may concern only one
-constitutional article (the article 36 of the Charter) but many legal
-acts, whereas a typical separation of powers case concerning the
-Parliament concerns many consitutional articles but only few ordinary
-laws. On the other hand, the number of (concerned) constitutional acts
-and references to the CCC caselaw may be correlated. We therefore run
-diagnostics, which reveal that the citations to CCC caselaw and the
-number of references to constitutional acts are rather correlated.
+The variable \emph{concerned acts} captures the number of concerned
+ordinary legal acts on the legal-act level, the variable \emph{concerned
+constitutional acts} captures the number of articles of the
+constitutional legal acts (mostly the Czech Constitution and the Charter
+of Fundamental Rights and Freedoms) and variable \emph{caselaw} captures
+the number of citations to its own caselaw. The information on the first
+two variables is based on the metadata provided by the CCC, the last is
+based on the regular expressions search of the text of the decisions.
 
 \begin{table}
 
-\caption{\label{tab:unnamed-chunk-2}Correlations between Independent Variables of Case Complexity}
+\caption{\label{tab:unnamed-chunk-3}Correlations between Independent Variables of Case Complexity}
 \centering
 \begin{tabular}[t]{l|l|l|l}
 \hline
@@ -1079,21 +1091,52 @@ number of references to constitutional acts are rather correlated.
 \end{tabular}
 \end{table}
 
+The first two we believe to be sufficiently different from each other: a
+typical right to fair proceedings case may concern only one
+constitutional article (the article 36 of the Charter) but many legal
+acts, whereas a typical separation of powers case concerning the
+Parliament concerns many consitutional articles but only few ordinary
+laws. On the other hand, the number of (concerned) constitutional acts
+and references to the CCC caselaw may be correlated. We therefore run
+diagnostics, which reveal that the citations to CCC caselaw and the
+number of references to constitutional acts are rather correlated.
+Because we believe the number of cited constitutional articles to better
+reflect the number of legal issues than the number of references to CCC
+case-law, we stick only to that variable.
+
+\hypertarget{controversy}{%
+\subparagraph{Controversy}\label{controversy}}
+
 In a similar vein, certain typically value-laden topics may generate
 more disagreement even if they raise only one or few legal questions.
 Typically, the restitution cases or cases concerning fundamental human
-rights have been coined as rather controversial. Wittig identifies a
-number of topics in the FCC database as prone for controversy. The CCC
-dataset contains a variable \emph{subject\_proceedings}, which roughly
-corresponds to the FCC topics data.
+rights have been coined as rather controversial. The CCC dataset
+contains a variable \emph{subject\_proceedings}, which contains the
+subject matter of any given case (a discrimination case, a separation of
+powers case and alike), and a variable \emph{field\_register}, which
+refers to the area of constitutional law that the case pertains (the
+right to fair trial, the right of freedom of speech).
+
+We coded the topics as controversial when they concern any of the
+following subject matters or areas of constitutional law:
+discrimination, expropriation, restitution, the property of church,
+sexual orientation, the protection of consumer, fundamental human
+rights, social and cultural rights, the right of property, the freedom
+of speech, and the separation between the church and state. Therefore,
+the variable \emph{controversial} is a dummy variable, which takes the
+value of 1 when the given case falls in any of the previously mentioned
+categories or it takes the value 0 when it does not.
 
 \hypertarget{norm-identification}{%
 \paragraph{Norm-identification}\label{norm-identification}}
 
-Wittig, we believe rightfully, draws a relationship between the
-adherence to norm of consensus and one's career choices. Theoretically,
-the actors socialized within the judiciary and its values are more
-likely to adhere to them.
+Secondly, our theory generated a second expectation: a relationship
+between adherence to norm of consensus and one's career choices.
+Theoretically, the actors socialized within the judiciary and its values
+are more likely to adhere to them than their peers who entered the CCC
+from the legal practice
+(\protect\hyperlink{ref-wittigOccurrenceSeparateOpinions2016}{Wittig
+2016, 84--87}.). Wittig confirms this intuition also empirically.
 
 Wittig thus operationalizes the norm-identification as the justices'
 career choice after their term. The justices that chose to stay within
@@ -1102,22 +1145,25 @@ identify with the norm of consensus, whereas the justices' that made
 different career choice are less likely to identify with the norm of
 consensus.
 
+\begin{figure}
+\centering
+\includegraphics{separate_opinions_files/figure-latex/unnamed-chunk-4-1.pdf}
+\caption{Kernel density of justices' ages at the start and and the end
+of their terms}
+\end{figure}
+
 Unfortunately, such a measure does not fit the CCC context. As the data
 shows, CCC justices start their term usually at the end of their career
 and a considerable part of them ends their term in their 70s, well past
 the retirement age in Czechia. Therefore, instead of operationalizing
 the norm-identification as the profession after their term, we
-operationalize it as the profession before they entered the CCC.
-
-\begin{figure}
-\centering
-\includegraphics{separate_opinions_files/figure-latex/unnamed-chunk-3-1.pdf}
-\caption{Kernel density of justices' ages at the start and and the end
-of their terms}
-\end{figure}
+operationalize it as the profession before they entered the CCC. Quite
+handily, the CCC dataset contains such an information on the last
+profession before the CCC justices took up their office.
 
 The variable \emph{profession} contains the information on the justices'
-previous career choices. We can observe that the distribution of the
+previous career choices and can take up the values of judge, scholar,
+politician, or lawyer. We can observe that the distribution of the
 professions has changed across time. While the 1st and 2nd terms of the
 CCC were quite balanced in terms of the professions, its 3rd term is
 heavily skewed towards the more to the norm of consensus adherent
@@ -1125,7 +1171,7 @@ professions.
 
 \begin{figure}
 \centering
-\includegraphics{separate_opinions_files/figure-latex/unnamed-chunk-4-1.pdf}
+\includegraphics{separate_opinions_files/figure-latex/unnamed-chunk-5-1.pdf}
 \caption{The distribution of professions of the CCC justices across its
 3 terms.}
 \end{figure}
@@ -1133,36 +1179,34 @@ professions.
 \hypertarget{time-in-office}{%
 \paragraph{Time in office}\label{time-in-office}}
 
-We code the time in office variables as the number of days a justice has
-left until their end of mandate. That allows us to account both for the
-collegiality costs hypothesis as well as the difference between
-professions hypothesis. We also operationalize the time in the office
-variable as a number of months between the month of the decision and the
-month at which the justice is expected to leave their office. The
-variable ranges from XXX to XXX.
+The effects of the CCC justices' profession should according to our
+theoretical expectations vary depending on the time the judges have
+spent in their office. The closer to them taking up the office, the
+effects of their preceding profession should be more pronounced.
+Similarly, according to the collegiality costs hypothesis, the
+dissenting behavior of justices should vary across time. Namely,
+justices are expected to dissent less at the beginning of their terms,
+as the collegiality costs are higher, and to dissent more at the end of
+their terms, as the collegiality costs of the disagreement are lower. We
+capture the \emph{time in office} variables as the number of months a
+justice has left until their end of mandate from the date of decision.
+That allows us to account both for the collegiality costs hypothesis as
+well as the difference between professions hypothesis.
 
 \hypertarget{workload}{%
 \paragraph{Workload}\label{workload}}
 
-We operationalize workload as the number of unfinished cases that any
-given judge has in the moment of any given decision as a judge
+Similarly to Brekke et al.
+(\protect\hyperlink{ref-brekkeThatOrderHow2023}{2023}), we
+operationalize \emph{workload} as the number of pending unfinished cases
+that any given judge has in the moment of any given decision as a judge
 rapporteur. We firstly mined the compositions of panels as well as the
 plenary from the text of the decision. We then calculated the number of
 unfinished cases each judge had at the time of any given decision as a
 judge rapporteur using the date of submission and of decision of a case.
-We believe such a measure captures the perceived workload of a judge
-better than the original EPL measure of caseload of the whole court: a
-judge knowing that they have, for example, 20 in comparison to 100
-decisions to draft as a judge rapporteur is how they would perceive
-having had more workload.
 
-\hypertarget{mixed-coalition}{%
-\paragraph{Mixed coalition}\label{mixed-coalition}}
-
-Lastly, we include a dummy variable mixed coalitions, which takes up the
-value 1 when two conditions are met: (1) the decision was made in a
-3-member chamber and (2) the composition of the chamber was made up of
-judges from both coalitions.
+\hypertarget{control-variables}{%
+\subsubsection{Control Variables}\label{control-variables}}
 
 \hypertarget{identification-strategy}{%
 \subsection{Identification strategy}\label{identification-strategy}}
@@ -1172,67 +1216,51 @@ judges from both coalitions.
 
 The results reveal quite an interesting trend at the CCC.
 
-\% Table created by stargazer v.5.2.3 by Marek Hlavac, Social Policy
-Institute. E-mail: marek.hlavac at gmail.com \% Date and time: Fri, Jan
-19, 2024 - 21:57:42
+\begin{table}
 
-\begin{table}[!htbp] \centering 
-  \caption{Results from the Logit Model} 
-  \label{} 
-\begin{tabular}{@{\extracolsep{5pt}}lc} 
-\\[-1.8ex]\hline 
-\hline \\[-1.8ex] 
- & \multicolumn{1}{c}{\textit{Dependent variable:}} \\ 
-\cline{2-2} 
-\\[-1.8ex] & dissenting\_opinion \\ 
-\hline \\[-1.8ex] 
- n\_concerned\_acts & 0.054$^{***}$ \\ 
-  & (0.010) \\ 
-  & \\ 
- n\_concerned\_constitutional\_acts & 0.111$^{***}$ \\ 
-  & (0.010) \\ 
-  & \\ 
- n\_citations & 0.032$^{***}$ \\ 
-  & (0.003) \\ 
-  & \\ 
- merits\_admissibilitymerits & $-$0.228$^{**}$ \\ 
-  & (0.105) \\ 
-  & \\ 
- judge\_professionlawyer & $-$0.349 \\ 
-  & (0.259) \\ 
-  & \\ 
- judge\_professionpolitician & 0.551$^{**}$ \\ 
-  & (0.270) \\ 
-  & \\ 
- judge\_professionscholar & 0.253$^{*}$ \\ 
-  & (0.152) \\ 
-  & \\ 
- time\_in\_office & $-$0.002 \\ 
-  & (0.002) \\ 
-  & \\ 
- controversial & 0.636$^{***}$ \\ 
-  & (0.114) \\ 
-  & \\ 
- judge\_professionlawyer:time\_in\_office & 0.003 \\ 
-  & (0.004) \\ 
-  & \\ 
- judge\_professionpolitician:time\_in\_office & $-$0.014$^{***}$ \\ 
-  & (0.004) \\ 
-  & \\ 
- judge\_professionscholar:time\_in\_office & 0.001 \\ 
-  & (0.002) \\ 
-  & \\ 
- Constant & $-$3.997$^{***}$ \\ 
-  & (0.146) \\ 
-  & \\ 
-\hline \\[-1.8ex] 
-Observations & 21,741 \\ 
-Log Likelihood & $-$3,328.673 \\ 
-Akaike Inf. Crit. & 6,683.347 \\ 
-\hline 
-\hline \\[-1.8ex] 
-\textit{Note:}  & \multicolumn{1}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
-\end{tabular} 
+\caption{\label{tab:unnamed-chunk-6}Results from the Logit Model}
+\centering
+\begin{tabular}[t]{lc}
+\toprule
+  & (1)\\
+\midrule
+(Intercept) & \num{-3.678}***\\
+ & (\num{0.168})\\
+n\_concerned\_acts & \num{0.052}***\\
+ & (\num{0.009})\\
+n\_concerned\_constitutional\_acts & \num{0.112}***\\
+ & (\num{0.010})\\
+n\_citations & \num{0.031}***\\
+ & (\num{0.003})\\
+merits\_admissibilitymerits & \num{-0.212}*\\
+ & (\num{0.105})\\
+judge\_professionlawyer & \num{-0.257}\\
+ & (\num{0.260})\\
+judge\_professionpolitician & \num{0.650}*\\
+ & (\num{0.273})\\
+judge\_professionscholar & \num{0.323}*\\
+ & (\num{0.154})\\
+time\_in\_office & \num{-0.003}+\\
+ & \vphantom{1} (\num{0.002})\\
+controversial & \num{0.635}***\\
+ & (\num{0.114})\\
+workload & \num{-0.003}***\\
+ & (\num{0.001})\\
+judge\_professionlawyer × time\_in\_office & \num{0.003}\\
+ & \vphantom{1} (\num{0.004})\\
+judge\_professionpolitician × time\_in\_office & \num{-0.014}**\\
+ & (\num{0.004})\\
+judge\_professionscholar × time\_in\_office & \num{0.001}\\
+ & (\num{0.002})\\
+\midrule
+Num.Obs. & \num{21741}\\
+AIC & \num{6670.2}\\
+BIC & \num{6782.0}\\
+Log.Lik. & \num{-3321.075}\\
+F & \num{56.183}\\
+RMSE & \num{0.19}\\
+\bottomrule
+\end{tabular}
 \end{table}
 
 \hypertarget{conclusions}{%

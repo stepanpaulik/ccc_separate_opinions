@@ -35,9 +35,8 @@ link-citations: true
 knitr::opts_chunk$set(echo = FALSE)
 library(patchwork)
 library(tidyverse); theme_set(theme_minimal())
-library(jtools)
 library(kableExtra)
-library(stargazer)
+library(modelsummary)
 
 
 load("descriptive_statistics.RData")
@@ -62,7 +61,6 @@ We find that a dissent imputes costs on the majority that produces longer argume
 Our article proceeds as follows. We start out with a theory. We explain the main differences between the expectations based on the theory in the CCC context in comparison to the SCOTUS context and based on that we draw the hypotheses for the empirical part. We briefly explain the choice of our broad methodological framework: the Bayesian statistics. We proceed to test the hypotheses in empirical part divided into sections one per each hypothesis. We discuss the pitfalls of our research and potential room for improvement afterwards. Lastly, we conclude with a summary of our findings.
 
 A separate opinion is a statement following the main ruling, in which a judge expresses the dissatisfacation with the decision by elaborating on points of the majority decision they disagree with [@wittigOccurrenceSeparateOpinions2016, p. 57].
-
 
 # Theory
 In general, there are multiple accounts of behavior of judges'. The first that had dominated until ~the end of 20th century posited that judges are policy oriented. A lot of research has been conducted on whether, how and to what extent do judges indeed seek to advance the policies they desire [@berdejoElectoralCyclesUS2017; @clarkLocatingSupremeCourt2010; @dworkinPoliticalJudgesRule1980; @kastellecEmpiricallyEvaluatingCountermajoritarian2016; @moyerJudicialInnovationSexual2012].
@@ -172,9 +170,13 @@ Wittig's model:
         - number of references to scholarly literature per paragraph
       
 ## Data description
-The data is based on the CCC dataset, which contains all decisions published by the CCC since its foundation, complete text corpus as well as plenty of metadata. We narrow our cases to all plenum decisions and to all 3-member chamber decisions on merits up until the end of 2022. The admissibility decisions of the 3-member chambers must be made unanimously, concurring decisions therein are a rarity.^[On top of that out of the 39 separate opinions in admissibility 3-chamber decisions, 25 of that are a copypasta from justice Jan Filip and 6 are a copypasta from justice Josef Fiala in alike cases. Thus, there is only a few left for a meaningful analysis. The class imbalance of the remaining ~10 decisions would be too large against the XXX of all chamber decisions on admissibility]. We skip the first decade of the CCC as the data on it are rather incomplete and inconsistent: For example, very few decisions contain the information on the composition in the text and many do not contain the name of the dissenting judge. We also limit our analysis until the end of 2022 as the CCC entered its 4th term in 2023 and started to undergo a complete personal change. 
+The data is based on the CCC dataset, which contains all decisions published by the CCC since its foundation, complete text corpus as well as plenty of metadata. We narrow our cases to all plenum decisions and to all 3-member chamber decisions on merits up until the end of 2022. The admissibility decisions of the 3-member chambers must be made unanimously, concurring decisions therein are a rarity.^[On top of that out of the 39 separate opinions in admissibility 3-chamber decisions, 25 of that are a copypasta from justice Jan Filip and 6 are a copypasta from justice Josef Fiala in alike cases. Thus, there is only a few left for a meaningful analysis. The class imbalance of the remaining ~10 decisions would be too large against the XXX of all chamber decisions on admissibility]. We skip the first decade of the CCC as the data on it are rather incomplete and inconsistent: For example, very few decisions contain the information on the composition in the text and many do not contain the name of the dissenting judge at all. We also limit our analysis until the end of 2022 as the CCC entered its 4th term in 2023 and started to undergo a complete personal change. The following plot confirms our intuition about the lack of variance among the admissibility decisions.
 
-The final dataset for analysis contains 4669 decisions of the CCC. Out of them, 81 % are decisions by the 3-member chambers on merits, around 9 % are plenum decisions on merits and the remaining 9 % are plenum decisions on admissibility. At least one separate opinion contain 4 % decisions out of the 3-member decisions, 11 % decisions of the plenum decisions on admissibility, and 39 % decisions of the plenum decisions on merits.
+```{r fig.caption = "Percentage of Decisions with at least one Separate Opinion"}
+separate_opinion_ratio
+```
+
+The final dataset for analysis contains `r toString(length(unique(data$doc_id)))` decisions of the CCC. Out of them, `r overall_table[overall_table$formation == "Chamber", "ratio_total"]` are decisions by the 3-member chambers on merits, around `r overall_table[overall_table$formation == "Plenum" & overall_table$merits_admissibility == "merits", "ratio_total"]` are plenum decisions on merits and the remaining `r overall_table[overall_table$formation == "Plenum" & overall_table$merits_admissibility == "admissibility", "ratio_total"]` are plenum decisions on admissibility. At least one separate opinion contain `r overall_table[overall_table$formation == "Chamber", "ratio_dissent"]` decisions out of the 3-member decisions, `r overall_table[overall_table$formation == "Plenum" & overall_table$merits_admissibility == "admissibility", "ratio_dissent"]` decisions of the plenum decisionson admissibility, and `r overall_table[overall_table$formation == "Plenum" & overall_table$merits_admissibility == "merits", "ratio_dissent"]` decisions of the plenum decisions on merits.
 
 ```{r}
 overall_table %>%
@@ -184,23 +186,25 @@ overall_table %>%
   ) %>%
   row_spec(0,bold=TRUE) %>%
   kable_styling()
-  
 ```
+
+
+
 
 ## Operationalization
 ### Dependent variable: a separate opinion
-Our dependent variable is whether a justice attached a separate opinion to a decision or not.^[Unlike Wittig we do not call our dependent variable a judge's vote, as that refers to a slightly different thing within the CCC context. A judge may vote against the majority opinion but since they are not mandated to write a separate opinion, these do not necessarily overlap. Similarly, a judge may vote for a disposition of a case and still attach a concurrence separate opinion.] Our dependent variable is thus a binomial variable that has two categories: either a justice did attach a separate opinion or she did not in any given case. 
+We conceptualize our dependent variable as the information whether a justice attached a separate opinion to a decision or not.^[Unlike Wittig we do not call our dependent variable a judge's vote, as that refers to a slightly different thing within the CCC context. A judge may vote against the majority opinion but since they are not mandated to write a separate opinion, these do not necessarily overlap. Similarly, a judge may vote for a disposition of a case and still attach a concurrence separate opinion.] Our dependent variable *Separate opinion* is thus a dummy variable that has two categories: either a justice did attach a separate opinion (1) or she did not in any given case (0). 
 
-We do not distinguish between a concurrence and a dissent for one reason. The difference between the two lays only in the disposition of the case. The justices may equally disagree on the interpretation of legal rules, thus, in the case-space model terms [@landaDisagreementsCollegialCourts2007; @laxNewJudicialPolitics2011], the judge cut points in any given case differ even when a justice attaches "only" concurrence. The difference is that in the cases containing concurrence, the case facts may have completely accidentally fallen on the same side both of the concurring judge as well as the majority, whereas in the cases containing a dissenting opinion, the case fell in between the cut points. We do not consider this phenomenon as theoretically interesting.
+We do not distinguish between a concurrence and a dissent. The reason is two-fold: practical and theoretical. Theoretically, the difference between the two lays only in the disposition of the case. The justices may equally disagree on the interpretation of legal rules, thus, in the case-space model terms [@landaDisagreementsCollegialCourts2007; @laxNewJudicialPolitics2011], the judge cut points in any given case differ even when a justice attaches "only" concurrence. The difference is that in the cases containing concurrence, the case facts may have completely accidentally fallen on the same side both of the concurring judge as well as the majority, whereas in the cases containing a dissenting opinion, the case fell in between the cut points. We do not consider this phenomenon as theoretically interesting. Practically, it was impossible to distinguish between the two categories as some decisions simply do not contain the information whether a separate opinion was a concurring or dissenting opinion.
 
 ### Explanatory variables
 #### Disagreement potential
 From the theoretical perspective it may be expected that the potential for disagreement varies across cases. In some cases, the disagreement potential is higher and, thus, the likelihood of a separate opinion is higher than in the cases with lower potential for disagreement. More specifically, we expect the potential for disagreement to be captured by two characteristics of any given case: (1) its complexity and (2) its controversy.
 
-As @corleyPuzzleUnanimityConsensus2013, p70 argue and empirically measure, complexity of a case leads to less certainty and more ambiguity for the justices, which leads to a higher likelihood of disagreement. The authors define legal complexity as the number of legal issues a case has to address. True to the @corleyPuzzleUnanimityConsensus2013 study, our operationalization of complexity relies on the assumption that the more legal issues there are in any given case, the higher the number of references to other laws and caselaw in the text of the corresponding decision. The variable *concerned acts* captures the number of concerned ordinary legal acts on the legal-act level, the variable *concerned constitutional acts* captures the number of articles of the constitutional legal acts (mostly the Czech Constitution and the Charter of Fundamental Rights and Freedoms) and variable *caselaw* captures the number of citations to its own caselaw. The information on the first two variables is based on the metadata provided by the CCC, the last is based on the regular expressions search of the text of the decisions.
+##### Complexity
+As @corleyPuzzleUnanimityConsensus2013, p70 argue and empirically measure, complexity of a case leads to less certainty and more ambiguity for the justices, which leads to a higher likelihood of disagreement. The authors define legal complexity as the number of legal issues a case has to address. True to the @corleyPuzzleUnanimityConsensus2013 study, our operationalization of complexity relies on the assumption that the more legal issues there are in any given case, the higher the number of references to other laws and caselaw in the text of the corresponding decision.
 
-The first two we believe to be sufficiently different from each other: a typical right to fair proceedings case may concern only one constitutional article (the article 36 of the Charter) but many legal acts, whereas a typical separation of powers case concerning the Parliament concerns many consitutional articles but only few ordinary laws. On the other hand, the number of (concerned) constitutional acts and references to the CCC caselaw may be correlated. We therefore run diagnostics, which reveal that the citations to CCC caselaw and the number of references to constitutional acts are rather correlated.
-
+The variable *concerned acts* captures the number of concerned ordinary legal acts on the legal-act level, the variable *concerned constitutional acts* captures the number of articles of the constitutional legal acts (mostly the Czech Constitution and the Charter of Fundamental Rights and Freedoms) and variable *caselaw* captures the number of citations to its own caselaw. The information on the first two variables is based on the metadata provided by the CCC, the last is based on the regular expressions search of the text of the decisions.
 
 ```{r}
 corr_acts %>%
@@ -221,44 +225,51 @@ corr_acts %>%
     )
 ```
 
-In a similar vein, certain typically value-laden topics may generate more disagreement even if they raise only one or few legal questions. Typically, the restitution cases or cases concerning fundamental human rights have been coined as rather controversial. Wittig identifies a number of topics in the FCC database as prone for controversy. The CCC dataset contains a variable *subject_proceedings*, which roughly corresponds to the FCC topics data. 
+The first two we believe to be sufficiently different from each other: a typical right to fair proceedings case may concern only one constitutional article (the article 36 of the Charter) but many legal acts, whereas a typical separation of powers case concerning the Parliament concerns many consitutional articles but only few ordinary laws. On the other hand, the number of (concerned) constitutional acts and references to the CCC caselaw may be correlated. We therefore run diagnostics, which reveal that the citations to CCC caselaw and the number of references to constitutional acts are rather correlated. Because we believe the number of cited constitutional articles to better reflect the number of legal issues than the number of references to CCC case-law, we stick only to that variable.
+
+##### Controversy
+In a similar vein, certain typically value-laden topics may generate more disagreement even if they raise only one or few legal questions. Typically, the restitution cases or cases concerning fundamental human rights have been coined as rather controversial. The CCC dataset contains a variable *subject_proceedings*, which contains the subject matter of any given case (a discrimination case, a separation of powers case and alike), and a variable *field_register*, which refers to the area of constitutional law that the case pertains (the right to fair trial, the right of freedom of speech). 
+
+We coded the topics as controversial when they concern any of the following subject matters or areas of constitutional law: discrimination, expropriation, restitution, the property of church, sexual orientation, the protection of consumer, fundamental human rights, social and cultural rights, the right of property, the freedom of speech, and the separation between the church and state. Therefore, the variable *controversial* is a dummy variable, which takes the value of 1 when the given case falls in any of the previously mentioned categories or it takes the value 0 when it does not.
 
 #### Norm-identification
-Wittig, we believe rightfully, draws a relationship between the adherence to norm of consensus and one's career choices. Theoretically, the actors socialized within the judiciary and its values are more likely to adhere to them.
+Secondly, our theory generated a second expectation: a relationship between adherence to norm of consensus and one's career choices. Theoretically, the actors socialized within the judiciary and its values are more likely to adhere to them than their peers who entered the CCC from the legal practice [@wittigOccurrenceSeparateOpinions2016, p. 84-87.]. Wittig confirms this intuition also empirically.
 
 Wittig thus operationalizes the norm-identification as the justices' career choice after their term. The justices that chose to stay within judiciary or go back to being scholars are expected to more strongly identify with the norm of consensus, whereas the justices' that made different career choice are less likely to identify with the norm of consensus.
-
-Unfortunately, such a measure does not fit the CCC context. As the data shows, CCC justices start their term usually at the end of their career and a considerable part of them ends their term in their 70s, well past the retirement age in Czechia. Therefore, instead of operationalizing the norm-identification as the profession after their term, we operationalize it as the profession before they entered the CCC.
 
 ```{r, fig.cap = "Kernel density of justices' ages at the start and and the end of their terms"}
 age_distribution
 ```
 
-The variable *profession* contains the information on the justices' previous career choices. We can observe that the distribution of the professions has changed across time. While the 1st and 2nd terms of the CCC were quite balanced in terms of the professions, its 3rd term is heavily skewed towards the more to the norm of consensus adherent professions.
+Unfortunately, such a measure does not fit the CCC context. As the data shows, CCC justices start their term usually at the end of their career and a considerable part of them ends their term in their 70s, well past the retirement age in Czechia. Therefore, instead of operationalizing the norm-identification as the profession after their term, we operationalize it as the profession before they entered the CCC. Quite handily, the CCC dataset contains such an information on the last profession before the CCC justices took up their office.
+
+The variable *profession* contains the information on the justices' previous career choices and can take up the values of judge, scholar, politician, or lawyer. We can observe that the distribution of the professions has changed across time. While the 1st and 2nd terms of the CCC were quite balanced in terms of the professions, its 3rd term is heavily skewed towards the more to the norm of consensus adherent professions.
 
 ```{r fig.cap = "The distribution of  professions of the CCC justices across its 3 terms."}
 professions
 ```
 
 #### Time in office
-We code the time in office variables as the number of days a justice has left until their end of mandate. That allows us to account both for the collegiality costs hypothesis as well as the difference between professions hypothesis. 
-We also operationalize the time in the office variable as a number of months between the month of the decision and the month at which the justice is expected to leave their office. The variable ranges from XXX to XXX. 
+The effects of the CCC justices' profession should according to our theoretical expectations vary depending on the time the judges have spent in their office. The closer to them taking up the office, the effects of their preceding profession should be more pronounced. Similarly, according to the collegiality costs hypothesis, the dissenting behavior of justices should vary across time. Namely, justices are expected to dissent less at the beginning of their terms, as the collegiality costs are higher, and to dissent more at the end of their terms, as the collegiality costs of the disagreement are lower. We capture the *time in office* variables as the number of months a justice has left until their end of mandate from the date of decision. That allows us to account both for the collegiality costs hypothesis as well as the difference between professions hypothesis.
 
 #### Workload
-We operationalize workload as the number of unfinished cases that any given judge has in the moment of any given decision as a judge rapporteur. We firstly mined the compositions of panels as well as the plenary from the text of the decision. We then calculated the number of unfinished cases each judge had at the time of any given decision as a judge rapporteur using the date of submission and of decision of a case. We believe such a measure captures the perceived workload of a judge better than the original EPL measure of caseload of the whole court: a judge knowing that they have, for example, 20 in comparison to 100 decisions to draft as a judge rapporteur is how they would perceive having had more workload.
+Similarly to @brekkeThatOrderHow2023, we operationalize *workload* as the number of pending unfinished cases that any given judge has in the moment of any given decision as a judge rapporteur. We firstly mined the compositions of panels as well as the plenary from the text of the decision. We then calculated the number of unfinished cases each judge had at the time of any given decision as a judge rapporteur using the date of submission and of decision of a case.
 
-#### Mixed coalition
-Lastly, we include a dummy variable mixed coalitions, which takes up the value 1 when two conditions are met: (1) the decision was made in a 3-member chamber and (2) the composition of the chamber was made up of judges from both coalitions.
+To address potential sources of bias in our regression analysis, we consider the workload of a judge to be assigned as good as random. The cases once submitted to the CCC get assigned to individual judges rapoprteurs based on the alphabetic order of their surnames. There is no intentional case selection in play. Therefore the assignment of cases to judges is independent of other covariates and so is the outcome of interest.
 
+### Control Variables
+Lastly, we control for multiple potential confounding variables. A confounding variable is such that (1) has an effect on treatment status and (2) has an effect on the outcome over and above its effect on the treatment status. Not controlling for confounding variables causes an omitted variable bias [@angristMostlyHarmlessEconometrics2009; @angristMasteringMetricsPath2015; buenodemesquitaThinkingClearlyData2021]. Therefore, we need to carefully consider which additional features may induce bias rather than throw in as many additional variables as possible.
 ## Identification strategy
 ## Results
 The results reveal quite an interesting trend at the CCC.
 
-```{r, results='asis'}
-stargazer(model, 
-          type='latex',
-          title = "Results from the Logit Model")
-
+```{r, warning = FALSE, echo = FALSE}
+modelsummary::modelsummary(model, 
+                           output = "latex",
+                           estimate = "{estimate}{stars}",
+                           statistic = "({std.error})",
+                           stars = TRUE,
+                           title = "Results from the Logit Model")
 ```
 
 # Conclusions
