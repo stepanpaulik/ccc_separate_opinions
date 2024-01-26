@@ -50,24 +50,20 @@ Although it has been traditionally espoused that there has been a divide between
 
 In contrast to, especially in European legal systems, such as the one at hand - Czechia, judges have been perceived as "proclaimers of law" and the law handed down by them [@hamannGermanFederalCourts2019, p. 417]. Such a view had hindered empirical legal research in Europe. The lack of empirical legal research can be partially blamed on lack of high quality data, a prerequisite for any quantitative empirical research. At least so the story goes until recently. The interest in empirical legal studies has picked up in the last years across the whole continent, including studies on plethora of topics within Germany [@arnoldScalingCourtDecisions2023; @coupetteQuantitativeRechtswissenschaft2018; @engstEinflussParteinaheAuf2017; @wittigOccurrenceSeparateOpinions2016], Spain and Portugal [@hanrettyDissentIberiaIdeal2012], the UK [@hanrettyCourtSpecialistsJudicial2020] or the EU institutions [@bielenBacklogsLitigationRates2018; @brekkeThatOrderHow2023; @fjelstulHowChamberSystem2023; @fjelstulEvolutionEuropeanUnion2019; @fjelstulTimelyAdministrationJustice2022].
 
-In our article, we set out to conduct an empirical research into the circumstances of disagreement on a court bench, more specifically whether Czech constitutional justices behave strategically in when and under what circumstances they dissent and whether there is an interplay between the behavior at different institutional level within the Czech Constitutional Court ("CCC").
+In our article, we set out to conduct an empirical research into the circumstances of disagreement on a court bench, we empirically research the circumstances of disagreement among the judges of the Czech Constitutional Court ("CCC") and we attempt to square the perception of judges as rational-economic beings [@epsteinWhyWhenJudges2011; @epsteinStrategicRevolutionJudicial2000], the identification-disagreement model [@wittigOccurrenceSeparateOpinions2016], and our empirical findings.
 
-Our research is loosely inspired by a similar research by @epsteinWhyWhenJudges2011, who studied under which circumstances do US judges generally dissent. More specifically, they built a formal economic model based on the strategic account of judicial behavior. In particular, they tested the dependence of dissent rate on workload, the dependence of dissent rate on size of courts, the dependence of dissent rate on the ideological distance, and the dependence of length of majority argumentation on the presence of a dissenting opinion. In our study, we test our hypotheses adopted to the CCC context that are nonetheless based on similar theoretical grounds.
-
-We adapt the theories constructed in the US context to the civil law and Czech judiciary contexts. We test whether the length of majority argumentation depends on the presence of one or more dissents, whether the workload of a judge affects their dissenting behavior, whether the dissenting behavior of judges changes at the start and end of their terms, and, lastly, whether relationships formed during the plenary sessions, as posited by the Czech legal scholarship, carry over to 3-member panel proceedings.
-
-We find that a dissent imputes costs on the majority that produces longer arguments to address a dissent. The effect is stronger the more disagreement there is on the bench. We find that the workload of a judge does decrease the likelihood of dissent.  Moreover, our analysis corresponds to the theory that dissents bring about significant collegiality costs for the dissenter. Lastly, we reveal similar trends in behavior of judicial coalitions from plenary proceedings also in the 3-member panel proceedings.
+We find that...
 
 Our article proceeds as follows. We start out with a theory. We explain the main differences between the expectations based on the theory in the CCC context in comparison to the SCOTUS context and based on that we draw the hypotheses for the empirical part. We briefly explain the choice of our broad methodological framework: the Bayesian statistics. We proceed to test the hypotheses in empirical part divided into sections one per each hypothesis. We discuss the pitfalls of our research and potential room for improvement afterwards. Lastly, we conclude with a summary of our findings.
 
 A separate opinion is a statement following the main ruling, in which a judge expresses the dissatisfacation with the decision by elaborating on points of the majority decision they disagree with [@wittigOccurrenceSeparateOpinions2016, p. 57].
 
 # Theory
-In general, there are multiple accounts of behavior of judges'. The first that had dominated until ~the end of 20th century posited that judges are policy oriented. A lot of research has been conducted on whether, how and to what extent do judges indeed seek to advance the policies they desire [@berdejoElectoralCyclesUS2017; @clarkLocatingSupremeCourt2010; @dworkinPoliticalJudgesRule1980; @kastellecEmpiricallyEvaluatingCountermajoritarian2016; @moyerJudicialInnovationSexual2012].
+In general, there are multiple accounts of judicial decision-making process. At first, judges were perceived by legalists as deciding simply by means of law. Later, the perception of judges shifted to an account that had dominated until ~the end of 20th century. The attitudinal accounts posited that judges are policy oriented. In other words, judges follow their own ideas and preferences when deciding cases. A lot of research has been conducted on whether, how and to what extent do judges indeed seek to advance the policies they desire [@berdejoElectoralCyclesUS2017; @clarkLocatingSupremeCourt2010; @dworkinPoliticalJudgesRule1980; @kastellecEmpiricallyEvaluatingCountermajoritarian2016; @moyerJudicialInnovationSexual2012].
 
-However, as of recently, the perspective on judges has shifted. Judges are now allegedly strategic and rational actors. One of the early pioneers of this approach @posnerWhatJudgesJustices1993 presents a simple model of judicial utility as function mainly of income, leisure and judicial voting. Further research followed the Posner mode and presented alternative models of judicial utility (based on economic psychology @foxallWhatJudgesMaximize2004). Replacing the policy oriented approaches, which hold judges to pursue political policy oriented goals, researchers now focus more on their self-interest in terms of career progression, higher income, or lesser workload [@carrubbaWhoControlsContent2012; @epsteinStrategicRevolutionJudicial2000]. @posnerHowJudgesThink2010 presents nine theories of approach for judicial behaviour, from which we mostly draw on the economical and sociological theory. Economic theory of judicial behaviour treats the judges as a rational, self-interested, utility maximizer and sociological theory of judicial behaviour incorporates factors of strategic calculation, emotion, and group polarization.
+However, as of recently, the perspective on judges has shifted. Judges are now allegedly strategic and rational actors. One of the early pioneers of this approach @posnerWhatJudgesJustices1993 presents a simple model of judicial utility as function mainly of income, leisure and judicial voting. Further research followed the Posner mode and presented alternative models of judicial utility (based on economic psychology @foxallWhatJudgesMaximize2004). Replacing the policy oriented approaches, which hold judges to pursue political policy oriented goals, researchers now focus more on their self-interest in terms of career progression, higher income, or lesser workload [@carrubbaWhoControlsContent2012; @epsteinStrategicRevolutionJudicial2000].
 
-@epsteinWhyWhenJudges2011 based their theory of dissents on the strategic-economic framework of self-interested strategically motivated judges. They presume that judges "leisure preferences, or, equivalently, effort aversion, which they trade off against their desire to have a good reputation and to express their legal and policy beliefs and preferences (and by doing so perhaps influence law and policy) by their vote, and by the judicial opinion explaining their vote, in the cases they hear." The benefits of a dissenting opinion are the potential to undermine the majority opinion when the dissent is influential and the enhanced reputation that the judge enjoys. The dissenting opinion may be cited in the future by other judges or publicly analysed by legal scholars. 
+In their empirical study on dissenting behavior on the Supreme Court of the USA ("SCOTUS"), @epsteinWhyWhenJudges2011 based their theory of dissents on the strategic-economic framework of self-interested strategically motivated judges. They presume that judges "leisure preferences, or, equivalently, effort aversion, which they trade off against their desire to have a good reputation and to express their legal and policy beliefs and preferences (and by doing so perhaps influence law and policy) by their vote, and by the judicial opinion explaining their vote, in the cases they hear." The benefits of a dissenting opinion are the potential to undermine the majority opinion when the dissent is influential and the enhanced reputation that the judge enjoys. The dissenting opinion may be cited in the future by other judges or publicly analysed by legal scholars. 
 
 The theories they presume and hypotheses they test rest on this framework: in the policy-oriented framework, it would not make sense to expect judges to dissent less as their workload increases. They would still seek a way to advance their political agenda and research has shown that dissenting opinions usually correspond to exactly just that [@clarkLocatingSupremeCourt2010]. However, in the strategic account, the higher the workload of a judge, the more pressing the effort costs of a dissent. Similarly, if a dissenting opinion imputes costs on the majority, we can theoretically expect it to respond to the dissent with a more thorough or detailed argumentation in the majority opinion.
 
@@ -149,32 +145,14 @@ Lastly, we test whether the 3-member chambers with members from both judicial co
 **H~6~:** *Having a 3-member panel composed of members of both judicial coalitions increases judges' likelihood of a dissent.*
 
 # Empirical analysis
-Wittig's model:
-
-* Dependent variable
-    + A Judge's Vote - done
-* Explanatory variables
-    + Norm identification
-        - a profession the judge has pursued after their time in the office - done as before
-    + time in office - months until judges exit from the office - done
-    + potential for disagreement
-        - paragraphs - number of paragraphs in the facts of the case/procedure history part - complexity in the form of number of references to other law/CCC caselaw
-        - controversial topics - done
-* Control variables
-    + institutional rules
-        - admissibility - whether a case was admissible or not - can be added
-        - number of parties - cannot be added
-        - political procedure - if it's initiated by a political actor
-        - president of the senate / judge rapportuer - don't understand
-    + role of law
-        - number of references to scholarly literature per paragraph
-      
 ## Data description
-The data is based on the CCC dataset, which contains all decisions published by the CCC since its foundation, complete text corpus as well as plenty of metadata. We narrow our cases to all plenum decisions and to all 3-member chamber decisions on merits up until the end of 2022. The admissibility decisions of the 3-member chambers must be made unanimously, concurring decisions therein are a rarity.^[On top of that out of the 39 separate opinions in admissibility 3-chamber decisions, 25 of that are a copypasta from justice Jan Filip and 6 are a copypasta from justice Josef Fiala in alike cases. Thus, there is only a few left for a meaningful analysis. The class imbalance of the remaining ~10 decisions would be too large against the XXX of all chamber decisions on admissibility]. We skip the first decade of the CCC as the data on it are rather incomplete and inconsistent: For example, very few decisions contain the information on the composition in the text and many do not contain the name of the dissenting judge at all. We also limit our analysis until the end of 2022 as the CCC entered its 4th term in 2023 and started to undergo a complete personal change. The following plot confirms our intuition about the lack of variance among the admissibility decisions.
+The data is based on the CCC dataset, which contains all decisions published by the CCC since its foundation, complete text corpus as well as plenty of metadata. We narrow our cases to all plenum decisions and to all 3-member chamber decisions on merits up until the end of 2022. The admissibility decisions of the 3-member chambers must be made unanimously, concurring decisions therein are a rarity.^[On top of that out of the 39 separate opinions in admissibility 3-chamber decisions, 25 of that are a copypasta from justice Jan Filip and 6 are a copypasta from justice Josef Fiala in alike cases. Thus, there is only a few left for a meaningful analysis. The class imbalance of the remaining ~10 decisions would be too large against the XXX of all chamber decisions on admissibility]. The following plot confirms our intuition about the lack of variance among the admissibility decisions.
 
-```{r fig.caption = "Percentage of Decisions with at least one Separate Opinion"}
+```{r fig.cap = "Percentage of Decisions with at least one Separate Opinion"}
 separate_opinion_ratio
 ```
+
+We skip the first decade of the CCC as the data on it are rather incomplete and inconsistent: For example, very few decisions contain the information on the composition in the text and many do not contain the name of the dissenting judge at all. We also limit our analysis until the end of 2022 as the CCC entered its 4th term in 2023 and started to undergo a complete personal change. 
 
 The final dataset for analysis contains `r toString(length(unique(data$doc_id)))` decisions of the CCC. Out of them, `r overall_table[overall_table$formation == "Chamber", "ratio_total"]` are decisions by the 3-member chambers on merits, around `r overall_table[overall_table$formation == "Plenum" & overall_table$merits_admissibility == "merits", "ratio_total"]` are plenum decisions on merits and the remaining `r overall_table[overall_table$formation == "Plenum" & overall_table$merits_admissibility == "admissibility", "ratio_total"]` are plenum decisions on admissibility. At least one separate opinion contain `r overall_table[overall_table$formation == "Chamber", "ratio_dissent"]` decisions out of the 3-member decisions, `r overall_table[overall_table$formation == "Plenum" & overall_table$merits_admissibility == "admissibility", "ratio_dissent"]` decisions of the plenum decisionson admissibility, and `r overall_table[overall_table$formation == "Plenum" & overall_table$merits_admissibility == "merits", "ratio_dissent"]` decisions of the plenum decisions on merits.
 
@@ -187,9 +165,6 @@ overall_table %>%
   row_spec(0,bold=TRUE) %>%
   kable_styling()
 ```
-
-
-
 
 ## Operationalization
 ### Dependent variable: a separate opinion
@@ -258,8 +233,10 @@ Similarly to @brekkeThatOrderHow2023, we operationalize *workload* as the number
 To address potential sources of bias in our regression analysis, we consider the workload of a judge to be assigned as good as random. The cases once submitted to the CCC get assigned to individual judges rapoprteurs based on the alphabetic order of their surnames. There is no intentional case selection in play. Therefore the assignment of cases to judges is independent of other covariates and so is the outcome of interest.
 
 ### Control Variables
-Lastly, we control for multiple potential confounding variables. A confounding variable is such that (1) has an effect on treatment status and (2) has an effect on the outcome over and above its effect on the treatment status. Not controlling for confounding variables causes an omitted variable bias [@angristMostlyHarmlessEconometrics2009; @angristMasteringMetricsPath2015; buenodemesquitaThinkingClearlyData2021]. Therefore, we need to carefully consider which additional features may induce bias rather than throw in as many additional variables as possible.
+Lastly, we control for multiple potential confounding variables. A confounding variable is such that (1) has an effect on treatment status and (2) has an effect on the outcome over and above its effect on the treatment status. Not controlling for confounding variables causes an omitted variable bias [@angristMostlyHarmlessEconometrics2009; @angristMasteringMetricsPath2014; @buenodemesquitaThinkingClearlyData2021]. Therefore, we need to carefully consider which additional features may induce bias rather than throw in as many additional variables as possible.
+
 ## Identification strategy
+
 ## Results
 The results reveal quite an interesting trend at the CCC.
 

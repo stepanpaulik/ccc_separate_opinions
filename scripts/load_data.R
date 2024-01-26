@@ -5,7 +5,7 @@ plan(multisession, workers = parallel::detectCores() - 2)
 controversial_topics = c("diskriminace", "spotřebitel", "vyvlastnění", "restituční nárok", "restituce", "církevní majetek", "sexuální orientace", "základní práva a svobody/rovnost v základních právech a svobodách a zákaz diskriminace", "základní práva a svobody/rovnost v právech a důstojnosti a zákaz diskriminace", "hospodářská, sociální a kulturní práva/právo na ochranu zdraví", "základní práva a svobody/právo vlastnit a pokojně užívat majetek/restituce", "základní práva a svobody/svoboda projevu a právo na informace/svoboda projevu", "základní ústavní principy/zákaz vázání státu na ideologii nebo náboženství (laický stát)")
 
 # data wrangling ----------------------------------------------------------
-data_metadata = read_rds("../data/US_metadata.rds") %>% 
+data_metadata = read_rds("../data/ccc_dataset/ccc_metadata.rds") %>% 
   mutate(presence_dissent = if_else(is.na(as.character(dissenting_opinion)), "None", "At least 1"),
          merits_admissibility = case_when(
            str_detect(as.character(type_verdict), "vyhověno|zamítnuto") ~ "merits",
@@ -15,7 +15,7 @@ data_metadata = read_rds("../data/US_metadata.rds") %>%
   filter(merits_admissibility == "merits" | formation == "Plenum") %>%
   filter(merits_admissibility != "procedural")
 
-data_judges = read_rds("../data/US_judges.rds") %>%
+data_judges = read_rds("../data/ccc_dataset/ccc_judges.rds") %>%
   mutate(judge_term_end = case_when(is.na(judge_term_end) ~ judge_term_start %m+% years(10),
                                     .default = judge_term_end))
 
@@ -23,10 +23,10 @@ data_compositions = data_metadata %>%
   select(doc_id, composition) %>%
   unnest(composition)
 
-data_dissents = read_rds("../data/US_dissents.rds") %>%
+data_dissents = read_rds("../data/ccc_dataset/ccc_separate_opinions.rds") %>%
   filter(doc_id %in% data_metadata$doc_id)
 
-data_metadata_temp = read_rds("../data/US_metadata.rds") %>% rename(date_decision_meta = date_decision,
+data_metadata_temp = read_rds("../data/ccc_dataset/ccc_metadata.rds") %>% rename(date_decision_meta = date_decision,
                                                                     date_submission_meta = date_submission) %>%
   select(judge_rapporteur_name, date_decision_meta, date_submission_meta)
 
