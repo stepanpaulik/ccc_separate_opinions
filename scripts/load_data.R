@@ -15,9 +15,7 @@ data_metadata = read_rds("../data/ccc_dataset/ccc_metadata.rds") %>%
   filter(merits_admissibility == "merits" | formation == "Plenum") %>%
   filter(merits_admissibility != "procedural")
 
-data_judges = read_rds("../data/ccc_dataset/ccc_judges.rds") %>%
-  mutate(judge_term_end = case_when(is.na(judge_term_end) ~ judge_term_start %m+% years(10),
-                                    .default = judge_term_end))
+data_judges = read_rds("../data/ccc_dataset/ccc_judges.rds")
 
 data_compositions = data_metadata %>%
   select(doc_id, composition) %>%
