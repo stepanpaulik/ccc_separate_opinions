@@ -5,38 +5,108 @@ library(ggfortify)
 library(corrr)
 library(multilevelmod)
 library(lme4)
+library(performance)
+library(parameters)
 source("scripts/load_data.R")
 
 # additional data prep step
 data = data %>%
-  mutate(dissenting_opinion = as_factor(dissenting_opinion)) %>%
-  mutate(across(where(is.numeric), scale))
+  mutate(separate_opinion = as_factor(separate_opinion)) %>%
+  mutate(across(where(is.numeric), ~datawizard::standardize(.x)))
 
-# %>%
-#   mutate(across(where(is.numeric), ~ center_column(.x))) # center and scale the numeric variables
-
-
+rmse = function(model){
+  sqrt(mean(model$residuals^2))
+}
 
 # RE - MODEL --------------------------------------------------------------
-model_base = logistic_reg() %>%
+model_re_base = logistic_reg() %>%
   set_engine("glm") %>%
-  fit(dissenting_opinion ~ 1,
+  fit(separate_opinion ~ 1,
       data = data, 
       family = binomial) %>%
   extract_fit_engine()
 
-model = logistic_reg() %>%
+model_re_full = logistic_reg() %>%
   set_engine("glm") %>%
-  fit(dissenting_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + merits_admissibility + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload,
+  fit(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + grounds + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload,
       data = data,
       family = binomial) %>%
   extract_fit_engine()
 
-AIC(logLik(model_base))
-AIC(logLik(model))
+# MIXED EFFECTS -----------------------------------------------------------
+model_me_base = logistic_reg() %>%
+  set_engine("glmer") %>%
+  fit(separate_opinion ~ 1 + (1 | formation),
+      data = data, REML = T) %>%
+  extract_fit_engine()
 
+model_me_formation = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + grounds + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + (1 | formation),
+                      data = data, 
+                      control = glmerControl(optimizer="bobyqa",
+                                             optCtrl=list(maxfun=2e5)),
+                      family = "binomial")
 
-# RE - DIAGNOSTICS ---------------------------------------------------------
+model_me_judge = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + grounds + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + (1 | judge_name),
+                           data = data, 
+                           control = glmerControl(optimizer="bobyqa",
+                                                  optCtrl=list(maxfun=2e5)),
+                           family = "binomial")
+
+model_me_no_interaction = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + grounds + judge_profession + time_in_office + controversial + workload + (1 | formation),
+                      data = data, 
+                      control = glmerControl(optimizer="bobyqa",
+                                             optCtrl=list(maxfun=2e5)),
+                      family = "binomial")
+
+# MODEL COMPARISON --------------------------------------------------------
+AIC(logLik(model_re_base))
+AIC(logLik(model_re_full))
+AIC(logLik(model_me_base))
+AIC(logLik(model_me_no_interaction))
+AIC(logLik(model_me_formation))
+AIC(logLik(model_me_judge))
+
+summary(model_me_formation)
+summary(model_me_judge)
+
+anova(model_re_base, model_re_full, test = "Chisq")
+anova(model_me_full, model_me_base, test = "Chisq")
+anova(model_me_full, model_me_no_interaction, test = "Chisq")
+
+check_collinearity(model_re_full)
+check_collinearity(model_me_full)
+
+check_autocorrelation(model_re_full)
+check_autocorrelation(model_me_full)
+
+clustered_SE = clubSandwich::coef_test(model_re_full, vcov = "CR2", cluster = data$formation)
+clustered_SE_me = clubSandwich::coef_test(model_me_full, vcov = "CR2", cluster = data$formation)
+
+summary(model_re_full)
+summary(model_re_full, cluster=c("formation"))
+
+modelsummary::modelsummary(list("Pooled" = model_re_full, "ME_judge" = model_me_judge, "ME_formation" = model_me_formation, "ME_formation_no_interaction" = model_me_no_interaction), 
+                                    statistic = "{std.error} ({p.value}) {stars}")
+
+# test random effects
+null.id = -2 * logLik(model_re_base) + 2 * logLik(model_me_base)
+pchisq(as.numeric(null.id), df=1, lower.tail=F)
+
+model_parameters(
+  model_re_full
+)
+
+model_parameters(
+  model_re_full
+)
+
+clustered_SE = model_parameters(
+  model_re_full,
+  vcov = "vcovCR",
+  vcov_args = list(type = "CR2", cluster = data$formation)
+)
+
+# DATA DIAGNOSIS ----------------------------------------------------------
 ## Multicolinearity --------------------------------------------------------
 # do a LINK TEST 
 linktest = function(model){
@@ -98,8 +168,9 @@ mixed_assoc = function(df, cor_method="spearman", adjust_cramersv_bias=TRUE){
   # apply function to each variable combination
   map2_df(df_comb$X1, df_comb$X2, f)
 }
+
 correlation_complete = mixed_assoc(data %>% 
-                                     select(c(n_concerned_acts, n_concerned_constitutional_acts, n_citations, merits_admissibility, judge_profession, time_in_office, controversial, workload))) %>%
+                                     select(c(n_concerned_acts, n_concerned_constitutional_acts, n_citations, grounds, judge_profession, time_in_office, controversial, workload))) %>%
   select(x, y, assoc) %>%
   pivot_wider(names_from = y, values_from = assoc) %>%
   column_to_rownames(var = "x") %>%
@@ -112,22 +183,6 @@ car::vif(model)
 
 # Conclusion: no apparent collinearity issue
 
-# MIXED EFFECTS -----------------------------------------------------------
-model_me_base = logistic_reg() %>%
-  set_engine("glm") %>%
-  fit(dissenting_opinion ~ 1,
-      data = data, REML = T) %>%
-  extract_fit_engine()
-
-model_only_me = logistic_reg() %>%
-  set_engine("glmer") %>%
-  fit(dissenting_opinion ~ 1 + (1 | formation),
-      data = data, REML = T) %>%
-  extract_fit_engine()
-
-# The ME models structured around the formation shows decrease in AIC, therefore, we will stick to it 
-AIC(logLik(model_me_base))
-AIC(logLik(model_only_me))
 
 # MODEL FITTING
 # wrapper function for linear mixed-models
@@ -138,7 +193,7 @@ glmer.glmulti = function(formula,data, random="",...){
         control=glmerControl(optimizer="bobyqa"), ...)
 }
 # define formula
-form_glmulti = as.formula(paste("dissenting_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + merits_admissibility + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload"))
+form_glmulti = as.formula(paste("separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + grounds + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload"))
 # multi selection for glmer
 model_fit = glmulti::glmulti(form_glmulti,random="+(1 | formation)", 
                 data = data, method = "h", fitfunc = glmer.glmulti,
@@ -149,14 +204,9 @@ top = top[1:20,]
 # inspect top 5 models
 top
 
-# FULL MODEL
-model_full_me = logistic_reg() %>%
-  set_engine("glmer") %>%
-  fit(dissenting_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + merits_admissibility + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + (1 | formation),
-      data = data) %>%
-  extract_fit_engine()
 
 AIC(logLik(model_full_me))
+rmse(model_full_me)
 
 summary(model_full_me)
 plot(model_full_me, formation ~ resid(.), abline = 0 )
@@ -173,12 +223,12 @@ plot(model_full_me, formation ~ fitted(.), id = 0.05, adj = -0.3,
 
 # 
 probs = 1/(1+exp(-fitted(mlr.glmer)))
-somers2(probs, as.numeric(data$dissenting_opinion))
+somers2(probs, as.numeric(data$separate_opinion))
 
 # MODEL DIAGNOSTICS
 # a diagnostic that plots the fitted or predicted values against the residuals
 plot(model_full_me, pch = 20, col = "black", lty = "dotted")
-# model = glm(dissenting_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + merits_admissibility + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload,
+# model = glm(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + grounds + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload,
 #     data = data, family = "binomial")
 
 modelsummary::modelsummary(model,
@@ -229,19 +279,30 @@ data = data %>%
                 Prediction = ifelse(Prediction > .5, 1, 0),
                 Prediction = factor(Prediction, levels = c("0", "1")))
 
-caret::confusionMatrix(data$Prediction, data$dissenting_opinion)
+caret::confusionMatrix(data$Prediction, data$separate_opinion)
 
 # MODEL - COALITIONS ------------------------------------------------------
-# model_coalitions = logistic_reg() %>%
-#   set_engine("glm") %>%
-#   fit(dissenting_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + coalition,
-#       data = data_coalition) %>%
-#   extract_fit_engine()
-# 
-# modelsummary::modelsummary(model_coalitions,
-#                            estimate = "{estimate}{stars}",
-#                            statistic = "({std.error})",
-#                            stars = TRUE)
+model_coalitions = logistic_reg() %>%
+  set_engine("glm") %>%
+  fit(separate_opinion ~ coalition,
+      data = data_coalition) %>%
+  extract_fit_engine()
+
+modelsummary::modelsummary(model_coalitions,
+                           estimate = "{estimate}{stars}",
+                           statistic = "({std.error})",
+                           stars = TRUE)
+
+plot_coalitions = model_coalitions %>%
+  tidy(conf.int = TRUE) %>%
+  ggplot(aes(x = term, y = estimate)) +
+  geom_point() +
+  geom_pointrange(aes(ymin = conf.low, ymax = conf.high)) +
+  labs(x = "Term", y = "Estimate")
+
+write_rds(model_coalitions, file = "../ccc_dataset/report/model_coalitions.rds")
+write_rds(plot_coalitions, file = "../ccc_dataset/report/plot_coalitions.rds")
+  
 
 rm(list=ls(pattern="^data"))
 save.image("report/model_results.RData")

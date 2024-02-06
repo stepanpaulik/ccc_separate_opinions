@@ -5,6 +5,15 @@ source("scripts/load_data.R")
 
 
 # EXPLORATORY ANALYSIS ---------------------------------------------------
+model_selection = data %>%
+  group_by(formation) %>%
+  count() %>%
+  ungroup() %>%
+  summarise(
+    units = n(),
+    mean_observations = median(n)
+  )
+
 data %>%
   ggplot(aes(x = controversial, y = dissenting_opinion, color = judge_gender)) +
   facet_wrap(~judge_profession) +
@@ -130,5 +139,32 @@ dependent_variables_overview = data %>%
   skimr::skim() %>%
   as_tibble() %>%
   select(c(skim_variable, judge_profession, numeric.mean, numeric.sd))
+
+
+# random ------------------------------------------------------------------
+dissents_distribution_judges = data_dissents %>%
+  group_by(doc_id) %>%
+  count() %>%
+  ungroup() %>%
+  ggplot(aes(x = n)) +
+  geom_bar() +
+  scale_x_continuous(breaks = seq(1, 9, 1))
+dissents_distribution_judges
+
+dissents_distribution_opinions = data_dissents %>%
+  group_by(doc_id) %>%
+  summarise(n = length(unique(dissenting_group))) %>%
+  ungroup() %>%
+  ggplot(aes(x = n)) +
+  geom_bar() +
+  scale_x_continuous(breaks = seq(1, 9, 1)) +
+  labs(x = "Number of dissenting opinions", y = "Count")
+
+
+dissents_prevalence = data_metadata %>%
+  filter(type_decision == "Nález" | formation == "Plenum") %>%
+  ggplot(aes(x = forcats::fct_infreq(presence_dissent))) +
+  geom_bar() +
+  labs(x = NULL, y = NULL)
 
 save.image("report/descriptive_statistics.RData")
