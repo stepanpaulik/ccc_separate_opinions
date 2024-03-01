@@ -1,0 +1,82 @@
+\begin{longtable}[t]{llrll}
+\caption{\label{tab:overalltable}Summary statistics for the whole dataset}\\
+\toprule
+\textbf{Formation} & \textbf{Grounds} & \textbf{Count} & \textbf{\%} & \textbf{\% with at least One Separate Opinion}\\
+\midrule
+Chamber & merits & 3862 & 81.2\% & 4.3\%\\
+Plenum & admissibility & 456 & 9.6\% & 11.2\%\\
+Plenum & merits & 436 & 9.2\% & 39.4\%\\
+\bottomrule
+\end{longtable}
+\efloatseparator
+ 
+\begin{longtable}[t]{llll}
+\caption{\label{tab:unnamed-chunk-1}Correlations between Independent Variables of Case Complexity}\\
+\toprule
+\textbf{Variable} & \textbf{1} & \textbf{2} & \textbf{3}\\
+\midrule
+1. \# of Ordinary Acts & — & — & —\\
+2. \# of Constitutional Articles & .35 & — & —\\
+3. \# of CCC References & .32 & .48 & —\\
+\bottomrule
+\multicolumn{4}{l}{\rule{0pt}{1em}\textit{Note.} Correlation was calculated using the Spearman Correlation Coefficient.}\\
+\end{longtable}
+\efloatseparator
+ 
+\begin{longtable}[]{@{}lrrrrrrr@{}}
+\caption{Summary statistics for the whole workload
+variable}\tabularnewline
+\toprule\noalign{}
+& Mean & SD & P0 & P25 & P50 & P75 & P100 \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+& Mean & SD & P0 & P25 & P50 & P75 & P100 \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+workload & 107.5295 & 54.38031 & 0 & 63 & 103 & 145 & 306 \\
+\end{longtable}
+\efloatseparator
+ 
+\begin{table}
+\centering
+\caption{\label{tab:unnamed-chunk-3}Results from the Logit Model}
+\centering
+\begin{tabular}[t]{lccc}
+\toprule
+  & Full Model & Disagreement & Norm\\
+\midrule
+(Intercept) & \num{-4.111}*** & \num{-4.172}*** & \num{-4.648}***\\
+ & (\num{0.235}) & (\num{0.234}) & (\num{0.218})\\
+n\_concerned\_acts & \num{0.086}** & \num{0.084}** & \\
+ & (\num{0.026}) & (\num{0.026}) & \\
+n\_concerned\_constitutional\_acts & \num{0.165}*** & \num{0.166}*** & \\
+ & (\num{0.031}) & (\num{0.031}) & \\
+n\_citations & \num{0.260}*** & \num{0.256}*** & \\
+ & (\num{0.025}) & (\num{0.025}) & \\
+groundsadmissibility & \num{-0.627}*** & \num{-0.639}*** & \num{-1.350}***\\
+ & (\num{0.113}) & (\num{0.113}) & (\num{0.099})\\
+judge\_professionwithin & \num{-0.117} &  & \num{-0.042}\\
+ & (\num{0.077}) &  & (\num{0.075})\\
+time\_in\_office & \num{0.001} &  & \num{0.129}**\\
+ & (\num{0.051}) &  & (\num{0.048})\\
+controversial0 & \num{-0.513}*** & \num{-0.509}*** & \\
+ & (\num{0.115}) & (\num{0.115}) & \\
+workload & \num{-0.117}** & \num{-0.104}** & \\
+ & (\num{0.040}) & (\num{0.038}) & \\
+judge\_professionwithin × time\_in\_office & \num{-0.097} &  & \num{-0.120}\\
+ & (\num{0.076}) &  & (\num{0.074})\\
+SD (Intercept formation) & \num{0.970} & \num{0.991} & \num{1.048}\\
+\midrule
+Num.Obs. & \num{21582} & \num{21582} & \num{21582}\\
+R2 Marg. & \num{0.076} & \num{0.074} & \num{0.066}\\
+R2 Cond. & \num{0.282} & \num{0.287} & \num{0.300}\\
+AIC & \num{6329.1} & \num{6327.7} & \num{6597.9}\\
+BIC & \num{6416.9} & \num{6391.5} & \num{6645.8}\\
+ICC & \num{0.2} & \num{0.2} & \num{0.3}\\
+RMSE & \num{0.19} & \num{0.19} & \num{0.19}\\
+\bottomrule
+\end{tabular}
+\end{table}

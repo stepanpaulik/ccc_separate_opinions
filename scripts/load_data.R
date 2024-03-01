@@ -2,7 +2,18 @@ library(tidyverse)
 library(furrr)
 plan(multisession, workers = parallel::detectCores() - 2)
 
+# PLACEBO -----------------------------------------------------------------
 controversial_topics = c("diskriminace", "spotřebitel", "vyvlastnění", "restituční nárok", "restituce", "církevní majetek", "sexuální orientace", "základní práva a svobody/rovnost v základních právech a svobodách a zákaz diskriminace", "základní práva a svobody/rovnost v právech a důstojnosti a zákaz diskriminace", "hospodářská, sociální a kulturní práva/právo na ochranu zdraví", "základní práva a svobody/právo vlastnit a pokojně užívat majetek/restituce", "základní práva a svobody/svoboda projevu a právo na informace/svoboda projevu", "základní ústavní principy/zákaz vázání státu na ideologii nebo náboženství (laický stát)")
+
+set.seed(222)
+
+subject_matter =  read_rds("../data/ccc_dataset/rds/ccc_subject_matter.rds") %>%
+  select(subject_matter) %>%
+  distinct(subject_matter)
+
+subject_matter = replicate(n = 5, subject_matter %>% slice_sample(n = length(controversial_topics)), simplify=F) %>%
+  bind_rows(.id="placebo")
+
 
 # data wrangling ----------------------------------------------------------
 data_metadata = read_rds("../data/ccc_dataset/rds/ccc_metadata.rds") %>% 
@@ -47,6 +58,11 @@ data = left_join(data_compositions, data_dissents, by = join_by(doc_id, judge_id
          time_in_office = interval(judge_term_start, date_decision) %/% months(1)) %>%
   rowwise() %>%
   mutate(controversial = if_else(any((subject_proceedings %>% pluck(1)) %in% controversial_topics) | any((subject_register %>% pluck(1)) %in% controversial_topics), 1, 0) %>% as_factor()) %>%
+  mutate(placebo1 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 1]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 1]), 1, 0) %>% as_factor(),
+         placebo2 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 2]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 2]), 1, 0) %>% as_factor(),
+         placebo3 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 3]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 3]), 1, 0) %>% as_factor(),
+         placebo4 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 4]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 4]), 1, 0) %>% as_factor(),
+         placebo5 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 5]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 5]), 1, 0) %>% as_factor()) %>%
   ungroup() %>%
   group_by(doc_id) %>%
   filter(n() %in% c(3,9,10,11,12,13,14,15)) %>%
@@ -58,23 +74,25 @@ data = left_join(data_compositions, data_dissents, by = join_by(doc_id, judge_id
   select(-where(is.list)) %>%
   select(-dissenting_group)
 
-coalition_one = c("Kateřina Šimáčková", "Vojtěch Šimíček", "Ludvík David", "Jaromír Jirsa", "David Uhlíř", "Jiří Zemánek", "Tomáš Lichovník", "Jan Filip", "Milada Tomková", "Pavel Šámal")
-coalition_two = c("Radovan Suchánek","Vladimír Sládeček","Josef Fiala","Jan Musil","Jaroslav Fenyk","Pavel Rychetský")
 
-data_coalition = data %>%
-  filter(formation != "Plenum") %>%
-  group_by(doc_id) %>%
-  filter(all(judge_name %in% c(coalition_one, coalition_two))) %>%
-  ungroup() %>%
-  mutate(coalition = if_else(judge_name %in% coalition_one, 1, 0)) %>%
-  group_by(doc_id) %>%
-  mutate(
-    coalition = sum(coalition),
-    coalition = case_when(coalition == 3 ~ "full_coal_1",
-                          coalition == 0 ~ "full_coal_2",
-                          coalition == 1 | 2 ~ "mixed_coal") %>% as_factor(),
-    separate_opinion = as_factor(separate_opinion)) %>%
-  ungroup()
+# COALITIONS --------------------------------------------------------------
+# coalition_one = c("Kateřina Šimáčková", "Vojtěch Šimíček", "Ludvík David", "Jaromír Jirsa", "David Uhlíř", "Jiří Zemánek", "Tomáš Lichovník", "Jan Filip", "Milada Tomková", "Pavel Šámal")
+# coalition_two = c("Radovan Suchánek","Vladimír Sládeček","Josef Fiala","Jan Musil","Jaroslav Fenyk","Pavel Rychetský")
+# 
+# data_coalition = data %>%
+#   filter(formation != "Plenum") %>%
+#   group_by(doc_id) %>%
+#   filter(all(judge_name %in% c(coalition_one, coalition_two))) %>%
+#   ungroup() %>%
+#   mutate(coalition = if_else(judge_name %in% coalition_one, 1, 0)) %>%
+#   group_by(doc_id) %>%
+#   mutate(
+#     coalition = sum(coalition),
+#     coalition = case_when(coalition == 3 ~ "full_coal_1",
+#                           coalition == 0 ~ "full_coal_2",
+#                           coalition == 1 | 2 ~ "mixed_coal") %>% as_factor(),
+#     separate_opinion = as_factor(separate_opinion)) %>%
+#   ungroup()
 
 rm(data_metadata_temp)
  
