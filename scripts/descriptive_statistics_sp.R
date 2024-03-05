@@ -32,6 +32,7 @@ grounds_ratio = read_rds("../data/ccc_dataset/rds/ccc_metadata.rds") %>%
   group_by(year_decision) %>%
   summarise(count = sum(admissibility, merits),
             ratio_grounds = scales::percent(merits/admissibility, accuracy = 0.01))
+grounds_ratio
 
 read_rds("../data/ccc_dataset/rds/ccc_metadata.rds") %>%
   filter(grounds != "procedural") %>%
@@ -40,24 +41,14 @@ read_rds("../data/ccc_dataset/rds/ccc_metadata.rds") %>%
   ggplot(aes(x = year_decision, y = n, fill = grounds)) +
   geom_col()
 
-data_metadata %>%
-  filter(grounds %in% c("merits", "admissibility")) %>%
-  group_by(year(date_submission)) %>%
-  summarise(caseload = n(),
-            avg_length = mean(length_proceeding)) %>%
-  filter(avg_length < 400) %>%
-  ggplot(aes(y = caseload, x = avg_length)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = F, color = "black") +
-  labs(x = "Average length of proceedings before the CCC", y = "Yearly caseload of the CCC")
-
 caseload = read_rds("../data/ccc_dataset/rds/ccc_metadata.rds") %>%
   ggplot(aes(x = year(date_decision), fill = grounds)) +
   geom_bar(position = position_stack(reverse = TRUE))  +
   scale_x_continuous(breaks = seq(1991, 2023, 2)) +
   scale_fill_brewer(palette="Pastel1") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  labs(x = NULL, y = NULL, fill = "Type of verdict")
+  labs(x = NULL, y = NULL, fill = "Type of verdict") +
+  scale_fill_grey()
 caseload
 
 separate_opinion_ratio = read_rds("../data/ccc_dataset/rds/ccc_metadata.rds") %>% 
@@ -71,7 +62,8 @@ separate_opinion_ratio = read_rds("../data/ccc_dataset/rds/ccc_metadata.rds") %>
   geom_point() + 
   geom_line() +
   labs(y = "Percent of Decisions with at least one Separate Opinion", color = NULL) +
-  scale_y_continuous(labels = scales::label_percent())
+  scale_y_continuous(labels = scales::label_percent()) +
+  scale_colour_grey()
 separate_opinion_ratio
 
 dissents_distribution_judges = data_dissents %>%
@@ -110,7 +102,7 @@ plot_workload = data %>%
   ggplot(aes(x = workload)) +
   geom_density() +
   facet_wrap(~judge_name)
-plot_workload 
+plot_workload
 
 
 # Descriptive Statistics --------------------------------------------------
@@ -137,15 +129,15 @@ age_distribution = data_judges %>%
   mutate(age_term_end = year(judge_term_end) - judge_yob) %>%
   ggplot(aes(x = age_term_end)) +
   geom_density() +
-  labs(x = "The age of a justice", y = "Density", colour = NULL)
+  labs(x = "The age of a justice at the end of their term", y = "Density", colour = NULL)
 age_distribution
 
-descriptive_dependent = data %>%
-  mutate(formation = if_else(formation == "Plenum", "Plenum", "Chamber"),
-         presence_dissent = if_else(is.na(as.character(separate_opinion)), 0, 1)) %>%
-  group_by(formation, grounds) %>%
-  summarise(n_dissents = mean(separate_opinion))
-descriptive_dependent
+# descriptive_dependent = data %>%
+#   mutate(formation = if_else(formation == "Plenum", "Plenum", "Chamber"),
+#          presence_dissent = if_else(is.na(as.character(separate_opinion)), 0, 1)) %>%
+#   group_by(formation, grounds) %>%
+#   summarise(n_dissents = mean(separate_opinion))
+# descriptive_dependent
 
 dependent_variables_overview = data %>%
   select(separate_opinion, judge_profession, n_concerned_acts, n_concerned_constitutional_acts, n_citations, controversial) %>%
@@ -155,33 +147,5 @@ dependent_variables_overview = data %>%
   as_tibble() %>%
   select(c(skim_variable, judge_profession, numeric.mean, numeric.sd))
 dependent_variables_overview
-
-# random ------------------------------------------------------------------
-dissents_distribution_judges = data_dissents %>%
-  group_by(doc_id) %>%
-  count() %>%
-  ungroup() %>%
-  ggplot(aes(x = n)) +
-  geom_bar() +
-  scale_x_continuous(breaks = seq(1, 9, 1))
-dissents_distribution_judges
-
-dissents_distribution_opinions = data_dissents %>%
-  group_by(doc_id) %>%
-  summarise(n = length(unique(dissenting_group))) %>%
-  ungroup() %>%
-  ggplot(aes(x = n)) +
-  geom_bar() +
-  scale_x_continuous(breaks = seq(1, 9, 1)) +
-  labs(x = "Number of dissenting opinions", y = "Count")
-dissents_distribution_opinions
-
-
-dissents_prevalence = data_metadata %>%
-  filter(type_decision == "Nález" | formation == "Plenum") %>%
-  ggplot(aes(x = forcats::fct_infreq(presence_dissent))) +
-  geom_bar() +
-  labs(x = NULL, y = NULL)
-dissents_prevalence
 
 save.image("report/descriptive_statistics.RData")

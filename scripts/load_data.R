@@ -74,6 +74,17 @@ data = left_join(data_compositions, data_dissents, by = join_by(doc_id, judge_id
   select(-where(is.list)) %>%
   select(-dissenting_group)
 
+data_term_temp = data %>% 
+  group_by(doc_id) %>%
+  count(judge_term_court) %>%
+  pivot_wider(names_from = judge_term_court, values_from = n) %>%
+  mutate(across(everything(), ~replace_na(., replace = 0))) %>%
+  summarise(panel_term = if_else(`3rd` > `2nd`, "3rd", "2nd") %>%
+              as_factor())
+
+data = data %>%
+  left_join(., data_term_temp)
+
 
 # COALITIONS --------------------------------------------------------------
 # coalition_one = c("Kateřina Šimáčková", "Vojtěch Šimíček", "Ludvík David", "Jaromír Jirsa", "David Uhlíř", "Jiří Zemánek", "Tomáš Lichovník", "Jan Filip", "Milada Tomková", "Pavel Šámal")
@@ -95,4 +106,5 @@ data = left_join(data_compositions, data_dissents, by = join_by(doc_id, judge_id
 #   ungroup()
 
 rm(data_metadata_temp)
+rm(data_term_temp)
  

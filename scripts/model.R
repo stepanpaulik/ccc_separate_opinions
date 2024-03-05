@@ -10,6 +10,7 @@ library(parameters)
 library(broom.mixed)
 source("scripts/load_data.R")
 
+
 # additional data prep step
 data = data %>%
   mutate(separate_opinion = as_factor(separate_opinion)) %>%
@@ -42,36 +43,52 @@ model_me_base = logistic_reg() %>%
       data = data, REML = T) %>%
   extract_fit_engine()
 
-model_me_full = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + grounds + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + (1 | formation),
+model_me_full = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + grounds + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + (1 | formation) + (1 | panel_term),
                       data = data, 
                       control = glmerControl(optimizer="bobyqa",
                                              optCtrl=list(maxfun=2e5)),
                       family = "binomial")
 
-model_me_no_interaction = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + grounds + judge_profession + time_in_office + controversial + workload + (1 | formation),
+model_me_interaction = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + grounds + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + (1 | formation) + (1 | panel_term),
                       data = data, 
                       control = glmerControl(optimizer="bobyqa",
                                              optCtrl=list(maxfun=2e5)),
                       family = "binomial")
 
 
-model_me_disagreement = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + grounds + controversial + workload + (1 | formation),
+model_me_disagreement = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + grounds + controversial + workload + (1 | formation) + (1 | panel_term),
                               data = data, 
                               control = glmerControl(optimizer="bobyqa",
                                                      optCtrl=list(maxfun=2e5)),
                               family = "binomial")
 
-model_me_identification = glmer(separate_opinion ~ grounds + judge_profession + time_in_office + judge_profession:time_in_office + (1 | formation),
+model_me_identification = glmer(separate_opinion ~ grounds + judge_profession + time_in_office + judge_profession:time_in_office + (1 | formation) + (1 | panel_term),
                                 data = data, 
                                 control = glmerControl(optimizer="bobyqa",
                                                        optCtrl=list(maxfun=2e5)),
                                 family = "binomial")
 
-model_me_final = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + grounds + judge_profession + time_in_office + controversial + workload + (1 | formation),
+model_me_formation = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + judge_profession + time_in_office + controversial + workload + (1 | formation),
                        data = data, 
                        control = glmerControl(optimizer="bobyqa",
                                               optCtrl=list(maxfun=2e5)),
                        family = "binomial")
+
+model_me_formation_term = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + judge_profession + time_in_office + controversial + workload + (1 | formation) + (1 | panel_term),
+                       data = data, 
+                       control = glmerControl(optimizer="bobyqa",
+                                              optCtrl=list(maxfun=2e5)),
+                       family = "binomial")
+
+model_me_formation_term_grounds = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + judge_profession + time_in_office + controversial + workload + (1 | formation) + (1 | panel_term),
+                                data = data, 
+                                control = glmerControl(optimizer="bobyqa",
+                                                       optCtrl=list(maxfun=2e5)),
+                                family = "binomial")
+
+model_re = glm(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + judge_profession + time_in_office + controversial + workload,
+               data = data, 
+               family = "binomial")
 
 # MODEL COMPARISON --------------------------------------------------------
 AIC(logLik(model_re_base))
@@ -81,6 +98,8 @@ AIC(logLik(model_me_no_interaction))
 AIC(logLik(model_me_full))
 
 summary(model_me_full)
+
+summary(model_me_final)
 
 anova(model_re_base, model_re_full, test = "Chisq")
 anova(model_me_full, model_me_base, test = "Chisq")
@@ -100,6 +119,20 @@ modelsummary::modelsummary(list("Pooled" = model_re_full,
                                 "ME_judge" = model_me_judge, 
                                 "ME_formation" = model_me_full, 
                                 "ME_formation_no_interaction" = model_me_no_interaction), 
+                           estimate = "{estimate}{stars}",
+                           statistic = "({std.error})",
+                           stars = TRUE)
+
+modelsummary::modelsummary(list("ME_term" = model_me_formation, 
+                                "ME_formation_term" = model_me_formation_term,
+                                "ME_interaction" = model_me_interaction,
+                                "ME_no_interaction" = model_me_formation_term_grounds,
+                                "ME_Disagreement" = model_me_disagreement,
+                                "ME_Norm" = model_me_identification,
+                                "FE_formation" = model_me_formation,
+                                "FE_foration_term" = model_me_formation_term,
+                                "RE_model" = model_re,
+                                "ME_full" = model_me_full), 
                            estimate = "{estimate}{stars}",
                            statistic = "({std.error})",
                            stars = TRUE)
