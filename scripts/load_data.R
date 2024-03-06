@@ -5,13 +5,13 @@ plan(multisession, workers = parallel::detectCores() - 2)
 # PLACEBO -----------------------------------------------------------------
 controversial_topics = c("diskriminace", "spotřebitel", "vyvlastnění", "restituční nárok", "restituce", "církevní majetek", "sexuální orientace", "základní práva a svobody/rovnost v základních právech a svobodách a zákaz diskriminace", "základní práva a svobody/rovnost v právech a důstojnosti a zákaz diskriminace", "hospodářská, sociální a kulturní práva/právo na ochranu zdraví", "základní práva a svobody/právo vlastnit a pokojně užívat majetek/restituce", "základní práva a svobody/svoboda projevu a právo na informace/svoboda projevu", "základní ústavní principy/zákaz vázání státu na ideologii nebo náboženství (laický stát)")
 
-set.seed(222)
+set.seed(2222)
 
 subject_matter =  read_rds("../data/ccc_dataset/rds/ccc_subject_matter.rds") %>%
   select(subject_matter) %>%
   distinct(subject_matter)
 
-subject_matter = replicate(n = 5, subject_matter %>% slice_sample(n = length(controversial_topics)), simplify=F) %>%
+subject_matter = replicate(n = 10, subject_matter %>% slice_sample(n = length(controversial_topics)), simplify=F) %>%
   bind_rows(.id="placebo")
 
 
@@ -62,7 +62,12 @@ data = left_join(data_compositions, data_dissents, by = join_by(doc_id, judge_id
          placebo2 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 2]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 2]), 1, 0) %>% as_factor(),
          placebo3 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 3]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 3]), 1, 0) %>% as_factor(),
          placebo4 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 4]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 4]), 1, 0) %>% as_factor(),
-         placebo5 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 5]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 5]), 1, 0) %>% as_factor()) %>%
+         placebo5 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 5]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 5]), 1, 0) %>% as_factor(),
+         placebo6 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 5]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 6]), 1, 0) %>% as_factor(),
+         placebo7 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 5]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 7]), 1, 0) %>% as_factor(),
+         placebo8 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 5]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 8]), 1, 0) %>% as_factor(),
+         placebo9 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 5]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 9]), 1, 0) %>% as_factor(),
+         placebo10 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 5]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 10]), 1, 0) %>% as_factor()) %>%
   ungroup() %>%
   group_by(doc_id) %>%
   filter(n() %in% c(3,9,10,11,12,13,14,15)) %>%

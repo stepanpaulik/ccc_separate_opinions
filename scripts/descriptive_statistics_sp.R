@@ -149,3 +149,4 @@ dependent_variables_overview = data %>%
 dependent_variables_overview
 
 save.image("report/descriptive_statistics.RData")
+
