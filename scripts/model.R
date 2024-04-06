@@ -13,6 +13,9 @@ source("scripts/load_data.R")
 
 # additional data prep step
 data = data %>%
+  mutate(r_n_concerned_acts = n_concerned_acts/length_decision,
+         r_n_concerned_constitutional_acts = n_concerned_constitutional_acts/length_decision,
+         r_n_citations = n_citations/length_decision) %>%
   # filter(n_concerned_acts != 0 & n_concerned_constitutional_acts != 0) %>% # The potential to filter decisions with 0 and 0 of the concerned acts as it may be considered missing data.
   mutate(separate_opinion = as_factor(separate_opinion)) %>%
   mutate(across(where(is.numeric), ~datawizard::standardize(.x))) %>%
@@ -41,11 +44,23 @@ model_me_base = logistic_reg() %>%
       data = data, REML = T) %>%
   extract_fit_engine()
 
-model_me_full = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + grounds + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + (1 | formation) + (1 | panel_term),
+model_me_full = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + grounds + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + length_decision + (1 | formation) + (1 | panel_term),
                       data = data, 
                       control = glmerControl(optimizer="bobyqa",
                                              optCtrl=list(maxfun=2e5)),
                       family = "binomial")
+
+model_me_full_relative = glmer(separate_opinion ~ r_n_concerned_acts + r_n_concerned_constitutional_acts + r_n_citations + grounds + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + (1 | formation) + (1 | panel_term),
+                      data = data, 
+                      control = glmerControl(optimizer="bobyqa",
+                                             optCtrl=list(maxfun=2e5)),
+                      family = "binomial")
+
+model_me_full_both = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations +  r_n_concerned_acts + r_n_concerned_constitutional_acts + r_n_citations + grounds + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + (1 | formation) + (1 | panel_term),
+                               data = data, 
+                               control = glmerControl(optimizer="bobyqa",
+                                                      optCtrl=list(maxfun=2e5)),
+                               family = "binomial")
 
 model_me_interaction = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + grounds + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + (1 | formation) + (1 | panel_term),
                       data = data, 
@@ -95,6 +110,13 @@ modelsummary::modelsummary(list("ME_term" = model_me_formation,
                                 "FE_formation" = model_me_formation,
                                 "FE_foration_term" = model_me_formation_term,
                                 "ME_full" = model_me_full), 
+                           estimate = "{estimate}{stars}",
+                           statistic = "{p.value} [{conf.low}, {conf.high}]",
+                           stars = TRUE)
+
+modelsummary::modelsummary(list("ME_full" = model_me_full,
+                                "ME_full_relative" = model_me_full_relative,
+                                "ME_full_both" = model_me_full_both), 
                            estimate = "{estimate}{stars}",
                            statistic = "{p.value} [{conf.low}, {conf.high}]",
                            stars = TRUE)

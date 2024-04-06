@@ -88,8 +88,11 @@ data_term_temp = data %>%
               as_factor())
 
 data = data %>%
-  left_join(., data_term_temp)
-
+  left_join(., data_term_temp) %>%
+  left_join(., read_rds("../data/ccc_dataset/rds/ccc_texts.rds") %>%
+              mutate(text = unlist(text)) %>%
+              group_by(doc_id) %>%
+              summarise(length_decision = str_length(text)))
 
 # COALITIONS --------------------------------------------------------------
 # coalition_one = c("Kateřina Šimáčková", "Vojtěch Šimíček", "Ludvík David", "Jaromír Jirsa", "David Uhlíř", "Jiří Zemánek", "Tomáš Lichovník", "Jan Filip", "Milada Tomková", "Pavel Šámal")

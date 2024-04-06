@@ -12,12 +12,12 @@ author:
 - name: Gor Vartazaryan
   affiliation: Charles University, gorike2000@gmail.com
 anonymous: FALSE
-removetitleabstract: TRUE
+removetitleabstract: FALSE
 abstract: ""
 thanks: "Replication files are available on the author's Github account (https://github.com/stepanpaulik/apex_courts_dataset/). **Current version**: `r format(Sys.time(), '%B %d, %Y')`"
 keywords: "empirical legal research, courts, dissents, judicial behavior, political science, regression analysis"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
-link-citations: true
+link-citations: yes
 linkcolor: blue
 geometry: margin=1in
 fontsize: 11pt
@@ -38,9 +38,12 @@ bibliography: "`r rbbt::bbt_write_bib('bibliography.bib', overwrite = TRUE)`"
 knitr::opts_chunk$set(echo = FALSE)
 library(patchwork)
 library(tidyverse); theme_set(theme_minimal())
+library(ggplot2)
 library(kableExtra)
 library(modelsummary)
 library(bookdown)
+
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE, fig.width=4.2, fig.asp=0.8)
 
 load("../data/descriptive_statistics.RData")
 load("../data/model_results.RData")
@@ -57,7 +60,7 @@ Such a view also goes against the possibility of a dissenting voice. A dissent s
 
 In our article, we pick up on this change and we set out to conduct an empirical research into the circumstances of disagreement on a court bench, we empirically research the circumstances of disagreement among the judges of the Czech Constitutional Court ("CCC") and we attempt to square the perception of judges as strategic rational-economic beings [@epsteinWhyWhenJudges2011; @epsteinStrategicRevolutionJudicial2000], the identification-disagreement model [@wittigOccurrenceSeparateOpinions2016], and our empirical findings.
 
-We find that...
+We find that in line with the identificatgion-disagreement model, the disagremenet potential of any given case is positively correlated to the likelihood of a separate opinion. In contrast to that, we do not find evidence that the adherence to the norm of consensus varies across professional background of the justices. We also find that the workload a justice has is correlated with their likelihood of attaching a separate opinion. Lastly, we do not find evidence that the dissenting behavior varies depending on the time elapsed between the start of justices' terms and the date of a decision.
 
 Our article proceeds as follows. In [section 2](#theory), we lay out theory of dissenting behavior. We mainly focus on the disagreement-identification model. In [section 3](#primer), we introduce the CCC. We discuss its institutional setup, its procedures and, most importantly, the rules concerning separate opinions. In [section 4](#hypotheses), we draw hypotheses based on the general theory applied to the specific institutional setup of the CCC. In [section 5](#empirics), we empirically test the hypotheses. We describe our data, we explain how we operationalized our variables, we describe our identification strategy, and lastly we discuss the results. [Section 6](#conclusion) concludes. 
 
@@ -270,11 +273,22 @@ model_selection %>%
 
 When identifying our model, we stood before a research choice that has been addressed differently by different researchers. As other studies on judicial decision-making relying on observational data, the data on judicial-decision making offers multiple potential clustering variables to include fixed effects on. In their study of effect of french language on the performance of the judges at the CJEU, @cheruvuHowInstitutionalConstraints2019 used fixed effects in their model the effects both on the individual judges as well as on the panel level. The reasoning behind fixed effects clustered on the formation were that it "[s]cholars argue the number of judges sitting on a chamber is a proxy for a cases’ salience as more important cases tend to be assigned to larger chambers (e.g. @kelemenPoliticalFoundationsJudicial2013; @larssonJudicialIndependencePolitical2016). Including chamber fixed-effects in my models addresses both heterogeneity in the collegial decision-making process of different chambers of judges and implicitly controls for the number of judges hearing a case." @clarkEstimatingEffectLeisure2018 in their paper studied the effect of leisure on judicial performance.^[Also measured as time for a judge to decide a case similarly to the @cheruvuHowInstitutionalConstraints2019 study.]. They included the the author fixed effects in their model.^[Which would correspond to the judge rapporteur in our case.] @brekkeCJEUDatabasePlatform2023 in a study on the usage of orders at the CJEU built a logistic regression model with subject matter fixed effects.
 
-Because in our study, we are interested in the between variance of individual judges as well as the subject matters, it does not make sense to include fixed effects of either cluster. In contrast to that, we are not interested in the so-called panel effects, especially the difference between the 15-member plenum session and the 3-member panels could produce bias. The more controversial cases or more legally complex cases are typically assigned to the plenum and the occurrence of separate opinions is higher in the plenary decisions. Moreover, the behavior of the 3-member panels varies as well. It thus makes the most sense to include panel fixed effects as that would allow us to control for a potentially potent source of bias. In our model, the variable *formation* captures the exact composition of the 3-member panels, whose composition is relative unstable especially after the introduction of system of rotations of justices in 2016, and the information whether the case was decided by the plenum, whose composition is relatively stable within the two terms.
+Because in our study, we are interested in the between variance of individual judges as well as the subject matters, it does not make sense to include fixed effects of either cluster. In contrast to that, we are not interested in the so-called panel effects, especially the difference between the 15-member plenum  and the 3-member panels could produce bias. The more controversial cases or more legally complex cases are typically assigned to the plenum and the occurrence of separate opinions is higher in the plenary decisions. Moreover, the behavior of the 3-member panels varies as well. It thus makes the most sense to include panel fixed effects as that would allow us to control for a potentially potent source of bias. In our model, the variable *formation* captures the information on the 3-member panels, whose composition is relative unstable especially after the introduction of system of rotations of justices in 2016, therefore the information is coded as the exact composition of any given 3-member panel, and the information whether the case was decided by the plenum, whose composition is relatively stable within the two terms.
 
-Moreover, our data includes two terms of the CCC. Its second decade roughly between 2003 and 2013 and its second decade between 2014 and 2023. Rather than including year fixed effects, we opt for the term fixed effects. If the majority of judges sitting in a panel came from the first term, the variable *term* is then coded as "1st", and if the majority of justices sitting in a panel came from the second term, the variable takes up the value "2st".
+Moreover, our data includes two terms of the CCC. Its second decade roughly between 2003 and 2013 and its second decade between 2014 and 2023. The composition of the CCC has completely changed between the two terms and so has, we expect, changed the behavior of the court as such. Rather than including year fixed effects, we opt for the term fixed effects. If the majority of judges sitting in a panel came from the first term, the variable *term* is then coded as "1st", and if the majority of justices sitting in a panel came from the second term, the variable takes up the value "2st".
 
 ## Results and discussion
+
+<!-- **H~1~:** *The probability of observing a separate opinion is higher for judges with low norm-identification than for judges with high norm-identification.* -->
+
+<!-- **H~2~:** *The probability of observing a separate opinion is higher for cases with a higher level of disagreement potential than in cases with a lower level of disagreement potential.* -->
+
+<!-- **H~3~:** *The closer the date of the decision to the date at which the judge entered, the larger the difference between the probability of observing a separate opinion of justices coming from judiciary and of justices coming outside judiciary.* -->
+
+<!-- **H~4~:** *The higher the workload of a judge, the lower the probability of them attaching a separate opinion.* -->
+
+<!-- **H~5~:** *The closer the date of the decision to the date at which the judge entered the office, the lower probability of a separate opinion, whereas the closer the date of the decision to the date at which the judge left the office, the higher the probability of a separate opinion.* -->
+
 The results reveal quite an interesting trend at the CCC. We tested the model under more specifications. The full model presented the best fit. However, while excluding the disagreement potential variables produced a significant drop in AIC, excluding the norm-identification did not. Therefore, the norm-identification variables do not seem to carry too much explanatory power regarding the dissenting behavior of CCC justices. 
 
 ```{r, warning = FALSE, echo = FALSE}
@@ -288,7 +302,9 @@ modelsummary::modelsummary(list("Full Model" = model_me_formation,
                            title = "Results from the Logit Model")
 ```
 
-Moving on to the interpretation of the results, we find a clear support for Hypothesis X: all the disagreement potential variables are positively and significantly correlated with the probability of a judge attaching a separate opinion. No matter the model specification, we always found a clear statistical, substantive and positive relationship between the probability of a judge attaching a separate opinion and the number of constitutional or ordinary acts concerned. 
+Moving on to the interpretation of the results, our results do not support the Hypothesis 1. Unlike at the GFCC, we do not find evidence for the norm-consensus operating according to our theoretical expectations. Firstly, adding the interaction term between the professional background and the time in office does not improve the model fit. It does not carry much explanatory power as an ANOVA test fails to reject the null hypothesis of no difference. Secondly, neither the separate variables of norm-identification nor the interaction term are near statistical significance. That does not however lead to us rejecting the identification-disagreement as a theoretical model. We believe it to be a clear theoretical model that can guide further empirical inquiries. It may just be the case that the proxy of the justices' profession may not be wholly accurate or that even if it was there may simply be currently no norm of consensus operating at the CCC.
+
+In contrast to that, we find a clear support for Hypothesis 2: all the disagreement potential variables are positively and significantly correlated with the probability of a judge attaching a separate opinion. No matter the model specification, we always found a clear statistical, substantive and positive relationship between the probability of a judge attaching a separate opinion and the number of constitutional or ordinary acts concerned.
 
 The same applies to the controversial value-laden topics. Because we are aware of the potential issue with "arbitrarily" selecting a couple of potential subject matters, we decided to test the robustness of our *controversial* variable. To do so, we conducted a placebo test. We sampled 10 placebo samples of different subject matters (n = `r length(controversial_topics)`) and fitted the same final full mixed-effects model with the *controversial* variable being replaced by the placebo. After rerunning the placebo test multiple times with various samples of different seeds, we found that only sometimes would at most one placebo sample out of the 10 be statistically significant, the remaining 9 or 10 samples were not.  While such a conclusion may not come as a complete surprise, as it is perfectly aligned with theoretical expectations, we provide a firm evidence for it.
 
@@ -300,12 +316,10 @@ placebo_models %>%
         digits = 2)
 ```
 
-Our results do not support the Hypothesis X. Interestingly, unlike at the GFCC, we do not find evidence for the norm-consensus operating according to our theoretical expectations. Firstly, adding the interaction term between the professional background and the time in office does not improve the model fit. It does not carry much explanatory power as an ANOVA test fails to reject the null hypothesis of no difference. Secondly, neither the separate variables of norm-identification nor the interaction term are near statistical significance. That does not however lead to us rejecting the identification-disagreement as a theoretical model. We believe it to be a clear theoretical model that can guide further empirical inquiries. It may just be the case that the proxy of the justices' profession may not be wholly accurate or that even if it was there may simply be currently no norm of consensus operating at the CCC.
 
-Our results also support for Hypothesis X. Higher workload of a judge decreases their probability of attaching a separate opinion. It thus appears that neither the claims of @epsteinWhyWhenJudges2011 are not unwarranted and may carry over to other contexts. The results thus reveal that judges of the CCC give way to strategical considerations regarding their leisure. If they're overburdened with work, they reduce the load elsewhere, namely in the additional burden of writing separate opinions.
+Our results also support for Hypothesis 4. Higher workload of a judge decreases their probability of attaching a separate opinion. It thus appears that neither the claims of @epsteinWhyWhenJudges2011 are not unwarranted and may carry over to other contexts. The results thus reveal that judges of the CCC give way to strategical considerations regarding their leisure. If they're overburdened with work, they reduce the load elsewhere, namely in the additional burden of writing separate opinions.
 
 Lastly, we do not find evidence for the so-called freshman's effect. The importance CCC justices attach to collegiality costs of a separate opinion seem to remain consistent across time as the time in office of a justice does not carry explanatory power in our model.
-
 
 # Conclusions {#conclusions}
 
