@@ -10,7 +10,6 @@ library(parameters)
 library(broom.mixed)
 source("scripts/load_data.R")
 
-
 # additional data prep step
 data = data %>%
   mutate(r_n_concerned_acts = n_concerned_acts/length_decision,
@@ -19,6 +18,7 @@ data = data %>%
   # filter(n_concerned_acts != 0 & n_concerned_constitutional_acts != 0) %>% # The potential to filter decisions with 0 and 0 of the concerned acts as it may be considered missing data.
   mutate(separate_opinion = as_factor(separate_opinion)) %>%
   mutate(across(where(is.numeric), ~datawizard::standardize(.x))) %>%
+  mutate(time_in_office = datawizard::unstandardize(time_in_office)) %>%
   mutate(judge_profession = if_else(judge_profession %in% c("judge"), true = "within", false = "outside"))
 
 # rmse = function(model){
@@ -33,9 +33,9 @@ model_re_base = logistic_reg() %>%
       family = binomial) %>%
   extract_fit_engine()
 
-model_re_full = glm(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + grounds + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + formation + panel_term,
-      data = data,
-      family = binomial)
+model_re_full = glm(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts +  + grounds + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + formation + panel_term,
+                    data = data,
+                    family = binomial)
 
 # MIXED EFFECTS -----------------------------------------------------------
 model_me_base = logistic_reg() %>%
@@ -51,25 +51,25 @@ model_me_full = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitu
                       family = "binomial")
 
 model_me_full_relative = glmer(separate_opinion ~ r_n_concerned_acts + r_n_concerned_constitutional_acts + r_n_citations + grounds + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + (1 | formation) + (1 | panel_term),
-                      data = data, 
-                      control = glmerControl(optimizer="bobyqa",
-                                             optCtrl=list(maxfun=2e5)),
-                      family = "binomial")
-
-model_me_full_both = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations +  r_n_concerned_acts + r_n_concerned_constitutional_acts + r_n_citations + grounds + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + (1 | formation) + (1 | panel_term),
                                data = data, 
                                control = glmerControl(optimizer="bobyqa",
                                                       optCtrl=list(maxfun=2e5)),
                                family = "binomial")
 
+model_me_full_both = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations +  r_n_concerned_acts + r_n_concerned_constitutional_acts + r_n_citations + grounds + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + (1 | formation) + (1 | panel_term),
+                           data = data, 
+                           control = glmerControl(optimizer="bobyqa",
+                                                  optCtrl=list(maxfun=2e5)),
+                           family = "binomial")
+
 model_me_interaction = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + grounds + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + (1 | formation) + (1 | panel_term),
-                      data = data, 
-                      control = glmerControl(optimizer="bobyqa",
-                                             optCtrl=list(maxfun=2e5)),
-                      family = "binomial")
+                             data = data, 
+                             control = glmerControl(optimizer="bobyqa",
+                                                    optCtrl=list(maxfun=2e5)),
+                             family = "binomial")
 
 
-model_me_disagreement = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + n_citations + grounds + controversial + workload + (1 | formation) + (1 | panel_term),
+model_me_disagreement = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + grounds + controversial + workload + (1 | formation) + (1 | panel_term),
                               data = data, 
                               control = glmerControl(optimizer="bobyqa",
                                                      optCtrl=list(maxfun=2e5)),
@@ -82,44 +82,50 @@ model_me_identification = glmer(separate_opinion ~ grounds + judge_profession + 
                                 family = "binomial")
 
 model_me_formation = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + grounds + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + (1 | formation),
-                       data = data, 
-                       control = glmerControl(optimizer="bobyqa",
-                                              optCtrl=list(maxfun=2e5)),
-                       family = "binomial")
+                           data = data, 
+                           control = glmerControl(optimizer="bobyqa",
+                                                  optCtrl=list(maxfun=2e5)),
+                           family = "binomial")
 
 model_me_formation_term = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + (1 | formation) + (1 | panel_term),
-                       data = data, 
-                       control = glmerControl(optimizer="bobyqa",
-                                              optCtrl=list(maxfun=2e5)),
-                       family = "binomial")
-
-model_me_formation_term_grounds = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + (1 | formation) + (1 | panel_term),
                                 data = data, 
                                 control = glmerControl(optimizer="bobyqa",
                                                        optCtrl=list(maxfun=2e5)),
                                 family = "binomial")
 
+model_me_formation_term_grounds = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + (1 | formation) + (1 | panel_term),
+                                        data = data, 
+                                        control = glmerControl(optimizer="bobyqa",
+                                                               optCtrl=list(maxfun=2e5)),
+                                        family = "binomial")
+
+model_me_workload = glmer(separate_opinion ~ n_concerned_acts + n_concerned_constitutional_acts + judge_profession + time_in_office + judge_profession:time_in_office + controversial + workload + workload_ratio_admissibility + (1 | formation) + (1 | panel_term),
+                                        data = data, 
+                                        control = glmerControl(optimizer="bobyqa",
+                                                               optCtrl=list(maxfun=2e5)),
+                                        family = "binomial")
+
 
 # MODEL SUMMARY -----------------------------------------------------------
-modelsummary::modelsummary(list("ME_term" = model_me_formation, 
-                                "ME_formation_term" = model_me_formation_term,
-                                "ME_interaction" = model_me_interaction,
-                                "ME_no_interaction" = model_me_formation_term_grounds,
-                                "ME_Disagreement" = model_me_disagreement,
-                                "ME_Norm" = model_me_identification,
-                                "FE_formation" = model_me_formation,
-                                "FE_foration_term" = model_me_formation_term,
-                                "ME_full" = model_me_full), 
-                           estimate = "{estimate}{stars}",
-                           statistic = "{p.value} [{conf.low}, {conf.high}]",
-                           stars = TRUE)
-
-modelsummary::modelsummary(list("ME_full" = model_me_full,
-                                "ME_full_relative" = model_me_full_relative,
-                                "ME_full_both" = model_me_full_both), 
-                           estimate = "{estimate}{stars}",
-                           statistic = "{p.value} [{conf.low}, {conf.high}]",
-                           stars = TRUE)
+# modelsummary::modelsummary(list("ME_term" = model_me_formation,
+#                                 "ME_formation_term" = model_me_formation_term,
+#                                 "ME_interaction" = model_me_interaction,
+#                                 "ME_no_interaction" = model_me_formation_term_grounds,
+#                                 "ME_Disagreement" = model_me_disagreement,
+#                                 "ME_Norm" = model_me_identification,
+#                                 "FE_formation" = model_me_formation,
+#                                 "FE_foration_term" = model_me_formation_term,
+#                                 "ME_full" = model_me_full),
+#                            estimate = "{estimate}{stars}",
+#                            statistic = "{p.value} [{conf.low}, {conf.high}]",
+#                            stars = TRUE)
+# 
+# modelsummary::modelsummary(list("ME_full" = model_me_full,
+#                                 "ME_full_relative" = model_me_full_relative,
+#                                 "ME_full_both" = model_me_full_both), 
+#                            estimate = "{estimate}{stars}",
+#                            statistic = "{p.value} [{conf.low}, {conf.high}]",
+#                            stars = TRUE)
 
 
 # MODEL COMPARISON --------------------------------------------------------
@@ -218,11 +224,11 @@ corr_acts
 # PREDICTION ACCURACY -----------------------------------------------------
 data_prediction = data %>%
   mutate(Prediction = predict(model_me_full, type = "response"),
-                Prediction = ifelse(Prediction > .5, 1, 0),
-                Prediction = factor(Prediction, levels = c("0", "1")))
+         Prediction = ifelse(Prediction > .5, 1, 0),
+         Prediction = factor(Prediction, levels = c("0", "1")))
 
 conf_matrix = caret::confusionMatrix(data_prediction$Prediction, data_prediction$separate_opinion)
-
+conf_matrix
 conf_matrix$table %>%
   as_tibble()
 
@@ -243,31 +249,44 @@ placebo_models = str_subset(string = colnames(data), "placebo\\d") %>%
 placebo_models
 
 # MODEL - COALITIONS ------------------------------------------------------
-# model_coalitions = logistic_reg() %>%
-#   set_engine("glm") %>%
-#   fit(separate_opinion ~ coalition,
-#       data = data_coalition) %>%
-#   extract_fit_engine()
-# 
-# modelsummary::modelsummary(model_coalitions,
-#                            estimate = "{estimate}{stars}",
-#                            statistic = "({std.error})",
-#                            stars = TRUE)
-# 
-# plot_coalitions = model_coalitions %>%
-#   tidy(conf.int = TRUE) %>%
-#   ggplot(aes(x = term, y = estimate)) +
-#   geom_point() +
-#   geom_pointrange(aes(ymin = conf.low, ymax = conf.high)) +
-#   labs(x = "Term", y = "Estimate")
-# 
+model_coalitions = logistic_reg() %>%
+  set_engine("glm") %>%
+  fit(separate_opinion ~ coalition,
+      data = data_coalition) %>%
+  extract_fit_engine()
+
+modelsummary::modelsummary(model_coalitions,
+                           estimate = "{estimate}{stars}",
+                           statistic = "({std.error})",
+                           stars = TRUE)
+
+plot_coalitions = model_coalitions %>%
+  tidy(conf.int = TRUE) %>%
+  ggplot(aes(x = term, y = estimate)) +
+  geom_point() +
+  geom_pointrange(aes(ymin = conf.low, ymax = conf.high)) +
+  labs(x = "Term", y = "Estimate")
+plot_coalitions
+
 # write_rds(model_coalitions, file = "../ccc_dataset/report/model_coalitions.rds")
 # write_rds(plot_coalitions, file = "../ccc_dataset/report/plot_coalitions.rds")
-  
+
+
+
+
+library(marginaleffects)
+
+# nd = datagrid(model = model_me_formation_term_grounds, judge_profession = c("outside", "within"), grid_type = "counterfactual")
+# pred <- predictions(model_me_formation_term_grounds, newdata = nd)
+
+
+marginal_probabilities = plot_predictions(model_me_formation_term_grounds, condition = c("time_in_office" ,"judge_profession"), type = "response") +
+  labs(title = "Probability of a SO conditional on \n Time in Office and Profession" ) +
+  xlab("Time in Office") +
+  ylab("Probability of a Separate Opinion")
+marginal_probabilities
+ggsave("marginal_probabilities.png", marginal_probabilities)
+
 
 rm(list=ls(pattern="^data"))
 save.image("data/model_results.RData")
-
-
-
-

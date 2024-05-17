@@ -16,6 +16,8 @@ subject_matter = replicate(n = 10, subject_matter %>% slice_sample(n = length(co
 
 
 # data wrangling ----------------------------------------------------------
+
+# Load and filter the data relevant for the analysis
 data_metadata = read_rds("../data/ccc_dataset/rds/ccc_metadata.rds") %>% 
   mutate(presence_dissent = if_else(is.na(as.character(separate_opinion)), "None", "At least 1")) %>%
   filter(between(year(date_decision), 2004, 2022)) %>%
@@ -24,6 +26,7 @@ data_metadata = read_rds("../data/ccc_dataset/rds/ccc_metadata.rds") %>%
 
 data_judges = read_rds("../data/ccc_dataset/rds/ccc_judges.rds")
 
+# 
 data_compositions = data_metadata %>%
   select(doc_id, composition) %>%
   unnest(composition)
@@ -32,8 +35,8 @@ data_dissents = read_rds("../data/ccc_dataset/rds/ccc_separate_opinions.rds") %>
   filter(doc_id %in% data_metadata$doc_id)
 
 data_metadata_temp = read_rds("../data/ccc_dataset/rds/ccc_metadata.rds") %>% rename(date_decision_meta = date_decision,
-                                                                    date_submission_meta = date_submission) %>%
-  select(judge_rapporteur_name, date_decision_meta, date_submission_meta)
+                                                                                     date_submission_meta = date_submission) %>%
+  select(judge_rapporteur_name, date_decision_meta, date_submission_meta, grounds, type_decision)
 
 data = left_join(data_compositions, data_dissents, by = join_by(doc_id, judge_id == dissenting_judge_id)) %>%
   mutate(dissenting_judge_name = if_else(condition = is.na(dissenting_judge_name), true = 0, false = 1)) %>%
@@ -45,15 +48,28 @@ data = left_join(data_compositions, data_dissents, by = join_by(doc_id, judge_id
   mutate(n_citations = length(unique(unlist(citations)))) %>%
   ungroup() %>%
   mutate(separate_opinion_nested = future_pmap(., function(doc_id, judge_name, date_decision, ...) data_judges %>%
-                                          rename(judge_name.y = judge_name) %>%
-                                          filter(date_decision >= judge_term_start & date_decision <= judge_term_end & judge_name == judge_name.y) %>%
-                                          select(judge_gender, judge_uni, judge_degree, judge_profession, judge_term_start, judge_term_end, judge_term_court)),
+                                                 rename(judge_name.y = judge_name) %>%
+                                                 filter(date_decision >= judge_term_start & date_decision <= judge_term_end & judge_name == judge_name.y) %>%
+                                                 select(judge_gender, judge_uni, judge_degree, judge_profession, judge_term_start, judge_term_end, judge_term_court)),
          workload = future_pmap(., function(doc_id, judge_name, date_decision, ...) data_metadata_temp %>%
                                   filter(date_decision_meta > date_decision & 
                                            date_submission_meta < date_decision & 
                                            judge_rapporteur_name == judge_name) %>%
-                                  nrow())) %>%
-  unnest(c(separate_opinion_nested, workload)) %>%
+                                  nrow()),
+         workload_ratio_admissibility = future_pmap(., function(doc_id, judge_name, date_decision, ...) {
+           data_temp = data_metadata_temp %>%
+             filter(grounds %in% c("admissibility", "merits")) %>%
+             filter(date_decision_meta > date_decision & 
+                      date_submission_meta < date_decision & 
+                      judge_rapporteur_name == judge_name) %>%
+             group_by(grounds) %>%
+             count() %>%
+             ungroup()
+           
+           output = data_temp$n[data_temp$grounds == "merits"]/data_temp$n[data_temp$grounds == "admissibility"]
+           return(output)}
+         )) %>%
+  unnest(c(separate_opinion_nested, workload, workload_ratio_admissibility)) %>%
   mutate(across(where(is.character), ~as_factor(.)),
          time_in_office = interval(judge_term_start, date_decision) %/% months(1)) %>%
   rowwise() %>%
@@ -76,6 +92,8 @@ data = left_join(data_compositions, data_dissents, by = join_by(doc_id, judge_id
   mutate(formation = if_else(formation == "Plenum", true = "Plenum", false = paste0(judge_name, collapse = ";")),
          formation = as_factor(formation)) %>%
   ungroup() %>%
+  mutate(controversial = fct_rev(controversial),
+         grounds = fct_rev(grounds)) %>%
   select(-where(is.list)) %>%
   select(-dissenting_group)
 
@@ -95,24 +113,26 @@ data = data %>%
               summarise(length_decision = str_length(text)))
 
 # COALITIONS --------------------------------------------------------------
-# coalition_one = c("Kateřina Šimáčková", "Vojtěch Šimíček", "Ludvík David", "Jaromír Jirsa", "David Uhlíř", "Jiří Zemánek", "Tomáš Lichovník", "Jan Filip", "Milada Tomková", "Pavel Šámal")
-# coalition_two = c("Radovan Suchánek","Vladimír Sládeček","Josef Fiala","Jan Musil","Jaroslav Fenyk","Pavel Rychetský")
-# 
-# data_coalition = data %>%
-#   filter(formation != "Plenum") %>%
-#   group_by(doc_id) %>%
-#   filter(all(judge_name %in% c(coalition_one, coalition_two))) %>%
-#   ungroup() %>%
-#   mutate(coalition = if_else(judge_name %in% coalition_one, 1, 0)) %>%
-#   group_by(doc_id) %>%
-#   mutate(
-#     coalition = sum(coalition),
-#     coalition = case_when(coalition == 3 ~ "full_coal_1",
-#                           coalition == 0 ~ "full_coal_2",
-#                           coalition == 1 | 2 ~ "mixed_coal") %>% as_factor(),
-#     separate_opinion = as_factor(separate_opinion)) %>%
-#   ungroup()
+coalition_one = c("Kateřina Šimáčková", "Vojtěch Šimíček", "Ludvík David", "Jaromír Jirsa", "David Uhlíř", "Jiří Zemánek", "Tomáš Lichovník", "Jan Filip", "Milada Tomková", "Pavel Šámal")
+coalition_two = c("Radovan Suchánek","Vladimír Sládeček","Josef Fiala","Jan Musil","Jaroslav Fenyk","Pavel Rychetský")
+
+data_coalition = data %>%
+  filter(formation != "Plenum") %>%
+  group_by(doc_id) %>%
+  filter(all(judge_name %in% c(coalition_one, coalition_two))) %>%
+  ungroup() %>%
+  mutate(coalition = if_else(judge_name %in% coalition_one, 1, 0)) %>%
+  group_by(doc_id) %>%
+  summarise(
+    coalition = sum(coalition),
+    coalition = case_when(coalition == 3 ~ "full_coal",
+                          coalition == 0 ~ "full_coal",
+                          coalition == 1 | 2 ~ "mixed_coal") %>% as_factor(),
+    separate_opinion = if_else(any(separate_opinion == 1), 1, 0)) %>%
+  mutate(separate_opinion = as_factor(separate_opinion)) %>%
+  ungroup() %>%
+  mutate(coalition = fct_rev(coalition))
 
 rm(data_metadata_temp)
 rm(data_term_temp)
- 
+
