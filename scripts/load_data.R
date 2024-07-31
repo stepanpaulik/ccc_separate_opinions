@@ -7,7 +7,7 @@ controversial_topics = c("diskriminace", "spotřebitel", "vyvlastnění", "resti
 
 set.seed(2222)
 
-subject_matter =  read_rds("../data/ccc_dataset/rds/ccc_subject_matter.rds") %>%
+subject_matter =  read_rds("../data/ccc_database/rds/ccc_subject_matter.rds") %>%
   select(subject_matter) %>%
   distinct(subject_matter)
 
@@ -18,30 +18,30 @@ subject_matter = replicate(n = 10, subject_matter %>% slice_sample(n = length(co
 # data wrangling ----------------------------------------------------------
 
 # Load and filter the data relevant for the analysis
-data_metadata = read_rds("../data/ccc_dataset/rds/ccc_metadata.rds") %>% 
+data_metadata = read_rds("../data/ccc_database/rds/ccc_metadata.rds") %>% 
   mutate(presence_dissent = if_else(is.na(as.character(separate_opinion)), "None", "At least 1")) %>%
   filter(between(year(date_decision), 2004, 2022)) %>%
   filter(grounds == "merits" | formation == "Plenum") %>%
   filter(grounds != "procedural")
 
-data_judges = read_rds("../data/ccc_dataset/rds/ccc_judges.rds")
+data_judges = read_rds("../data/ccc_database/rds/ccc_judges.rds")
 
 # 
 data_compositions = data_metadata %>%
   select(doc_id, composition) %>%
   unnest(composition)
 
-data_dissents = read_rds("../data/ccc_dataset/rds/ccc_separate_opinions.rds") %>%
+data_dissents = read_rds("../data/ccc_database/rds/ccc_separate_opinions.rds") %>%
   filter(doc_id %in% data_metadata$doc_id)
 
-data_metadata_temp = read_rds("../data/ccc_dataset/rds/ccc_metadata.rds") %>% rename(date_decision_meta = date_decision,
+data_metadata_temp = read_rds("../data/ccc_database/rds/ccc_metadata.rds") %>% rename(date_decision_meta = date_decision,
                                                                                      date_submission_meta = date_submission) %>%
   select(judge_rapporteur_name, date_decision_meta, date_submission_meta, grounds, type_decision)
 
 data = left_join(data_compositions, data_dissents, by = join_by(doc_id, judge_id == dissenting_judge_id)) %>%
   mutate(dissenting_judge_name = if_else(condition = is.na(dissenting_judge_name), true = 0, false = 1)) %>%
   rename(separate_opinion = dissenting_judge_name) %>%
-  left_join(., data_metadata %>% select(doc_id, date_decision, subject_proceedings, grounds, subject_register, formation, type_decision, type_proceedings, concerned_acts, concerned_constitutional_acts, type_verdict, citations)) %>%
+  left_join(., data_metadata %>% select(doc_id, date_decision, year_decision, subject_proceedings, grounds, subject_register, formation, type_decision, type_proceedings, concerned_acts, concerned_constitutional_acts, type_verdict, citations)) %>%
   mutate(n_concerned_acts = if_else(is.na(concerned_acts), 0, lengths(concerned_acts)),
          n_concerned_constitutional_acts = str_count(string = as.character(concerned_constitutional_acts), pattern = "čl")) %>%
   rowwise() %>%
@@ -70,10 +70,11 @@ data = left_join(data_compositions, data_dissents, by = join_by(doc_id, judge_id
            return(output)}
          )) %>%
   unnest(c(separate_opinion_nested, workload, workload_ratio_admissibility)) %>%
+  left_join(., data_judges |> group_by(judge_name) |> summarise(first_term_start = min(judge_term_start))) %>%
   mutate(across(where(is.character), ~as_factor(.)),
-         time_in_office = interval(judge_term_start, date_decision) %/% months(1)) %>%
-  rowwise() %>%
-  mutate(controversial = if_else(any((subject_proceedings %>% pluck(1)) %in% controversial_topics) | any((subject_register %>% pluck(1)) %in% controversial_topics), 1, 0) %>% as_factor()) %>%
+         time_in_office = interval(first_term_start, date_decision) %/% months(1)) %>%
+  rowwise() |>
+  mutate(controversial = if_else(any((subject_proceedings %>% pluck(1)) %in% controversial_topics) | any((subject_register %>% pluck(1)) %in% controversial_topics), 1, 0) %>% as_factor()) |>
   mutate(placebo1 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 1]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 1]), 1, 0) %>% as_factor(),
          placebo2 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 2]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 2]), 1, 0) %>% as_factor(),
          placebo3 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 3]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 3]), 1, 0) %>% as_factor(),
@@ -84,18 +85,20 @@ data = left_join(data_compositions, data_dissents, by = join_by(doc_id, judge_id
          placebo8 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 5]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 8]), 1, 0) %>% as_factor(),
          placebo9 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 5]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 9]), 1, 0) %>% as_factor(),
          placebo10 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 5]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 10]), 1, 0) %>% as_factor()) %>%
-  ungroup() %>%
-  group_by(doc_id) %>%
-  filter(n() %in% c(3,9,10,11,12,13,14,15)) %>%
-  filter(!any(judge_term_court %in% c("1st"))) %>%
-  arrange(judge_name) %>%
+  ungroup() |>
+  group_by(doc_id) |>
+  filter(n() %in% c(3,9,10,11,12,13,14,15)) |>
+  filter(!any(judge_term_court %in% c("1st"))) |>
+  arrange(judge_name) |>
   mutate(formation = if_else(formation == "Plenum", true = "Plenum", false = paste0(judge_name, collapse = ";")),
          formation = as_factor(formation)) %>%
-  ungroup() %>%
+  ungroup() |>
   mutate(controversial = fct_rev(controversial),
-         grounds = fct_rev(grounds)) %>%
-  select(-where(is.list)) %>%
-  select(-dissenting_group)
+         grounds = fct_rev(grounds)) |>
+  select(-where(is.list)) |>
+  select(-dissenting_group) |>
+  mutate(judge_profession = if_else(judge_profession %in% c("judge"), true = "within", false = "outside"),
+         year_decision = factor(year_decision), ordered = TRUE)
 
 data_term_temp = data %>% 
   group_by(doc_id) %>%
@@ -107,7 +110,7 @@ data_term_temp = data %>%
 
 data = data %>%
   left_join(., data_term_temp) %>%
-  left_join(., read_rds("../data/ccc_dataset/rds/ccc_texts.rds") %>%
+  left_join(., read_rds("../data/ccc_database/rds/ccc_texts.rds") %>%
               mutate(text = unlist(text)) %>%
               group_by(doc_id) %>%
               summarise(length_decision = str_length(text)))
@@ -129,9 +132,9 @@ data_coalition = data %>%
                           coalition == 0 ~ "full_coal",
                           coalition == 1 | 2 ~ "mixed_coal") %>% as_factor(),
     separate_opinion = if_else(any(separate_opinion == 1), 1, 0)) %>%
-  mutate(separate_opinion = as_factor(separate_opinion)) %>%
   ungroup() %>%
-  mutate(coalition = fct_rev(coalition))
+  mutate(coalition = fct_rev(coalition)) |>
+  left_join(read_rds("../data/ccc_database/rds/ccc_metadata.rds") |> select(doc_id, judge_rapporteur_name))
 
 rm(data_metadata_temp)
 rm(data_term_temp)

@@ -5,6 +5,13 @@ source("scripts/load_data.R")
 
 
 # EXPLORATORY ANALYSIS ---------------------------------------------------
+data_fair_trial = data |>
+  left_join(read_rds("../data/ccc_database/rds/ccc_metadata.rds") |> 
+              mutate(fair_trial = if_else(str_detect(string = as.character(concerned_constitutional_acts), pattern = "2/1993 Sb./Sb.m.s., čl. 36"), "Fair Trial", "Rest")) |>
+              select(doc_id, fair_trial)) |>
+  group_by(fair_trial) |>
+  summarise(mean_n_concerned_constitutional_acts = mean(n_concerned_constitutional_acts),
+            mean_caselaw = mean(n_citations))
 data %>%
   ggplot(aes(x = controversial, y = separate_opinion, color = judge_gender)) +
   facet_wrap(~judge_profession) +
@@ -25,7 +32,7 @@ model_selection = data %>%
   )
 model_selection
 
-grounds_ratio = read_rds("../data/ccc_dataset/rds/ccc_metadata.rds") %>%
+grounds_ratio = read_rds("../data/ccc_database/rds/ccc_metadata.rds") %>%
   group_by(year_decision, grounds) %>%
   count() %>%
   pivot_wider(names_from = grounds, values_from = n) %>%
@@ -34,14 +41,14 @@ grounds_ratio = read_rds("../data/ccc_dataset/rds/ccc_metadata.rds") %>%
             ratio_grounds = scales::percent(merits/admissibility, accuracy = 0.01))
 grounds_ratio
 
-read_rds("../data/ccc_dataset/rds/ccc_metadata.rds") %>%
+read_rds("../data/ccc_database/rds/ccc_metadata.rds") %>%
   filter(grounds != "procedural") %>%
   group_by(year_decision, grounds) %>%
   count() %>%
   ggplot(aes(x = year_decision, y = n, fill = grounds)) +
   geom_col()
 
-caseload = read_rds("../data/ccc_dataset/rds/ccc_metadata.rds") %>%
+caseload = read_rds("../data/ccc_database/rds/ccc_metadata.rds") %>%
   ggplot(aes(x = year(date_decision), fill = grounds)) +
   geom_bar(position = position_stack(reverse = TRUE))  +
   scale_x_continuous(breaks = seq(1991, 2023, 2)) +
@@ -51,7 +58,7 @@ caseload = read_rds("../data/ccc_dataset/rds/ccc_metadata.rds") %>%
   scale_fill_grey()
 caseload
 
-separate_opinion_ratio = read_rds("../data/ccc_dataset/rds/ccc_metadata.rds") %>% 
+separate_opinion_ratio = read_rds("../data/ccc_database/rds/ccc_metadata.rds") %>% 
   filter(!grounds %in% c("procedural")) %>%
   mutate(presence_dissent = if_else(is.na(as.character(separate_opinion)), 0, 1)) %>%
   group_by(year(date_decision), grounds) %>%
@@ -140,7 +147,7 @@ age_distribution
 # descriptive_dependent
 
 dependent_variables_overview = data %>%
-  select(separate_opinion, judge_profession, n_concerned_acts, n_concerned_constitutional_acts, n_citations, controversial) %>%
+  select(separate_opinion, judge_profession, n_citations, controversial) %>%
   group_by(judge_profession) %>%
   select(where(is.numeric)) %>%
   skimr::skim() %>%
@@ -148,5 +155,5 @@ dependent_variables_overview = data %>%
   select(c(skim_variable, judge_profession, numeric.mean, numeric.sd))
 dependent_variables_overview
 
-save.image("report/descriptive_statistics.RData")
+# save.image("report/descriptive_statistics.RData")
 

@@ -9,3 +9,9 @@ model_selection = data %>%
     units = n(),
     mean_observations = median(n)
   )
+
+data |>
+  filter(n_citations == 0 & separate_opinion == 1)
+
+zero_cca = data |>
+  filter(n_concerned_constitutional_acts == 0 & separate_opinion == 1)
