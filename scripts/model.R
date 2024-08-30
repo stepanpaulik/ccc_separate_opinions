@@ -13,41 +13,38 @@ if(load == TRUE){
   source("scripts/load_data.R")
   
   model_no_fe = feglm(
-    fml = separate_opinion ~ n_citations + judge_profession * time_in_office + controversial + workload + grounds,
+    fml = separate_opinion ~ n_citations + judge_profession * time_in_office + time_until_end + controversial + workload + grounds,
     data = data,
     cluster = "formation",
     family = "binomial"
   )
   
   model_fe_year = feglm(
-    fml = separate_opinion ~ n_citations + judge_profession * time_in_office + controversial + workload + grounds | year_decision,
+    fml = separate_opinion ~ n_citations + judge_profession * time_in_office + time_until_end + controversial + workload + grounds | year_decision,
     data = data,
     cluster = "formation",
     family = "binomial"
   )
   
   model_fe_year_chamber = feglm(
-    fml = separate_opinion ~ n_citations + judge_profession * time_in_office + controversial + workload + grounds | year_decision + formation,
+    fml = separate_opinion ~ n_citations + judge_profession * time_in_office + time_until_end + controversial + workload + grounds | year_decision + formation,
     data = data,
     cluster = "formation",
     family = "binomial"
   )
   
   model_fe_year_chamber_judge = feglm(
-    fml = separate_opinion ~ n_citations + time_in_office + controversial + workload + grounds | year_decision + formation + judge_name,
+    fml = separate_opinion ~ n_citations + time_in_office + time_until_end + controversial + workload + grounds | year_decision + formation + judge_name,
     data = data,
     cluster = "formation",
     family = "binomial"
   )
   
   model_lpm = feols(
-    fml = separate_opinion ~ n_citations + judge_profession * time_in_office + controversial + workload + grounds + year_decision + formation,
+    fml = separate_opinion ~ n_citations + judge_profession * time_in_office + time_until_end + controversial + workload + grounds + year_decision + formation,
     data = data,
     cluster = "formation"
   )
-  
-  # modelsummary::modelplot(model_fe_final, vcov = ~formation)
-  
   
   modelsummary::modelsummary(list(
     "(1) LOGIT" = model_no_fe,
@@ -58,57 +55,14 @@ if(load == TRUE){
     statistic = "{p.value} [{conf.low}, {conf.high}]",
     exponentiate = TRUE,
     stars = TRUE)
-  
-  to_remove = model_fe_year_chamber_judge$obs_selection$obsRemoved
-  
-  data_filtered = data[to_remove,]
-  
-  model_no_fe_filtered = feglm(
-    fml = separate_opinion ~ n_citations + judge_profession * time_in_office + controversial + workload + grounds,
-    data = data_filtered,
-    cluster = "formation",
-    family = "binomial"
-  )
-  
-  model_fe_year_filtered = feglm(
-    fml = separate_opinion ~ n_citations + judge_profession * time_in_office + controversial + workload + grounds | year_decision,
-    data = data_filtered,
-    cluster = "formation",
-    family = "binomial"
-  )
-  
-  model_fe_year_chamber_filtered = feglm(
-    fml = separate_opinion ~ n_citations + judge_profession * time_in_office + controversial + workload + grounds | year_decision + formation,
-    data = data_filtered,
-    cluster = "formation",
-    family = "binomial"
-  )
-  
-  model_fe_year_chamber_judge_filtered = feglm(
-    fml = separate_opinion ~ n_citations + time_in_office + controversial + workload + grounds | year_decision + formation + judge_name,
-    data = data_filtered,
-    cluster = "formation",
-    family = "binomial"
-  )
-  
-  modelsummary::modelsummary(list(
-    "(1) LOGIT" = model_no_fe_filtered,
-    "(2) FE LOGIT" = model_fe_year_filtered,
-    "(3) FE LOGIT" = model_fe_year_chamber_filtered,
-    "(4) FE LOGIT" = model_fe_year_chamber_judge_filtered),
-    estimate = "{estimate}{stars}",
-    statistic = "{p.value} [{conf.low}, {conf.high}]",
-    exponentiate = TRUE,
-    stars = TRUE)
-  
-  # DAMisc::intEff(obj = model_fe_full, vars = c("judge_profession", "time_in_office"), data = data)
-  
-  # nd = datagrid(model = model_me_formation_term_grounds, judge_profession = c("outside", "within"), grid_type = "counterfactual")
-  # pred <- predictions(model_me_formation_term_grounds, newdata = nd)
+
   
   marginal_predictions_fe = marginaleffects::predictions(model_fe_year_chamber)
   
-  marginal_probabilities = plot_predictions(model_fe_year_chamber, condition = c("time_in_office" ,"judge_profession"), type = "response") +
+  marginal_probabilities = plot_predictions(model_fe_year_chamber, 
+                                            condition = c("time_in_office" ,"judge_profession"), 
+                                            type = "response",
+                                            gray = TRUE) +
     labs(title = "Probability of a SO conditional on \n Time in Office and Profession" ) +
     xlab("Time in Office") +
     ylab("Probability of a Separate Opinion")
@@ -158,18 +112,12 @@ model_coalitions = feglm(
   family = "binomial"
 )
 
-model_coalitions_fe = feglm(
+model_coalitions_fe_outcome = feglm(
   fml = separate_opinion ~ coalition | judge_rapporteur_name,
   data = data_coalition,
   family = "binomial"
 )
 
-modelsummary::modelsummary(list("(1)" = model_coalitions,
-                                "(2)" = model_coalitions_fe),
-                           estimate = "{estimate}{stars}",
-                           statistic = "({std.error})",
-                           exponentiate = TRUE,
-                           stars = TRUE)
 
 plot_coalitions = model_coalitions %>%
   tidy(conf.int = TRUE) %>%
@@ -180,12 +128,6 @@ plot_coalitions = model_coalitions %>%
   labs(x = "Term", y = "Estimate")
 plot_coalitions
 }
-
-# write_rds(model_coalitions, file = "../ccc_dataset/report/model_coalitions.rds")
-# write_rds(plot_coalitions, file = "../ccc_dataset/report/plot_coalitions.rds")
-
-
-
 
 
 # rm(list=ls(pattern="^data"))

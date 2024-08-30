@@ -4,115 +4,47 @@ library(geomtextpath)
 source("scripts/load_data.R")
 
 
-# EXPLORATORY ANALYSIS ---------------------------------------------------
-data_fair_trial = data |>
-  left_join(read_rds("../data/ccc_database/rds/ccc_metadata.rds") |> 
-              mutate(fair_trial = if_else(str_detect(string = as.character(concerned_constitutional_acts), pattern = "2/1993 Sb./Sb.m.s., čl. 36"), "Fair Trial", "Rest")) |>
-              select(doc_id, fair_trial)) |>
-  group_by(fair_trial) |>
-  summarise(mean_n_concerned_constitutional_acts = mean(n_concerned_constitutional_acts),
-            mean_caselaw = mean(n_citations))
-data %>%
-  ggplot(aes(x = controversial, y = separate_opinion, color = judge_gender)) +
-  facet_wrap(~judge_profession) +
-  stat_summary(fun = mean, geom = "point") +
-  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
-  theme_set(theme_bw(base_size = 10)) +
-  theme(legend.position = "top") +
-  labs(x = "", y = "Observed Probabilty of a separate opinion")
+# DATA DESCRIPTION --------------------------------------------------------
 
+# Overall data ------------------------------------------------------------
+separate_opinion_table = read_rds("../data/ccc_database/rds/ccc_metadata.rds") |>
+  mutate(formation = if_else(formation %in% "Plenum", "Plenum", "Chamber")) |>
+  mutate(presence_dissent = if_else(is.na(as.character(separate_opinion)), 0, 1)) |>
+  group_by(formation, grounds, presence_dissent) |>
+  count() |>
+  group_by(formation, grounds) |>
+  mutate(total = sum(n)) |>
+  ungroup() |>
+  mutate(freq = paste0(100*round(n/total,4), " %")) |>
+  filter(presence_dissent == 1) |>
+  select(-presence_dissent)
+separate_opinion_table
 
-model_selection = data %>%
-  group_by(formation) %>%
-  count() %>%
-  ungroup() %>%
-  summarise(
-    units = n(),
-    mean_observations = median(n)
-  )
-model_selection
+separate_opinion_ratio_plenum = read_rds("../data/ccc_database/rds/ccc_metadata.rds") |>
+  mutate(formation = if_else(formation %in% "Plenum", "Plenum", "Chamber")) |>
+  filter(formation %in% "Plenum") |>
+  mutate(presence_dissent = if_else(is.na(as.character(separate_opinion)), "No SO", "At least 1 SO")) |>
+  mutate(presence_dissent = as_factor(presence_dissent)) |>
+  ggplot(aes(x = year_decision, fill = presence_dissent)) +
+  geom_bar(alpha = 0.3) +
+  scale_fill_grey(start = 0.6, end = 0) +
+  labs(x = "Year of the Decision", y = "Number of Decisions", fill = NULL) + 
+  scale_x_continuous(guide = guide_axis(angle = 90), breaks=1993:2022)
+  
 
-grounds_ratio = read_rds("../data/ccc_database/rds/ccc_metadata.rds") %>%
-  group_by(year_decision, grounds) %>%
-  count() %>%
-  pivot_wider(names_from = grounds, values_from = n) %>%
-  group_by(year_decision) %>%
-  summarise(count = sum(admissibility, merits),
-            ratio_grounds = scales::percent(merits/admissibility, accuracy = 0.01))
-grounds_ratio
+separate_opinion_ratio_chamber = read_rds("../data/ccc_database/rds/ccc_metadata.rds") |>
+  mutate(formation = if_else(formation %in% "Plenum", "Plenum", "Chamber")) |>
+  filter(formation %in% "Chamber") |>
+  mutate(presence_dissent = if_else(is.na(as.character(separate_opinion)), "No SO", "At least 1 SO")) |>
+  mutate(presence_dissent = as_factor(presence_dissent)) |>
+  ggplot(aes(x = year_decision, fill = presence_dissent)) +
+  geom_bar(alpha = 0.3) + 
+  scale_fill_grey(start = 0.6, end = 0) +
+  labs(x = "Year of the Decision", y = "Number of Decisions", fill = NULL) +
+  scale_x_continuous(guide = guide_axis(angle = 90), breaks=1993:2022)
 
-read_rds("../data/ccc_database/rds/ccc_metadata.rds") %>%
-  filter(grounds != "procedural") %>%
-  group_by(year_decision, grounds) %>%
-  count() %>%
-  ggplot(aes(x = year_decision, y = n, fill = grounds)) +
-  geom_col()
+# Alternatively explore guide = guide_axis(n.dodge = 2)
 
-caseload = read_rds("../data/ccc_database/rds/ccc_metadata.rds") %>%
-  ggplot(aes(x = year(date_decision), fill = grounds)) +
-  geom_bar(position = position_stack(reverse = TRUE))  +
-  scale_x_continuous(breaks = seq(1991, 2023, 2)) +
-  scale_fill_brewer(palette="Pastel1") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  labs(x = NULL, y = NULL, fill = "Type of verdict") +
-  scale_fill_grey()
-caseload
-
-separate_opinion_ratio = read_rds("../data/ccc_database/rds/ccc_metadata.rds") %>% 
-  filter(!grounds %in% c("procedural")) %>%
-  mutate(presence_dissent = if_else(is.na(as.character(separate_opinion)), 0, 1)) %>%
-  group_by(year(date_decision), grounds) %>%
-  summarise(sum(presence_dissent)/n()) %>%
-  rename(Year = `year(date_decision)`,
-           `Dissent` = `sum(presence_dissent)/n()`) %>%
-  ggplot(aes(x = Year, y = Dissent, group = grounds, color = grounds)) + 
-  geom_point() + 
-  geom_line() +
-  labs(y = "Percent of Decisions with at least one Separate Opinion", color = NULL) +
-  scale_y_continuous(labels = scales::label_percent()) +
-  scale_colour_grey()
-separate_opinion_ratio
-
-dissents_distribution_judges = data_dissents %>%
-  group_by(doc_id) %>%
-  count() %>%
-  ungroup() %>%
-  ggplot(aes(x = n)) +
-  geom_bar() +
-  scale_x_continuous(breaks = seq(1, 9, 1))
-dissents_distribution_judges
-
-dissents_distribution_opinions = data_dissents %>%
-  group_by(doc_id) %>%
-  summarise(n = length(unique(dissenting_group))) %>%
-  ungroup() %>%
-  ggplot(aes(x = n)) +
-  geom_bar() +
-  scale_x_continuous(breaks = seq(1, 9, 1)) +
-  labs(x = "Number of dissenting opinions", y = "Count")
-dissents_distribution_opinions
-
-dissents_prevalence = data_metadata %>%
-  filter(grounds == "merits" | formation == "Plenum") %>%
-  ggplot(aes(x = forcats::fct_infreq(presence_dissent))) +
-  geom_bar() +
-  labs(x = NULL, y = NULL)
-dissents_prevalence
-
-descr_workload = data %>%
-  select(workload) %>%
-  skimr::skim() %>%
-  select(skim_variable, numeric.mean, numeric.sd, numeric.p0, numeric.p25, numeric.p50, numeric.p75, numeric.p100)
-descr_workload
-
-plot_workload = data %>%
-  ggplot(aes(x = workload)) +
-  geom_density() +
-  facet_wrap(~judge_name)
-plot_workload
-
-
-# Descriptive Statistics --------------------------------------------------
 overall_table = data_metadata %>%
   mutate(formation = if_else(formation == "Plenum", "Plenum", "Chamber"),
          presence_dissent = if_else(is.na(as.character(separate_opinion)), 0, 1)) %>%
@@ -123,37 +55,90 @@ overall_table = data_metadata %>%
   ungroup()
 overall_table
 
-professions = data_judges %>% 
-  filter(judge_term_court != "4th") %>%
-  ggplot(aes(x = forcats::fct_infreq(judge_profession))) +
+# Operationalization ------------------------------------------------------
+professions = data_judges |> 
+  filter(judge_term_court %in% c("2nd","3rd")) |>
+  mutate(judge_profession = case_when(
+    judge_profession %in% "judge" ~ "Judge",
+    judge_profession %in% "scholar" ~ "Scholar",
+    judge_profession %in% "lawyer" ~ "Lawyer",
+    judge_profession %in% "politician" ~ "Politician",
+  )) |>
+  ggplot(aes(x = forcats::fct_infreq(judge_profession), fill = forcats::fct_infreq(judge_profession))) +
   geom_bar() +
-  labs(x = NULL, y = NULL) +
-  facet_wrap(~judge_term_court)
+  labs(x = NULL, y = NULL, fill = NULL) +
+  scale_fill_grey() +
+  guides(fill="none")
 professions
 
-age_distribution = data_judges %>% 
-  filter(judge_term_court != "4th") %>%
-  mutate(age_term_end = year(judge_term_end) - judge_yob) %>%
-  ggplot(aes(x = age_term_end)) +
-  geom_density() +
-  labs(x = "The age of a justice at the end of their term", y = "Density", colour = NULL)
-age_distribution
+n_within = data_judges |> 
+  filter(judge_term_court %in% c("2nd","3rd")) |>
+  filter(judge_profession %in% "judge") |>
+  nrow()
 
-# descriptive_dependent = data %>%
-#   mutate(formation = if_else(formation == "Plenum", "Plenum", "Chamber"),
-#          presence_dissent = if_else(is.na(as.character(separate_opinion)), 0, 1)) %>%
-#   group_by(formation, grounds) %>%
-#   summarise(n_dissents = mean(separate_opinion))
-# descriptive_dependent
+n_outside = nrow(data_judges |> filter(judge_term_court %in% c("2nd","3rd"))) - n_within
 
-dependent_variables_overview = data %>%
-  select(separate_opinion, judge_profession, n_citations, controversial) %>%
-  group_by(judge_profession) %>%
-  select(where(is.numeric)) %>%
-  skimr::skim() %>%
-  as_tibble() %>%
-  select(c(skim_variable, judge_profession, numeric.mean, numeric.sd))
-dependent_variables_overview
 
-# save.image("report/descriptive_statistics.RData")
+reelected_judges = data_judges |> 
+  group_by(judge_name) |>
+  filter(n() > 1)
+ 
+reelected_judges = data_judges |> 
+  filter(judge_term_court %in% c("2nd","3rd")) |>
+  filter(judge_name %in% reelected_judges$judge_name) |>
+  distinct(judge_name, .keep_all = TRUE) |>
+  nrow()
+
+
+# Summary table -----------------------------------------------------------
+dependent_variables_overview_numeric = data |>
+  select(judge_profession, n_citations, controversial, workload, grounds, time_in_office, time_until_end) |>
+  skimr::skim(where(is.numeric)) |>
+  select(skim_variable, numeric.mean, numeric.sd, numeric.p0, numeric.p25, numeric.p50, numeric.p75, numeric.p100)
+dependent_variables_overview_numeric
+
+dependent_variables_overview_factor = data |>
+  select(separate_opinion, judge_profession, controversial, grounds) |>
+  mutate(separate_opinion = as_factor(if_else(separate_opinion == 1, "Attached a SO", "No SO")),
+         judge_profession = as_factor(judge_profession),
+         controversial = as_factor(if_else(controversial == 1, "Controversial Topic", "Uncontroversial Topic"))) |>
+  map_dfr(~table(.x) |> as.data.frame() |> as_tibble()) |>
+  mutate(.x = c("No SO", "Attached a SO", "Outside Judiciary", "Within Judiciary", "Controversial", "Uncontroversial", "Admissibility", "On Merits"),
+         group = c("Separate Opinion", "Separate Opinion", "Profession", "Profession", "Issue Salience", "Issue Salience", "Grounds", "Grounds"))
+dependent_variables_overview_factor
+
+model_selection = rbind(data |>
+  group_by(formation) |>
+  count() |>
+  ungroup() |>
+  summarise(
+    units = n(),
+    mean_observations = median(n)
+  ) |>
+    mutate(group = "Formation"),
+  data |>
+    group_by(year_decision) |>
+    count() |>
+    ungroup() |>
+    summarise(
+      units = n(),
+      mean_observations = median(n)
+    ) |>
+    mutate(group = "Year"), 
+  data |>
+    group_by(judge_name) |>
+    count() |>
+    ungroup() |>
+    summarise(
+      units = n(),
+      mean_observations = median(n)
+    ) |>
+    mutate(group = "Judge")) |>
+  pivot_longer(cols = c(units, mean_observations)) |>
+  mutate(name = if_else(name %in% "units", "Units", "Mean Observations"))
+model_selection
+
+# save.image("data/descriptive_statistics.RData")
+
+
 

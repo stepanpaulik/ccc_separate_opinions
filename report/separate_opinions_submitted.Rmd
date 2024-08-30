@@ -1,7 +1,7 @@
 ---
 output: 
-  bookdown::pdf_document2: default
-  stevetemplates::article3:
+  bookdown::pdf_document2: 
+    extra_dependencies: ["float"]
     keep_tex: false
     toc: false
     number_section: true
@@ -34,7 +34,6 @@ bibliography: "`r rbbt::bbt_write_bib('bibliography.bib', overwrite = TRUE)`"
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
 library(patchwork)
 library(tidyverse); theme_set(theme_minimal())
 library(ggplot2)
@@ -42,7 +41,7 @@ library(kableExtra)
 library(modelsummary) 
 library(bookdown)
 
-knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE, fig.width=4.2, fig.asp=0.8)
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE, fig.width=4.2, fig.asp=0.8, fig.pos = "H", out.extra = "")
 
 load("../data/descriptive_statistics.RData")
 load("../data/model_results.RData")
@@ -178,7 +177,7 @@ overall_table %>%
     col.names = c("Formation", "Grounds", "Count", "%", "% with at least One Separate Opinion")
   ) %>%
   row_spec(0,bold=TRUE) %>%
-  kable_styling()
+  kable_styling(latex_options = "hold_position")
 ```
 
 

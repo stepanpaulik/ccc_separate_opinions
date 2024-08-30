@@ -72,7 +72,8 @@ data = left_join(data_compositions, data_dissents, by = join_by(doc_id, judge_id
   unnest(c(separate_opinion_nested, workload, workload_ratio_admissibility)) %>%
   left_join(., data_judges |> group_by(judge_name) |> summarise(first_term_start = min(judge_term_start))) %>%
   mutate(across(where(is.character), ~as_factor(.)),
-         time_in_office = interval(first_term_start, date_decision) %/% months(1)) %>%
+         time_in_office = interval(first_term_start, date_decision) %/% months(1),
+         time_until_end = interval(date_decision, judge_term_end) %/% months(1)) %>%
   rowwise() |>
   mutate(controversial = if_else(any((subject_proceedings %>% pluck(1)) %in% controversial_topics) | any((subject_register %>% pluck(1)) %in% controversial_topics), 1, 0) %>% as_factor()) |>
   mutate(placebo1 = if_else(any((subject_proceedings %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 1]) | any((subject_register %>% pluck(1)) %in% subject_matter$subject_matter[subject_matter$placebo == 1]), 1, 0) %>% as_factor(),

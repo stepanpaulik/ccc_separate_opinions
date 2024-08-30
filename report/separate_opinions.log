@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.7.2)  31 JUL 2024 07:48
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.7.2)  19 AUG 2024 10:53
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -609,18 +609,14 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <9> on input line 153.
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <5> on input line 153.
-(./separate_opinions.toc
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10.95> on input line 3.
-)
-\tf@toc=\write3
-\openout3 = `separate_opinions.toc'.
-
 
 
 [1
 
 {/Users/stepanpaulik/Library/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}{/Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}]
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <10.95> on input line 169.
+
 
 [2]
 
@@ -636,74 +632,65 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 
 [8]
 
+LaTeX Warning: Hyper reference `data-description' on page 9 undefined on input line 251.
+
+<separate_opinions_files/figure-latex/separate-opinion-ratio-chamber-1.pdf, id=175, 417.56pt x 335.2525pt>
+File: separate_opinions_files/figure-latex/separate-opinion-ratio-chamber-1.pdf Graphic file (type pdf)
+<use separate_opinions_files/figure-latex/separate-opinion-ratio-chamber-1.pdf>
+Package pdftex.def Info: separate_opinions_files/figure-latex/separate-opinion-ratio-chamber-1.pdf  used on input line 258.
+(pdftex.def)             Requested size: 417.55896pt x 335.25168pt.
+
+
 [9]
-
-[10]
-
-[11]
-<separate_opinions_files/figure-latex/separate-opinion-ratio-1.pdf, id=243, 288.07625pt x 241.90375pt>
-File: separate_opinions_files/figure-latex/separate-opinion-ratio-1.pdf Graphic file (type pdf)
-<use separate_opinions_files/figure-latex/separate-opinion-ratio-1.pdf>
-Package pdftex.def Info: separate_opinions_files/figure-latex/separate-opinion-ratio-1.pdf  used on input line 284.
-(pdftex.def)             Requested size: 288.08432pt x 241.91052pt.
+<separate_opinions_files/figure-latex/separate-opinion-ratio-plenum-1.pdf, id=188, 417.56pt x 335.2525pt>
+File: separate_opinions_files/figure-latex/separate-opinion-ratio-plenum-1.pdf Graphic file (type pdf)
+<use separate_opinions_files/figure-latex/separate-opinion-ratio-plenum-1.pdf>
+Package pdftex.def Info: separate_opinions_files/figure-latex/separate-opinion-ratio-plenum-1.pdf  used on input line 269.
+(pdftex.def)             Requested size: 417.55896pt x 335.25168pt.
 
 
-[12 <./separate_opinions_files/figure-latex/separate-opinion-ratio-1.pdf>]
+[10 <./separate_opinions_files/figure-latex/separate-opinion-ratio-chamber-1.pdf>]
+
+[11 <./separate_opinions_files/figure-latex/separate-opinion-ratio-plenum-1.pdf>]
+
+[12]
+<separate_opinions_files/figure-latex/profession-distribution-1.pdf, id=250, 422.57875pt x 337.26pt>
+File: separate_opinions_files/figure-latex/profession-distribution-1.pdf Graphic file (type pdf)
+<use separate_opinions_files/figure-latex/profession-distribution-1.pdf>
+Package pdftex.def Info: separate_opinions_files/figure-latex/profession-distribution-1.pdf  used on input line 335.
+(pdftex.def)             Requested size: 422.58415pt x 337.26431pt.
+
 
 [13]
 
-[14]
-<separate_opinions_files/figure-latex/age-distribution-1.pdf, id=292, 293.095pt x 232.87pt>
-File: separate_opinions_files/figure-latex/age-distribution-1.pdf Graphic file (type pdf)
-<use separate_opinions_files/figure-latex/age-distribution-1.pdf>
-Package pdftex.def Info: separate_opinions_files/figure-latex/age-distribution-1.pdf  used on input line 349.
-(pdftex.def)             Requested size: 293.09427pt x 232.86942pt.
+[14 <./separate_opinions_files/figure-latex/profession-distribution-1.pdf>]
 
+[15{/Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}]
 
-[15 <./separate_opinions_files/figure-latex/age-distribution-1.pdf>]
-<separate_opinions_files/figure-latex/profession-distribution-1.pdf, id=307, 423.5825pt x 331.2375pt>
-File: separate_opinions_files/figure-latex/profession-distribution-1.pdf Graphic file (type pdf)
-<use separate_opinions_files/figure-latex/profession-distribution-1.pdf>
-Package pdftex.def Info: separate_opinions_files/figure-latex/profession-distribution-1.pdf  used on input line 357.
-(pdftex.def)             Requested size: 423.59439pt x 331.24678pt.
+[16]
 
+[17{/Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}{/Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathex.enc}]
 
-[16 <./separate_opinions_files/figure-latex/profession-distribution-1.pdf>]
-
-[17{/Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}]
-Overfull \hbox (303.95213pt too wide) detected at line 420
-\OML/lmm/m/it/10.95 Pr\OT1/lmr/m/n/10.95 (\OML/lmm/m/it/10.95 separate opinion \OT1/lmr/m/n/10.95 = 1) = []
- []
-
-
-
-[18{/Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}{/Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}]
-
-LaTeX Warning: Reference `tab:prediction' on page 19 undefined on input line 427.
-
-
+[18]
 
 [19]
+<separate_opinions_files/figure-latex/predicted-probabilities-1.pdf, id=334, 417.56pt x 335.2525pt>
+File: separate_opinions_files/figure-latex/predicted-probabilities-1.pdf Graphic file (type pdf)
+<use separate_opinions_files/figure-latex/predicted-probabilities-1.pdf>
+Package pdftex.def Info: separate_opinions_files/figure-latex/predicted-probabilities-1.pdf  used on input line 517.
+(pdftex.def)             Requested size: 417.55896pt x 335.25168pt.
+
 
 [20]
-Overfull \hbox (1.54787pt too wide) in paragraph at lines 476--501
+
+[21 <./separate_opinions_files/figure-latex/predicted-probabilities-1.pdf>]
+Overfull \hbox (1.54787pt too wide) in paragraph at lines 536--561
  [][] 
  []
 
 
 
-[21]
-<separate_opinions_files/figure-latex/predicted-probabilities-1.pdf, id=388, 287.0725pt x 230.8625pt>
-File: separate_opinions_files/figure-latex/predicted-probabilities-1.pdf Graphic file (type pdf)
-<use separate_opinions_files/figure-latex/predicted-probabilities-1.pdf>
-Package pdftex.def Info: separate_opinions_files/figure-latex/predicted-probabilities-1.pdf  used on input line 513.
-(pdftex.def)             Requested size: 287.0718pt x 230.86192pt.
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
-
-[22 <./separate_opinions_files/figure-latex/predicted-probabilities-1.pdf>]
+[22]
 
 [23]
 
@@ -721,18 +708,18 @@ LaTeX Warning: There were undefined references.
 
  ) 
 Here is how much of TeX's memory you used:
- 16576 strings out of 475544
- 307823 string characters out of 5776250
- 1958905 words of memory out of 5000000
+ 16567 strings out of 475544
+ 308010 string characters out of 5776250
+ 1956905 words of memory out of 5000000
  38819 multiletter control sequences out of 15000+600000
- 642792 words of font info for 98 fonts, out of 8000000 for 9000
+ 640161 words of font info for 98 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 83i,10n,93p,2560b,975s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx10.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx8.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx9.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi10.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi6.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi8.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr10.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr12.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr17.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr6.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr8.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr9.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri10.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri9.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy6.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy8.pfb>
-Output written on separate_opinions.pdf (26 pages, 485091 bytes).
+ 83i,10n,93p,2540b,971s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx10.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx8.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmex10.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi10.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi6.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi8.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr10.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr12.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr17.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr6.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr8.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr9.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri10.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri9.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy6.pfb></Users/stepanpaulik/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy8.pfb>
+Output written on separate_opinions.pdf (26 pages, 455608 bytes).
 PDF statistics:
- 645 PDF objects out of 1000 (max. 8388607)
- 558 compressed objects within 6 object streams
- 125 named destinations out of 1000 (max. 500000)
- 125 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 602 PDF objects out of 1000 (max. 8388607)
+ 515 compressed objects within 6 object streams
+ 118 named destinations out of 1000 (max. 500000)
+ 141 words of extra memory for PDF output out of 10000 (max. 10000000)
 
